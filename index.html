@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Notes · Year 1</title>
+<meta name="description" content="Unofficial study notes for first-year KUAS engineering courses: summaries, practice problems with worked solutions, formula sheets and quiz reviews.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<script>
+  // follow the theme picked on a subject page (light / dark / system)
+  try {
+    const t = (JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {}).theme;
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) { /* storage unavailable */ }
+</script>
+<style>
+  /* Home: the subject picker. Same KUAS-style palette as the subject pages; each subject keeps its own colour
+     (Math green, Physics a darker blue). */
+  :root {
+    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C;
+    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8;
+    --blue: #1F4B8F; --blue-text: #1C437F; --blue-soft: #8FB4EC; --blue-tint: #EAF0FA;
+    --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A;
+      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+      --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A;
+    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+    --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+  p { margin: 0; }
+  .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  :where(a):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+
+  .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .appbar-row { display: flex; align-items: center; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); text-decoration: none; }
+  .brand svg { width: 36px; height: 36px; flex: none; }
+  .brand-text { display: grid; line-height: 1.2; }
+  .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
+  .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
+
+  .band { background: var(--band); border-bottom: 5px solid var(--green); }
+  .band .wrap { padding-block: 24px 20px; }
+  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; line-height: 1.15; }
+  .band-title .en { font-size: clamp(32px, 9vw, 44px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
+  .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; }
+  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
+  .band-lede { margin-top: 8px; font-size: 15px; color: var(--ink-soft); max-width: 60ch; }
+
+  .subjects { display: grid; gap: 14px; padding-block: 24px 8px; }
+  .subject { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px; border: 1.5px solid var(--c); border-radius: 4px;
+    background: var(--surface); color: var(--ink); text-decoration: none; }
+  a.subject:hover { background: var(--c-tint); }
+  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); border-style: dashed; }
+  .s-icon { grid-row: span 2; width: 52px; height: 52px; }
+  .s-icon svg { width: 100%; height: 100%; display: block; }
+  .s-kicker { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
+  .s-title { display: block; margin-top: 2px; font-size: 20px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+  .s-text { grid-column: 2; font-size: 14.5px; color: var(--ink-soft); }
+  .s-foot { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 8px; }
+  .s-parts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+  .s-parts li { padding: 2px 10px; border-radius: 999px; background: var(--c-tint); color: var(--c-text); font-size: 12.5px; font-weight: 700; }
+  .s-go { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; background: var(--c); color: #FFFFFF; font-size: 14px; font-weight: 700; line-height: 1; }
+  .s-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .s-soon { display: inline-block; padding: 4px 12px; border: 1.5px solid var(--c); border-radius: 999px; color: var(--c-text); font-size: 13px; font-weight: 700; }
+  :root[data-theme="dark"] .s-go { color: #0E1310; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-go { color: #0E1310; } }
+
+  .site-foot .wrap { padding-block: 20px 32px; text-align: center; }
+  .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<header class="appbar"><div class="wrap appbar-row">
+  <a class="brand" href="./" aria-label="Study Notes, home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg>
+    <span class="brand-text"><b>Study Notes</b><small>Year 1 · Semester 1</small></span>
+  </a>
+</div></header>
+
+<div class="band"><div class="wrap">
+  <h1 class="band-title"><span class="en">Subjects</span><span class="jp" lang="ja">科目</span></h1>
+  <p class="band-lede">Notes for first-year engineering courses: key ideas, practice problems with worked solutions, formula sheets and quiz reviews.</p>
+</div></div>
+
+<main class="wrap">
+  <div class="subjects">
+    <a class="subject math" href="math/">
+      <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
+      <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
+      <p class="s-text">Midterm review: limits and continuity, derivative rules, extrema, series and Taylor polynomials.</p>
+      <span class="s-foot">
+        <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li></ul>
+        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
+      </span>
+    </a>
+    <div class="subject physics">
+      <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
+      <span><span class="s-kicker">Physics</span><span class="s-title">Engineering Physics 1</span></span>
+      <p class="s-text">Notes for this course will appear here.</p>
+      <span class="s-foot"><span class="s-soon">Coming soon</span></span>
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="wrap">
+  <p class="fine">Unofficial study notes. Not an official Kyoto University of Advanced Science page.</p>
+</div></footer>
+</body>
+</html>
