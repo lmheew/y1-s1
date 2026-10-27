@@ -440,10 +440,10 @@ async function loadQuizzes(ring) {
 // ---------- commands ----------
 const PASSWORD = process.env.SITE_PASSWORD || '';
 
-async function buildSite(pw = PASSWORD) {
+async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   const ring = pw ? await keyring(pw) : null;
   if (ring) await syncSeal(ring);
-  else if (readPrivateDir()) console.warn('note: src/math/private/ exists but SITE_PASSWORD is not set, so the locked in-class sheets were not rebuilt.');
+  else if (!afterRekey && readPrivateDir()) console.warn('note: src/math/private/ exists but SITE_PASSWORD is not set, so the locked in-class sheets were not rebuilt.');
   const quizzes = ring ? await loadQuizzes(ring) : null;
   let box = readJSON(LOCKED);
   const r = render({ quizzes, locked: true, lockedNos: box ? box.quizzes : [] });
@@ -547,7 +547,7 @@ async function rekey() {
   if (lockedData) fs.writeFileSync(LOCKED, JSON.stringify(await sealBox(ring, lockedData, { quizzes: lockedBox.quizzes })) + '\n');
   if (sealedData) fs.writeFileSync(SEALED, JSON.stringify(await sealBox(ring, sealedData)) + '\n');
   console.log('re-encrypted with the new password. Devices that chose "Remember" will ask for it once.');
-  await buildSite('');
+  await buildSite('', { afterRekey: true });
 }
 
 const [cmd, arg] = process.argv.slice(2);
