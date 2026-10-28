@@ -9,7 +9,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 ## Rules
 
 - **Never commit `src/math/private/` or the password.** The folder is git-ignored. The in-class quiz sheets exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/locked.json` (what the site opens with the password).
-- The password comes from the user in chat. Don't save it anywhere: not in files, not in memory, not in commit messages.
+- The password is saved in the user's Claude memory, because they asked for that. Otherwise they give it in chat. Never put it in the repository: not in files, not in commit messages.
 - Wording stays non-personal: no "your quizzes", no "from your chats", no student-ID versions.
 - The course is calculator-free, so answers stay exact (√2/2, ln(7/8), 2 + e).
 - Every new answer gets a numeric check in a verify script, and every check must pass before pushing.
@@ -53,7 +53,7 @@ python3 src/check_site.py
 3. Add numeric checks for the new answers.
 4. Build, run every check, then commit and push.
 
-## A new in-class quiz (ask the user for the password)
+## A new in-class quiz (needs the password)
 
 1. `SITE_PASSWORD='…' node src/math/build.mjs open` decrypts the private sources into `src/math/private/`.
 2. Retype the quiz into `private/inclass.mjs`, and add its checks to `private/verify_inclass.py`.
