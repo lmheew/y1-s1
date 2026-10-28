@@ -4,12 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Study Notes · Year 1</title>
-<meta name="description" content="Unofficial study notes for first-year KUAS engineering courses: summaries, practice problems with worked solutions, formula sheets and quiz reviews.">
+<meta name="description" content="Unofficial study notes for first-year KUAS engineering courses: summaries, practice problems with worked solutions, formula sheets, quizzes and mock exams.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
@@ -21,26 +22,26 @@
   } catch (e) { /* storage unavailable */ }
 </script>
 <style>
-  /* Home: the subject picker. Same KUAS-style palette as the subject pages; each subject keeps its own colour
-     (Math green, Physics a darker blue). */
+  /* Home: subjects, upcoming exams, what's new, and offline use. Same KUAS-style palette as the subject pages;
+     each subject keeps its own colour (Math green, Physics a darker blue). Hand-written: edit it directly. */
   :root {
-    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C;
-    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8;
+    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --bar: #377E46;
+    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8; --amber: #8F5B0D; --charcoal: #505050;
     --blue: #1F4B8F; --blue-text: #1C437F; --blue-soft: #8FB4EC; --blue-tint: #EAF0FA;
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A;
-      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337;
+      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
       --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A;
-    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337;
+    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
     --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
     color-scheme: dark;
   }
@@ -50,7 +51,8 @@
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
   p { margin: 0; }
   .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  :where(a):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+  :where(a, button):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+  svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
   .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
   .appbar-row { display: flex; align-items: center; height: 60px; }
@@ -68,7 +70,12 @@
   .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
   .band-lede { margin-top: 8px; font-size: 15px; color: var(--ink-soft); max-width: 60ch; }
 
-  .subjects { display: grid; gap: 14px; padding-block: 24px 8px; }
+  main { padding-block: 24px 8px; display: grid; gap: 30px; }
+  .sec-title { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--green); font-size: 19px; font-weight: 700; line-height: 1.3; }
+  .new-pill { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--lime); color: #1B2A0E;
+    font-size: 10.5px; font-weight: 900; line-height: 1.3; letter-spacing: .06em; text-transform: uppercase; vertical-align: middle; }
+
+  .subjects { display: grid; gap: 14px; }
   .subject { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
     display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px; border: 1.5px solid var(--c); border-radius: 4px;
     background: var(--surface); color: var(--ink); text-decoration: none; }
@@ -88,6 +95,35 @@
   :root[data-theme="dark"] .s-go { color: #0E1310; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-go { color: #0E1310; } }
 
+  .up-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .up-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
+  a.up-item:hover { background: var(--tint); }
+  .up-cal { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--tint); color: var(--green-text); }
+  .up-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
+  .up-name { font-size: 15.5px; font-weight: 700; }
+  .up-when { font-size: 13px; color: var(--ink-soft); }
+  .up-left { flex: none; font-size: 14px; font-weight: 700; color: var(--green-text); font-variant-numeric: tabular-nums; }
+  .up-item.soon { border-color: var(--amber); }
+  .up-item.soon .up-left { color: var(--amber); }
+  .up-item.past { opacity: .6; }
+  .up-more { margin-top: 10px; font-size: 13.5px; color: var(--ink-soft); }
+  .up-more a { color: var(--green-text); font-weight: 700; }
+
+  .news { list-style: none; margin: 0; padding: 0; display: grid; }
+  .news li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .news a { color: var(--ink); text-decoration: none; }
+  .news a:hover .n-text { text-decoration: underline; }
+  .n-date { display: block; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
+  .n-text { font-size: 14.5px; }
+
+  .offline { padding: 16px; border: 1.5px dashed var(--green); border-radius: 4px; }
+  .offline h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+  .offline p { font-size: 14px; color: var(--ink-soft); }
+  .offline p + p { margin-top: 8px; }
+  .install { appearance: none; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 0; border-radius: 999px;
+    background: var(--bar); color: #FFFFFF; font: 700 14px/1 var(--font); cursor: pointer; }
+  .ok { color: var(--green-text); font-weight: 700; }
+
   .site-foot .wrap { padding-block: 20px 32px; text-align: center; }
   .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
 </style>
@@ -102,31 +138,116 @@
 
 <div class="band"><div class="wrap">
   <h1 class="band-title"><span class="en">Subjects</span><span class="jp" lang="ja">科目</span></h1>
-  <p class="band-lede">Notes for first-year engineering courses: key ideas, practice problems with worked solutions, formula sheets and quiz reviews.</p>
+  <p class="band-lede">Notes for first-year engineering courses: key ideas, practice problems with worked solutions, formula sheets, quizzes and mock exams.</p>
 </div></div>
 
 <main class="wrap">
-  <div class="subjects">
-    <a class="subject math" href="math/">
-      <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
-      <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
-      <p class="s-text">Midterm review: limits and continuity, derivative rules, extrema, series and Taylor polynomials.</p>
-      <span class="s-foot">
-        <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li></ul>
-        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
-      </span>
-    </a>
-    <div class="subject physics">
-      <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
-      <span><span class="s-kicker">Physics</span><span class="s-title">Engineering Physics 1</span></span>
-      <p class="s-text">Notes for this course will appear here.</p>
-      <span class="s-foot"><span class="s-soon">Coming soon</span></span>
+  <section aria-label="Subjects">
+    <div class="subjects">
+      <a class="subject math" href="math/" id="card-math">
+        <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
+        <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
+        <p class="s-text">Midterm review: limits and continuity, derivative rules, extrema, series and Taylor polynomials.</p>
+        <span class="s-foot">
+          <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li><li>Exams</li></ul>
+          <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
+        </span>
+      </a>
+      <div class="subject physics">
+        <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
+        <span><span class="s-kicker">Physics</span><span class="s-title">Engineering Physics 1</span></span>
+        <p class="s-text">Notes for this course will appear here.</p>
+        <span class="s-foot"><span class="s-soon">Coming soon</span></span>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section aria-labelledby="up-title">
+    <h2 class="sec-title" id="up-title">Upcoming exams</h2>
+    <ul class="up-list" id="up-list"><li class="up-item"><span class="up-main"><span class="up-when">Loading…</span></span></li></ul>
+    <p class="up-more">Mock midterms with a timer and self-scoring: <a href="math/#exams">Math · Exams</a></p>
+  </section>
+
+  <section aria-labelledby="news-title">
+    <h2 class="sec-title" id="news-title">What's new</h2>
+    <ul class="news" id="news"></ul>
+  </section>
+
+  <section class="offline" id="offline" aria-labelledby="off-title">
+    <h2 id="off-title">Use it like an app, even offline</h2>
+    <p>Add the site to your home screen. Each page you open is saved on the device, so it works without a signal, and it updates itself when you're back online.</p>
+    <p id="off-ios" hidden>On iPhone or iPad: tap the Share button in Safari, then <b>Add to Home Screen</b>.</p>
+    <p id="off-other">On Android or a computer: use the button below, or your browser's menu (<b>Install app</b> or <b>Add to Home screen</b>).</p>
+    <button type="button" class="install" id="install" hidden>Install Study Notes</button>
+    <p class="ok" id="off-done" hidden>Installed: you're using the app version.</p>
+  </section>
 </main>
 
 <footer class="site-foot"><div class="wrap">
   <p class="fine">Unofficial study notes. Not an official Kyoto University of Advanced Science page.</p>
 </div></footer>
+
+<script>
+  (() => {
+    const DAY = 86400000;
+    const $ = (s) => document.querySelector(s);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const CAL = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>';
+    const fresh = (date) => { const t = new Date(date + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
+    const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
+    const COURSE_PAGE = { math: 'math/#exams' };
+
+    function exams(list) {
+      const ul = $('#up-list');
+      const today = todayJST();
+      const rows = list.map((x) => {
+        let when = 'Date to be announced', left = '', cls = '', sort = Infinity;
+        if (x.date) {
+          const days = Math.round((new Date(x.date + 'T00:00:00+09:00').getTime() - today) / DAY);
+          when = new Date(x.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (x.time ? ' · ' + x.time : '');
+          left = days < 0 ? 'Done' : days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
+          cls = days < 0 ? ' past' : days <= 7 ? ' soon' : '';
+          sort = days < 0 ? 1e9 + days : days;
+        }
+        const href = COURSE_PAGE[x.subject];
+        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${esc(x.course)} · ${esc(when)}</span></span><span class="up-left">${left}</span>`;
+        return { sort, html: href ? `<li><a class="up-item${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item${cls}">${inner}</li>` };
+      });
+      rows.sort((a, b) => a.sort - b.sort);
+      ul.innerHTML = rows.map((r) => r.html).join('') || '<li class="up-item"><span class="up-main"><span class="up-when">No exams listed yet.</span></span></li>';
+    }
+    function news(list) {
+      $('#news').innerHTML = list.slice(0, 6).map((n) => {
+        const d = new Date(n.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
+        const body = `<span class="n-date">${esc(d)}${fresh(n.date) ? ' <span class="new-pill">New</span>' : ''}</span><span class="n-text">${esc(n.text)}</span>`;
+        return `<li>${n.link ? `<a href="${esc(n.link)}">${body}</a>` : body}</li>`;
+      }).join('');
+      if (list.some((n) => fresh(n.date) && (n.subject === 'math' || n.subject === 'all'))) {
+        $('#card-math .s-kicker').insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
+      }
+    }
+    fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })
+      .catch(() => { $('#up-list').innerHTML = '<li class="up-item"><span class="up-main"><span class="up-when">Couldn\'t load the exam list. Check your connection.</span></span></li>'; });
+
+    // offline and install
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (standalone) { $('#off-done').hidden = false; $('#off-ios').hidden = true; $('#off-other').hidden = true; }
+    else if (ios) { $('#off-ios').hidden = false; $('#off-other').hidden = true; }
+    let deferred = null;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e; $('#install').hidden = false; });
+    $('#install').addEventListener('click', async () => {
+      if (!deferred) return;
+      deferred.prompt();
+      await deferred.userChoice.catch(() => null);
+      deferred = null;
+      $('#install').hidden = true;
+    });
+    window.addEventListener('appinstalled', () => { $('#install').hidden = true; $('#off-done').hidden = false; });
+    if ('serviceWorker' in navigator && /\.github\.io$|^localhost$/.test(location.hostname)) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { /* ignore */ }); });
+    }
+  })();
+</script>
 </body>
 </html>

@@ -19,6 +19,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { units, habits, practice } from './content.mjs';
 import { tags, formulas, exactValues, BADGE, TAB_ICONS, UI_ICONS, UNIT_ICONS } from './extras.mjs';
 import { followups } from './followups.mjs';
+import { mocks } from './exams.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
@@ -29,6 +30,8 @@ const KATEX_DIR = process.env.KATEX_DIR || path.join(ROOT, 'src', 'vendor', 'kat
 const require = createRequire(import.meta.url);
 const katex = require(path.join(KATEX_DIR, 'katex.min.js'));
 const rel = (p) => path.relative(ROOT, p);
+// site.json (repository root): exam dates and the "What's new" list, shared with the home page
+const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 
 // ---------- markup ----------
@@ -100,6 +103,24 @@ const ring = (r, id, cls) => {
   return `<svg ${id ? `id="${id}" ` : ''}class="ring ${cls}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="ring-val" data-c="${c}" cx="${size / 2}" cy="${size / 2}" r="${r}" style="stroke-dasharray:${c};stroke-dashoffset:${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
 };
 const SHORT = { u1: 'Limits & continuity', u2: 'Derivative rules', u3: 'Implicit & parametric', u4: 'Extrema & concavity', u5: 'Series & Taylor' };
+// anything with `added: 'YYYY-MM-DD'` gets a "New" label on the page for two weeks (page.js decides, at view time)
+const addedAttr = (o) => (o && o.added ? ` data-added="${esc(o.added)}"` : '');
+// interactive graphs (graphs.js draws them when they scroll into view), placed after a unit's key ideas
+const GRAPHS = {
+  u2: [['secant', 'Secant to tangent', String.raw`Drag $h$ toward $0$. The secant slope $\frac{f(1+h)-f(1)}{h}$ of $f(x)=x^2$ approaches the tangent slope $f'(1)=2$.`]],
+  u3: [['implicit', 'Tangent to a circle', String.raw`Move the point around $x^2+y^2=25$. The slope is $y'=-\frac{x}{y}$, and where $y=0$ the tangent is vertical.`]],
+  u4: [['concavity', 'Slope and concavity', String.raw`Slide along $f(x)=x^3-3x$. The sign of $f'$ tells increasing or decreasing; the sign of $f''$ tells concave up or down.`]],
+  u5: [['newton', "Newton's method", String.raw`Each step follows the tangent at $x_n$ down to the $x$-axis: $x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$, here for $f(x)=x^2-2$ from $x_1=2$.`],
+    ['taylor', 'Taylor polynomials', String.raw`Raise the degree: the Taylor polynomial of $\sin x$ about $0$ follows the curve over a wider and wider range.`]],
+};
+const GRAPHS_ADDED = '2026-10-29';
+const TESTBAR_ADDED = '2026-10-29';
+const graphHTML = ([kind, title, note]) => `
+  <figure class="explore" id="gx-${kind}" data-graph="${kind}" data-added="${GRAPHS_ADDED}">
+    <figcaption class="gx-title"><span class="kicker">Explore</span>${esc(title)}</figcaption>
+    <div class="gx-stage"><p class="gx-wait">Loading the graph…</p></div>
+    <p class="gx-note">${inline(note)}</p>
+  </figure>`;
 
 // ---------- the page ----------
 // quizzes: the in-class sheets (from src/math/private/inclass.mjs) or null when they aren't available.
@@ -125,9 +146,10 @@ function render({ quizzes, locked, lockedNos }) {
       return `<li id="${id}">${inline(it)}</li>`;
     }).join('');
     return `
-<section class="unit" id="su-${u.id}">
+<section class="unit" id="su-${u.id}"${addedAttr(u)}>
   <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${u.quiz} · ${u.days}</p><h2>${esc(u.title)}</h2></div></header>
   <ul class="ideas">${ideas}</ul>
+  ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
 </section>`;
   }).join('') + `
@@ -154,7 +176,7 @@ function render({ quizzes, locked, lockedNos }) {
         <button type="button" class="mbtn" data-mark="review" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12M4 3h8l-2 3 2 3H4"/></svg>Review again</button>
       </div>`);
       return `
-  <article class="prob" id="${elId}" data-id="${id}" data-state="none">
+  <article class="prob" id="${elId}" data-id="${id}" data-state="none"${addedAttr(p)}>
     <header class="prob-head"><span class="qno">${MARU}Q.${pi + 1}</span><span class="src">${esc(p.src)}</span><span class="state-tag" aria-live="polite"></span></header>
     <div class="stem">${blocks(p.stem)}</div>
     ${partsList(p.parts)}
@@ -171,7 +193,7 @@ function render({ quizzes, locked, lockedNos }) {
 
   // Formulas
   const formulasHTML = formulas.map((g) => `
-<section class="fgroup" id="fg-${g.id}">
+<section class="fgroup" id="fg-${g.id}"${addedAttr(g)}>
   <h2><span class="kicker">${g.quiz}</span>${esc(g.title)}</h2>
   <div class="frows">${g.rows.map(([name, t], i) => {
     const id = `f-${g.id}-${i + 1}`;
@@ -198,12 +220,14 @@ function render({ quizzes, locked, lockedNos }) {
 
   // Quizzes: per quiz, the in-class sheet (or its password panel) plus Follow-up A and B behind a switcher
   const sheets = {};
+  // limit in seconds: 0 counts up (quizzes); otherwise it counts down and then shows the overtime (mock exams)
+  const timerHTML = (limit) => `<div class="timer" data-timer${limit ? ` data-limit="${limit}"` : ''}><span class="time" aria-live="off">${limit ? `${String(Math.floor(limit / 60)).padStart(2, '0')}:00` : '00:00'}</span><button type="button" class="t-go">${UI_ICONS.timer}<span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>`;
   function sheetHTML(sheetId, seg, visible, title, sub, focus, qs, searchLabel, searchExtra, index) {
     return `
   <article class="sheet" id="${sheetId}" data-seg="${seg}"${visible ? '' : ' hidden'}>
     <header class="sheet-head">
       <div><h3 class="sheet-title">${title}</h3><p class="sheet-sub">${sub}</p></div>
-      <div class="timer" data-timer><span class="time" aria-live="off">00:00</span><button type="button" class="t-go">${UI_ICONS.timer}<span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>
+      ${timerHTML(0)}
     </header>
     ${focus ? `<p class="focus">${esc(focus)}</p>` : ''}
     ${qs.map((x, i) => {
@@ -262,32 +286,66 @@ function render({ quizzes, locked, lockedNos }) {
   const span = units.length > 1 ? `Quizzes ${units[0].no}–${units[units.length - 1].no}` : units[0].quiz;
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
-  const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes']];
-  const body = `
-<header class="appbar"><div class="wrap appbar-row">
-  <a class="brand" href="#summary" aria-label="CLA1 Review, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
-  <div class="appbar-actions">
-    <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
-    <button type="button" class="search-btn" id="search-btn" aria-label="Search everything">${UI_ICONS.search}</button>
-  </div>
-</div></header>
+  // Exams: upcoming exams (dates from site.json; page.js shows the countdown) and the mock midterms
+  const upcoming = SITE.exams.filter((x) => x.subject === 'math');
+  const upcomingHTML = upcoming.map((x, i) => `
+      <li class="up-item" data-date="${esc(x.date || '')}" data-time="${esc(x.time || '')}">
+        <span class="up-cal" aria-hidden="true">${UI_ICONS.calendar}</span>
+        <span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${x.date ? '' : 'Date to be announced'}</span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li>`).join('');
+  const mockSheets = mocks.map((m, mi) => {
+    const points = m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
+    const qsHTML = m.qs.map((x, qi) => {
+      const id = `${m.id}-q${qi + 1}`;
+      const qpts = x.pts.reduce((a, b) => a + b, 0);
+      INDEX.push(entry('Exams', 'exams', id, `${m.title} · ${x.label} — ${x.topic}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' mock midterm exam practice test'));
+      const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">(${pi + 1}) ${p} pt</button>`).join('');
+      return `
+    <div class="rq" id="${id}">
+      <div class="stem"><p><b class="ql">${x.label}</b> <span class="qtopic">${esc(x.topic)}</span> ${inline(x.stem)} <span class="pts">(${qpts} pt)</span></p></div>
+      ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`))}
+      <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>
+      <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>
+    </div>`;
+    }).join('');
+    return `
+  <article class="sheet mock" id="${m.id}" data-seg="${mi}" data-mock="${m.id}" data-total="${points}"${mi ? ' hidden' : ''}${addedAttr(m)}>
+    <header class="sheet-head">
+      <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${m.minutes} min · ${points} pt · ${span}</p></div>
+      ${timerHTML(m.minutes * 60)}
+    </header>
+    <p class="focus">Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.</p>
+    ${qsHTML}
+    <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
+  </article>`;
+  }).join('');
+  const examsHTML = `
+    <section class="exam-up" id="ex-upcoming">
+      <h2 class="sec-title">Upcoming exams</h2>
+      <ul class="up-list">${upcomingHTML}</ul>
+    </section>
+    <section class="qgroup mockgroup" id="mocks">
+      <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
+      <div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
+    `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">Mock ${mi + 1}<span class="seg-score"></span></button>`).join('')}</div>
+      ${mockSheets}
+    </section>`;
 
-<nav class="tabbar" aria-label="Sections"><div class="tabbar-row" role="tablist">
-  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'summary'}">${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
-</div></nav>
-
-<main%MAIN_ATTRS%>
-  <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
-    ${band('Summary', 'まとめ', 'One unit per quiz: the key ideas, and the common mistakes to avoid.')}
-    <div class="wrap content">
-      <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
-      ${summaryHTML}
-    </div>
-  </section>
-
-  <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
-    ${band('Practice', '練習問題', `${total} practice problems in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`)}
-    <div class="wrap content">
+  const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
+  // The newest `added` date in each tab, so the tab can show a dot before its content is built
+  const newest = (dates) => dates.filter(Boolean).sort().pop() || '';
+  const NEWEST = {
+    summary: newest([...units.map((u) => u.added), Object.keys(GRAPHS).length ? GRAPHS_ADDED : '']),
+    practice: newest(Object.values(practice).flat().map((p) => p.added)),
+    formulas: newest([...formulas.map((g) => g.added), TESTBAR_ADDED]),
+    quizzes: newest(Object.values(followups).flat().map((f) => f.added)),
+    exams: newest(mocks.map((m) => m.added)),
+  };
+  // Summary is built with the page. The other tabs travel as JSON text and are built the first time they open
+  // (page.js), so the browser only lays out what is being read; that keeps the first load fast as content grows.
+  const LAZY = {
+    practice: `
       <div class="overview">
         <div class="ov-main">
           <div class="ring-big-wrap">${ring(38, 'ring-all', 'ring-lg')}<span class="ring-center"><b id="ring-all-text">0/${total}</b><small>got it</small></span></div>
@@ -305,24 +363,69 @@ function render({ quizzes, locked, lockedNos }) {
       </div>
       <p class="empty-note" id="empty-note" hidden></p>
       ${practiceHTML}
-      <div class="reset-row"><button type="button" class="linkbtn" id="reset">Clear all marks</button><span>Marks are saved in this browser only.</span></div>
+      <div class="reset-row"><button type="button" class="linkbtn" id="reset">Clear all marks</button><span>Marks are saved in this browser only.</span></div>`,
+    formulas: `
+      <div class="testbar" data-added="${TESTBAR_ADDED}">
+        <button type="button" class="pill" id="test-btn" aria-pressed="false">${UI_ICONS.eye}<span>Test me</span></button>
+        <p class="test-hint">Hides every formula and exact value. Say it to yourself, then tap to check.</p>
+        <button type="button" class="linkbtn" id="test-reset" hidden>Hide all again</button>
+      </div>
+      ${exactHTML}${formulasHTML}`,
+    quizzes: `<nav class="qjump" aria-label="Jump to a quiz">${quizJump}</nav>${quizzesHTML}
+      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}`,
+    exams: examsHTML,
+  };
+  const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
+  // raw HTML inside a non-JS <script> is kept as plain text by the browser: no parsing, no escaping needed
+  const lazyScripts = Object.entries(LAZY).map(([v, html]) => {
+    if (/<\/script|<!--/i.test(html)) throw new Error(`the ${v} tab contains "</script" or "<!--", which can't travel inside a script element`);
+    return `<script type="text/x-lazy-html" id="lazy-${v}">${html.trim()}</script>`;
+  }).join('\n');
+  const body = `
+<header class="appbar"><div class="wrap appbar-row">
+  <a class="brand" href="#summary" aria-label="CLA1 Review, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
+  <div class="appbar-actions">
+    <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
+    <button type="button" class="search-btn" id="search-btn" aria-label="Search everything">${UI_ICONS.search}</button>
+  </div>
+</div></header>
+
+<nav class="tabbar" aria-label="Sections"><div class="tabbar-row" role="tablist">
+  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'summary'}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
+</div></nav>
+
+<main%MAIN_ATTRS%>
+  <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
+    ${band('Summary', 'まとめ', 'One unit per quiz: the key ideas, and the common mistakes to avoid.')}
+    <div class="wrap content">
+      <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
+      ${summaryHTML}
     </div>
+  </section>
+
+  <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
+    ${band('Practice', '練習問題', `${total} practice problems in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`)}
+    ${lazyBox('practice')}
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
     ${band('Formulas', '公式集', `Every formula from ${span} on one page, plus the exact trig values you need without a calculator.`)}
-    <div class="wrap content">${exactHTML}${formulasHTML}</div>
+    ${lazyBox('formulas')}
   </section>
 
   <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
     ${band('Quizzes', '小テスト', hasLocks
     ? 'Each quiz has the in-class sheet (password needed) and two open follow-ups: A uses the same skills with new numbers, and B targets common mistakes. Start the timer and work without notes.'
     : 'Each quiz has the in-class sheet and two follow-ups: A uses the same skills with new numbers, and B targets common mistakes. Start the timer and work without notes.')}
-    <div class="wrap content"><nav class="qjump" aria-label="Jump to a quiz">${quizJump}</nav>${quizzesHTML}
-      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}
-    </div>
+    ${lazyBox('quizzes')}
+  </section>
+
+  <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
+    ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length} mock midterms covering every topic so far. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${lazyBox('exams')}
   </section>
 </main>
+${lazyScripts}
 `;
   return { body, INDEX, PRIV, sheets, total, hasLocks, nos };
 }
@@ -366,7 +469,7 @@ const indexScript = (index) => `<script type="application/json" id="search-index
 const SHARED = path.join(ROOT, 'src', 'shared');
 const assets = () => ({
   css: fs.readFileSync(path.join(SRC, 'page.css'), 'utf8') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.css'), 'utf8'),
-  js: fs.readFileSync(path.join(SRC, 'page.js'), 'utf8') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.js'), 'utf8'),
+  js: ['page.js', 'graphs.js'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.js'), 'utf8'),
   kcss: katexCSS(),
 });
 const KATEX_TWEAK = '<style>.katex{font-size:1.07em}.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}</style>';
@@ -476,6 +579,7 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
 <meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
 ${FONT_LINKS}
 <style>${css}</style>
 <style>${kcss}</style>

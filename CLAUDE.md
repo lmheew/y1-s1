@@ -2,10 +2,12 @@
 
 A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmheew.github.io/y1-s1/.
 
-- `/` is `index.html`, the subject picker. It is hand-written; update its cards when a subject is added or changes.
+- `/` is `index.html`, the home page: subject cards, upcoming exams, what's new, and offline install help. It is hand-written; update its cards when a subject is added or changes. It reads `site.json`.
 - `/math/` is the CLA1 review (Calculus & Linear Algebra 1). It is built by `src/math/build.mjs`. Never edit `math/index.html` by hand.
 - Physics (Engineering Physics 1) is planned as `/physics/`, in a darker blue theme. Build it only when asked.
 - The floating calculator (`src/shared/calculator.js` and `calculator.css`) is shared by every subject page. The build inlines it; a new subject's build should too.
+- `site.json` holds exam dates and the "What's new" list, for the home page and the Math page's Exams tab.
+- `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 
 ## Rules
 
@@ -22,6 +24,8 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `content.mjs`: units (Summary key ideas and "Watch out" lists), exam-day habits, practice problems.
 - `followups.mjs`: Follow-up A (same skills, new numbers) and Follow-up B (targets common mistakes) for each quiz. Each is worth 10 pt, like the in-class sheet.
 - `extras.mjs`: search tags for the practice problems, the Formulas tab, the exact-values table and the icons.
+- `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points.
+- `graphs.js`: the interactive graphs. Which unit shows which graph is set by `GRAPHS` in `build.mjs`.
 - `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`.
 - `build.mjs` (with the short unit names in `SHORT`), `page.css`, `page.js`.
 
@@ -35,17 +39,22 @@ Markup inside the strings:
 
 Strings use `String.raw`, so avoid `${` inside them.
 
+- **Steps.** Solutions open one step at a time. Each paragraph, or each list item, of `sol` is one step, so write a step per block (`**(1)** …`, blank line, `**(2)** …`).
+- **New labels.** Give anything new an `added: 'YYYY-MM-DD'` (units, practice problems, formula groups, mocks). It gets a "New" label, and its tab a dot, for 14 days. Also add a line to `news` in `site.json`.
+
 ## Build and check
 
 ```sh
 node src/math/build.mjs site
-python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && python3 src/math/verify_followups.py && node src/math/verify_exact.mjs
+python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && python3 src/math/verify_followups.py && python3 src/math/verify_mocks.py && node src/math/verify_exact.mjs
 node src/shared/calculator_test.js
 python3 src/check_site.py
+python3 src/check_features.py
 ```
 
 - Without `SITE_PASSWORD`, `site` keeps `math/locked.json` as it is.
 - `check_site.py` runs the page in Chromium (Playwright): layout on phone and desktop, tabs, search and the locked panels. With `SITE_PASSWORD` set it also tests unlocking.
+- `check_features.py` covers the Exams tab, countdowns, mock scoring, step-by-step solutions, Test me, graphs, New labels, the home page and offline use. Some of its checks count today's content; update the counts when content changes.
 - KaTeX is vendored, so no network or npm install is needed.
 
 ## A new class (no password needed)
@@ -69,6 +78,12 @@ A few details about the password:
 - The build refuses a password that doesn't open the current files. A typo can't lock everyone out.
 - Case, spaces and hyphens are ignored, in the build and on the page.
 - To change it, run `SITE_PASSWORD='old' NEW_SITE_PASSWORD='new' node src/math/build.mjs rekey`. Devices that chose "Remember on this device" then ask for the new password once.
+
+## Exam dates, What's new, and speed
+
+- **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild the Math page. Countdowns, sorting and "Done" are worked out in the browser.
+- **Fast first load.** Only the Summary tab is built with the page. Practice, Formulas, Quizzes and Exams travel as text (`<script type="text/x-lazy-html">`) and are built the first time they open. `page.js` `VIEW_INIT` switches on each tab's features then. Keep new tabs lazy too. `leakcheck.mjs` reads the lazy text as well.
+- **Offline.** `sw.js` serves pages and data network-first, with the saved copy when offline, and images and fonts cache-first. Bump `CACHE` in `sw.js` when its `CORE` list changes.
 
 ## The floating calculator
 

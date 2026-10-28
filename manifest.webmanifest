@@ -1,0 +1,19 @@
+{
+  "name": "Study Notes · Year 1",
+  "short_name": "Study Notes",
+  "description": "Unofficial study notes for first-year KUAS engineering courses: summaries, practice, formulas, quizzes and mock exams.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Calculus & Linear Algebra 1", "short_name": "Math", "url": "math/", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Exams and mock midterms", "short_name": "Exams", "url": "math/#exams", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}

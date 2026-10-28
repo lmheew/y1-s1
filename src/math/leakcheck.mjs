@@ -12,7 +12,10 @@ const inclass = path.join(SRC, 'private', 'inclass.mjs');
 if (!fs.existsSync(inclass)) { console.error('error: src/math/private/inclass.mjs is missing; run `node src/math/build.mjs open` first.'); process.exit(1); }
 const { quizzes } = await import(pathToFileURL(inclass).href);
 const page = fs.readFileSync(path.join(ROOT, 'math', 'index.html'), 'utf8');
-const pub = page.replace(/<script type="application\/json" id="search-index">[\s\S]*?<\/script>/, '');
+// tabs built on first open travel as text (<script id="lazy-…">): include them so they are checked too
+const lazy = [...page.matchAll(/<script type="text\/x-lazy-html" id="lazy-\w+">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+if (!lazy.length) { console.error('error: found no lazy tabs in math/index.html; update leakcheck.mjs to match the page'); process.exit(1); }
+const pub = page.replace(/<script type="application\/json" id="search-index">[\s\S]*?<\/script>/, '') + lazy.join('\n');
 const index = (page.match(/<script type="application\/json" id="search-index">([\s\S]*?)<\/script>/) || [, '[]'])[1];
 const shared = ['content.mjs', 'followups.mjs', 'extras.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
