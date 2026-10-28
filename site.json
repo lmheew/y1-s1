@@ -1,15 +1,59 @@
 {
   "about": "Shared data for the study site. exams: date is YYYY-MM-DD and time is HH:MM, both in Japan time; leave them null until announced. news: newest first; entries from the last 14 days get a New label.",
   "exams": [
-    { "subject": "math", "course": "Calculus & Linear Algebra 1", "name": "Calculus midterm", "date": null, "time": null },
-    { "subject": "math", "course": "Calculus & Linear Algebra 1", "name": "Linear Algebra midterm", "date": null, "time": null },
-    { "subject": "math", "course": "Calculus & Linear Algebra 1", "name": "Calculus final", "date": null, "time": null },
-    { "subject": "math", "course": "Calculus & Linear Algebra 1", "name": "Linear Algebra final", "date": null, "time": null }
+    {
+      "subject": "math",
+      "course": "Calculus & Linear Algebra 1",
+      "name": "Calculus midterm",
+      "date": "2026-10-30",
+      "time": null
+    },
+    {
+      "subject": "math",
+      "course": "Calculus & Linear Algebra 1",
+      "name": "Linear Algebra midterm",
+      "date": null,
+      "time": null
+    },
+    {
+      "subject": "math",
+      "course": "Calculus & Linear Algebra 1",
+      "name": "Calculus final",
+      "date": null,
+      "time": null
+    },
+    {
+      "subject": "math",
+      "course": "Calculus & Linear Algebra 1",
+      "name": "Linear Algebra final",
+      "date": null,
+      "time": null
+    }
   ],
   "news": [
-    { "date": "2026-10-29", "subject": "math", "text": "Exams tab: three mock midterms with a countdown timer and self-scoring, plus upcoming exams.", "link": "math/#exams" },
-    { "date": "2026-10-29", "subject": "math", "text": "Formulas: a Test me mode that hides every formula and exact value until you tap.", "link": "math/#formulas" },
-    { "date": "2026-10-29", "subject": "math", "text": "Solutions now open one step at a time, and the Summary has five interactive graphs.", "link": "math/#summary" },
-    { "date": "2026-10-29", "subject": "all", "text": "The site works offline and can be added to your home screen. A floating calculator sits on the Math page.", "link": "math/" }
+    {
+      "date": "2026-10-29",
+      "subject": "math",
+      "text": "Exams tab: three mock midterms with a countdown timer and self-scoring, plus upcoming exams.",
+      "link": "math/#exams"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "math",
+      "text": "Formulas: a Test me mode that hides every formula and exact value until you tap.",
+      "link": "math/#formulas"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "math",
+      "text": "Solutions now open one step at a time, and the Summary has five interactive graphs.",
+      "link": "math/#summary"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "all",
+      "text": "The site works offline and can be added to your home screen. A floating calculator sits on the Math page.",
+      "link": "math/"
+    }
   ]
 }
