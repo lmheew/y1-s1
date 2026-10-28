@@ -5,6 +5,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `/` is `index.html`, the subject picker. It is hand-written; update its cards when a subject is added or changes.
 - `/math/` is the CLA1 review (Calculus & Linear Algebra 1). It is built by `src/math/build.mjs`. Never edit `math/index.html` by hand.
 - Physics (Engineering Physics 1) is planned as `/physics/`, in a darker blue theme. Build it only when asked.
+- The floating calculator (`src/shared/calculator.js` and `calculator.css`) is shared by every subject page. The build inlines it; a new subject's build should too.
 
 ## Rules
 
@@ -39,6 +40,7 @@ Strings use `String.raw`, so avoid `${` inside them.
 ```sh
 node src/math/build.mjs site
 python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && python3 src/math/verify_followups.py && node src/math/verify_exact.mjs
+node src/shared/calculator_test.js
 python3 src/check_site.py
 ```
 
@@ -67,6 +69,16 @@ A few details about the password:
 - The build refuses a password that doesn't open the current files. A typo can't lock everyone out.
 - Case, spaces and hyphens are ignored, in the build and on the page.
 - To change it, run `SITE_PASSWORD='old' NEW_SITE_PASSWORD='new' node src/math/build.mjs rekey`. Devices that chose "Remember on this device" then ask for the new password once.
+
+## The floating calculator
+
+- It's a ghost button parked on the left or right edge, bottom left by default. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across.
+- The first tap makes it opaque and shows "Tap again to open". A second tap on it opens the calculator. A tap anywhere else, or 4 seconds without one, cancels. Enter on the focused button opens it at once.
+- The calculator follows the Windows standard layout, with memory (MC MR M+ M− MS and the M▾ list) and no history. It works with exact fractions, so 1 ÷ 3 × 3 = 1 and 0.1 + 0.2 = 0.3. It shows results the way Windows does: 16 digits, and "1.e+16" style above that. `calculator_test.js` holds the Windows cases; keep them passing.
+- The window doesn't block the page. It moves by its title bar and closes with ×, Esc (once it's cleared), or one tap on the button.
+- It is off while a quiz timer runs, since the course is calculator-free; `page.js` sends a `quiztimer` event.
+- It is set up after the page has loaded, so it adds nothing to load time; keep it that way.
+- Browser storage: `study-calc-memory` (memory values) and `study-calc-position` (where the button rests).
 
 ## A private, unlocked copy
 

@@ -83,6 +83,40 @@ with sync_playwright() as p:
         first.locator('.seg-btn[data-seg="0"]').click()
         check(f'{label}: footer links home', page.locator('.foot-links a[href="../"]').count() == 1)
 
+        # floating calculator: first tap wakes it, a tap elsewhere cancels, two taps open it, a drag snaps to a side
+        page.click('#tab-summary')
+        page.wait_for_selector('.calc-fab')
+        page.wait_for_timeout(400)
+        fab = page.locator('.calc-fab')
+        is_armed = lambda: page.evaluate("document.querySelector('.calc-fab').classList.contains('armed')")
+        box = fab.bounding_box()
+        fx, fy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        page.mouse.click(fx, fy)
+        check(f'{label}: calculator button wakes on the first tap', is_armed() and page.locator('.calc-tip.show').count() == 1)
+        page.mouse.click(fx + 150, fy - 250)
+        check(f'{label}: a tap elsewhere cancels it', not is_armed() and page.locator('.calc-panel').count() == 0)
+        page.mouse.click(fx, fy)
+        page.mouse.click(fx, fy)
+        page.wait_for_timeout(300)
+        check(f'{label}: two taps open the calculator', page.locator('.calc-panel').is_visible())
+        for act, v in [('digit', '1'), ('op', '/'), ('digit', '3'), ('op', '*'), ('digit', '3'), ('eq', '')]:
+            page.locator(f'.calc-keys [data-act="{act}"]' + (f'[data-v="{v}"]' if v else '')).click()
+        check(f'{label}: 1 ÷ 3 × 3 = 1', page.locator('.calc-value').inner_text() == '1', page.locator('.calc-value').inner_text())
+        page.locator('.calc-x[data-act="close"]').click()
+        vw = page.evaluate('document.documentElement.clientWidth')
+        page.mouse.move(fx, fy)
+        page.mouse.down()
+        for i in range(1, 13):
+            page.mouse.move(fx + (vw * 0.65 - fx) * i / 12, fy - 120 * i / 12)
+            page.wait_for_timeout(20)
+        page.wait_for_timeout(150)
+        page.mouse.up()
+        page.wait_for_timeout(500)
+        box = fab.bounding_box()
+        check(f'{label}: dragged past the middle, it sticks to the right side', abs(box['x'] + box['width'] - (vw - 10)) <= 2, box)
+        page.evaluate("localStorage.removeItem('study-calc-position'); localStorage.removeItem('study-calc-memory')")
+        page.click('#tab-quizzes')
+
         if PASSWORD:
             form = first.locator('form.unlock')
             form.locator('input[name="password"]').fill('not-the-password')

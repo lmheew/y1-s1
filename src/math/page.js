@@ -198,10 +198,12 @@
         else { start = Date.now(); iv = setInterval(tick, 250); tick(); label.textContent = 'Pause'; }
         rst.hidden = false;
         t.classList.toggle('running', Boolean(iv));
+        document.dispatchEvent(new Event('quiztimer')); // the floating calculator turns off while a timer runs
       });
       rst.addEventListener('click', () => {
         clearInterval(iv); iv = null; acc = 0;
         out.textContent = '00:00'; label.textContent = 'Start timer'; rst.hidden = true; t.classList.remove('running');
+        document.dispatchEvent(new Event('quiztimer'));
       });
     });
   }

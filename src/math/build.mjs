@@ -362,9 +362,11 @@ const FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">`;
 const indexScript = (index) => `<script type="application/json" id="search-index">${JSON.stringify(index).replace(/</g, '\\u003c')}</script>`;
+// page.css/page.js are this subject's; the floating calculator in src/shared is common to every subject page
+const SHARED = path.join(ROOT, 'src', 'shared');
 const assets = () => ({
-  css: fs.readFileSync(path.join(SRC, 'page.css'), 'utf8'),
-  js: fs.readFileSync(path.join(SRC, 'page.js'), 'utf8'),
+  css: fs.readFileSync(path.join(SRC, 'page.css'), 'utf8') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.css'), 'utf8'),
+  js: fs.readFileSync(path.join(SRC, 'page.js'), 'utf8') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.js'), 'utf8'),
   kcss: katexCSS(),
 });
 const KATEX_TWEAK = '<style>.katex{font-size:1.07em}.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}</style>';
