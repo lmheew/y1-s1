@@ -12,7 +12,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 
 ## Rules
 
-- **Never commit `src/math/private/` or the password.** The folder is git-ignored. The in-class quiz sheets exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/locked.json` (what the site opens with the password).
+- **Never commit `src/math/private/` or the password.** The folder is git-ignored. The in-class quiz sheets and the past midterm papers exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/locked.json` (what the site opens with the password). `locked.json` also keeps a readable list of the past papers' titles, times and points, so a build without the password can still draw their password panels.
 - The password is saved in the user's Claude memory, because they asked for that. Otherwise they give it in chat. Never put it in the repository: not in files, not in commit messages.
 - Wording stays non-personal: no "your quizzes", no "from your chats", no student-ID versions.
 - The course is calculator-free, so answers stay exact (√2/2, ln(7/8), 2 + e).
@@ -28,8 +28,9 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `followups.mjs`: Follow-up A (same skills, new numbers) and Follow-up B (targets common mistakes) for each quiz. Each is worth 10 pt, like the in-class sheet.
 - `extras.mjs`: search tags for the practice problems, the Formulas tab, the exact-values table and the icons.
 - `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points.
+- `private/past.mjs`: past midterm papers (AY2022 spring, AY2023 fall), retyped with worked answers, in the same shape as the mocks plus `seg` (the switcher label), `sub` and optional `labels` for parts the paper letters ((a), (1a)). The papers give no time or points, so 60 min and 100 pt are estimates. Checked in `private/verify_past.py`. They show in the Exams tab under "Past midterms", locked with the same password, and work like the mocks once opened.
 - `graphs.js`: the interactive graphs. Which unit shows which graph is set by `GRAPHS` in `build.mjs`.
-- `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`.
+- `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`, like everything in `private/`.
 - `build.mjs` (with the short unit names in `SHORT`), `page.css`, `page.js`.
 
 Markup inside the strings:
@@ -66,6 +67,12 @@ python3 src/check_features.py
 2. Add practice problems, formulas and search tags.
 3. Add numeric checks for the new answers.
 4. Build, run every check, then commit and push.
+
+## A past exam paper (needs the password)
+
+1. `open`, as below, then add the paper to `private/past.mjs` and its checks to `private/verify_past.py`.
+2. No public page may use the same functions: `leakcheck.mjs` reads the past papers too. Change a mock or practice problem that does.
+3. Build with `SITE_PASSWORD`, run `leakcheck.mjs` and every check (`check_site.py` with `SITE_PASSWORD` opens the papers), then commit and push.
 
 ## A new in-class quiz (needs the password)
 

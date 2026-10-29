@@ -41,6 +41,12 @@
     {
       "date": "2026-10-29",
       "subject": "math",
+      "text": "Exams: two past midterms (AY2022 and AY2023) with worked answers, a timer and self-scoring. They open with the in-class password.",
+      "link": "math/#exams"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "math",
       "text": "Summary: each section now follows the course schedule, with its day numbers, dates and lesson name. Infinite series (Day 9) has a section of its own.",
       "link": "math/#summary"
     },

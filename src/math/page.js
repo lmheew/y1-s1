@@ -341,9 +341,9 @@
     if (e.key === '/' && sheet.hidden && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); openSearch(); }
   });
 
-  // ----- in-class sheets: on the public site they arrive encrypted (locked.json) and open with the password -----
+  // ----- in-class sheets and past midterms: on the public site they arrive encrypted (locked.json) and open with the password -----
   // Key: PBKDF2-SHA256 over the normalized password; content: AES-GCM over gzip'd JSON. Must match build.mjs.
-  // A key remembered on this device opens them at load; they're put in place once the Quizzes tab is built.
+  // A key remembered on this device opens them at load; each is put in place once its tab (Quizzes, Exams) is built.
   const mainEl = $('main');
   const lockSrc = mainEl ? mainEl.dataset.locked : '';
   let unlockQuizzes = () => {};
@@ -378,20 +378,21 @@
       return JSON.parse(text);
     }
     const say = (form, text, err) => { const m = $('.u-msg', form); m.textContent = text; m.classList.toggle('err', Boolean(err)); };
-    let unlocked = false, opened = null, placed = false;
-    // swap the password panels for the sheets (needs the Quizzes tab built)
+    let unlocked = false, opened = null;
+    // swap each password panel that is on the page for its sheet (tabs are built on first open, so this runs again then)
     function place() {
-      if (!opened || placed || !built.quizzes) return;
-      placed = true;
+      if (!opened) return;
       Object.keys(opened.sheets).forEach((id) => {
         const old = document.getElementById(id);
-        if (!old) return;
+        if (!old || !old.classList.contains('lock')) return;
         const t = document.createElement('template');
         t.innerHTML = opened.sheets[id];
         const fresh = t.content.firstElementChild;
         fresh.hidden = old.hidden;
         old.replaceWith(fresh);
+        markNew(fresh.parentNode);
         bindTimers(fresh);
+        if (fresh.classList.contains('mock')) bindMock(fresh);
       });
       const row = $('#lockrow');
       if (row) row.hidden = false;
@@ -522,36 +523,41 @@
   let scores = {};
   try { scores = JSON.parse(localStorage.getItem(SKEY) || '{}') || {}; } catch (e) { scores = {}; }
   const saveScores = () => { try { localStorage.setItem(SKEY, JSON.stringify(scores)); } catch (e) { /* ignore */ } };
+  // a mock or past midterm you mark yourself: ticks add up to a score, kept in this browser
+  function bindMock(sh) {
+    if (sh.dataset.bound) return;
+    sh.dataset.bound = '1';
+    const id = sh.dataset.mock, total = Number(sh.dataset.total);
+    const ticks = new Set(Array.isArray(scores[id]) ? scores[id] : []);
+    const segScore = $(`.seg-btn[aria-controls="${sh.id}"] .seg-score`);
+    const paintScore = () => {
+      let pts = 0;
+      $$('.mk', sh).forEach((b) => {
+        const on = ticks.has(b.dataset.k);
+        b.setAttribute('aria-pressed', String(on));
+        if (on) pts += Number(b.dataset.pts);
+      });
+      $('.score-val', sh).textContent = pts;
+      if (segScore) segScore.textContent = ticks.size ? ` · ${pts}/${total}` : '';
+    };
+    sh.addEventListener('click', (e) => {
+      const b = e.target.closest('.mk');
+      if (b) {
+        if (ticks.has(b.dataset.k)) ticks.delete(b.dataset.k); else ticks.add(b.dataset.k);
+        scores[id] = Array.from(ticks); saveScores(); paintScore();
+        return;
+      }
+      if (e.target.closest('.mk-clear')) { ticks.clear(); delete scores[id]; saveScores(); paintScore(); }
+    });
+    paintScore();
+  }
   VIEW_INIT.exams = (scope) => {
     bindSegs(scope);
     bindTimers(scope);
     countdown();
     setInterval(countdown, 60000);
-    $$('.sheet.mock', scope).forEach((sh) => {
-      const id = sh.dataset.mock, total = Number(sh.dataset.total);
-      const ticks = new Set(Array.isArray(scores[id]) ? scores[id] : []);
-      const segScore = $(`.seg-btn[aria-controls="${sh.id}"] .seg-score`);
-      const paintScore = () => {
-        let pts = 0;
-        $$('.mk', sh).forEach((b) => {
-          const on = ticks.has(b.dataset.k);
-          b.setAttribute('aria-pressed', String(on));
-          if (on) pts += Number(b.dataset.pts);
-        });
-        $('.score-val', sh).textContent = pts;
-        if (segScore) segScore.textContent = ticks.size ? ` · ${pts}/${total}` : '';
-      };
-      sh.addEventListener('click', (e) => {
-        const b = e.target.closest('.mk');
-        if (b) {
-          if (ticks.has(b.dataset.k)) ticks.delete(b.dataset.k); else ticks.add(b.dataset.k);
-          scores[id] = Array.from(ticks); saveScores(); paintScore();
-          return;
-        }
-        if (e.target.closest('.mk-clear')) { ticks.clear(); delete scores[id]; saveScores(); paintScore(); }
-      });
-      paintScore();
-    });
+    $$('.sheet.mock', scope).forEach(bindMock);
+    unlockQuizzes(scope); // the past midterms are locked like the in-class sheets
   };
 
   // ----- offline: a service worker keeps a copy of the site (on GitHub Pages; not inside claude.ai) -----

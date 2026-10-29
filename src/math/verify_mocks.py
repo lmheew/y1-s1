@@ -152,19 +152,20 @@ check("M2 Q3(3) f(0) = 1", f(0), 1)
 check("M2 Q3(3) (f^-1)'(1)", d1(finv, 1, 1e-5), 1 / 3, 1e-5)
 check("M2 Q3(4) dy/dx at t=pi/6", d1(lambda t: sin(2 * t), pi / 6) / d1(cos, pi / 6), -2)
 
-f = lambda x: 3 * x ** 4 - 4 * x ** 3
-fp = lambda x: 12 * x ** 3 - 12 * x * x
-check_true("M2 Q4(1) f'(0)=f'(1)=0", fp(0) == 0 and fp(1) == 0)
+f = lambda x: x ** 4 - 4 * x ** 3
+fp = lambda x: 4 * x ** 3 - 12 * x * x
+check_true("M2 Q4(1) f'(0)=f'(3)=0", fp(0) == 0 and fp(3) == 0)
+check("M2 Q4(1) f' formula", d1(f, 1.7), fp(1.7))
 check_true("M2 Q4(2) f'<0 on both sides of 0 (neither)", fp(-0.1) < 0 and fp(0.1) < 0)
-check_true("M2 Q4(2) f' goes - to + at 1 (relative min)", fp(0.9) < 0 < fp(1.1))
-check("M2 Q4(2) f(1)", f(1), -1)
-check_true("M2 Q4(3) f'' changes sign at 0 and 2/3", d2(f, -0.05) > 0 > d2(f, 0.05) and d2(f, 2 / 3 - 0.05) < 0 < d2(f, 2 / 3 + 0.05))
-check("M2 Q4(3) f(2/3)", f(2 / 3), -16 / 27)
-mx, mn, xmx, xmn = sampled_extrema(f, -1, 2)
-check("M2 Q4(4) absolute max on [-1,2]", mx, 16)
-check("M2 Q4(4) absolute min on [-1,2]", mn, -1)
-check("M2 Q4(4) max at x=2", xmx, 2, 1e-4)
-check("M2 Q4(4) min at x=1", xmn, 1, 1e-4)
+check_true("M2 Q4(2) f' goes - to + at 3 (relative min)", fp(2.9) < 0 < fp(3.1))
+check("M2 Q4(2) f(3)", f(3), -27)
+check_true("M2 Q4(3) f'' changes sign at 0 and 2", d2(f, -0.05) > 0 > d2(f, 0.05) and d2(f, 2 - 0.05) < 0 < d2(f, 2 + 0.05))
+check("M2 Q4(3) f(2)", f(2), -16)
+mx, mn, xmx, xmn = sampled_extrema(f, -1, 4)
+check("M2 Q4(4) absolute max on [-1,4]", mx, 5)
+check("M2 Q4(4) absolute min on [-1,4]", mn, -27)
+check("M2 Q4(4) max at x=-1", xmx, -1, 1e-4)
+check("M2 Q4(4) min at x=3", xmn, 3, 1e-4)
 
 n = 60
 check("M2 Q5(1) lim (2^(n+2)-5^n)/(5^n+3)", (2 ** (n + 2) - 5 ** n) / (5 ** n + 3), -1)

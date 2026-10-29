@@ -166,22 +166,22 @@ Divide each by $k!$: $c_0=-\frac{1}{2}$, $c_1=-\sqrt3$, $c_2=\frac{2}{2!}=1$, $c
 **(4)** At $t=\frac{\pi}{6}$: $\frac{dx}{dt}=-\sin t=-\frac{1}{2}$ and $\frac{dy}{dt}=2\cos 2t=1$. So $\frac{dy}{dx}=\frac{1}{-1/2}=-2$.`,
       },
       {
-        topic: 'Extrema and concavity', label: 'Q.4', stem: R`Consider $f(x)=3x^4-4x^3$.`, pts: [2, 3, 2, 3],
+        topic: 'Extrema and concavity', label: 'Q.4', stem: R`Consider $f(x)=x^4-4x^3$.`, pts: [2, 3, 2, 3],
         parts: [
           R`Find the critical points.`,
           R`Classify each critical point with the first derivative test.`,
           R`Find the inflection points.`,
-          R`Find the absolute maximum and minimum on $-1\le x\le2$.`,
+          R`Find the absolute maximum and minimum on $-1\le x\le4$.`,
         ],
-        answer: [R`(1) $x=0$ and $x=1$`, R`(2) $x=0$: neither. $x=1$: relative min $f(1)=-1$.`, R`(3) $(0,0)$ and $\left(\frac{2}{3},-\frac{16}{27}\right)$`,
-          R`(4) absolute max $16$ at $x=2$, absolute min $-1$ at $x=1$`],
-        sol: R`**(1)** $f'(x)=12x^3-12x^2=12x^2(x-1)$, so $x=0$ and $x=1$.
+        answer: [R`(1) $x=0$ and $x=3$`, R`(2) $x=0$: neither. $x=3$: relative min $f(3)=-27$.`, R`(3) $(0,0)$ and $(2,-16)$`,
+          R`(4) absolute max $5$ at $x=-1$, absolute min $-27$ at $x=3$`],
+        sol: R`**(1)** $f'(x)=4x^3-12x^2=4x^2(x-3)$, so $x=0$ and $x=3$.
 
-**(2)** $12x^2\ge0$, so the sign of $f'$ is the sign of $x-1$: negative on both sides of $0$ (no sign change: neither), and $-\to+$ at $x=1$: a relative min, $f(1)=-1$.
+**(2)** $4x^2\ge0$, so the sign of $f'$ is the sign of $x-3$: negative on both sides of $0$ (no sign change: neither), and $-\to+$ at $x=3$: a relative min, $f(3)=81-108=-27$.
 
-**(3)** $f''(x)=36x^2-24x=12x(3x-2)$ changes sign at $x=0$ and $x=\frac{2}{3}$. With $f(0)=0$ and $f\left(\frac{2}{3}\right)=\frac{48}{81}-\frac{32}{27}=-\frac{16}{27}$, the points are $(0,0)$ and $\left(\frac{2}{3},-\frac{16}{27}\right)$.
+**(3)** $f''(x)=12x^2-24x=12x(x-2)$ changes sign at $x=0$ and $x=2$. With $f(0)=0$ and $f(2)=16-32=-16$, the points are $(0,0)$ and $(2,-16)$.
 
-**(4)** Compare $f(-1)=7$, $f(0)=0$, $f(1)=-1$ and $f(2)=16$. The absolute max is $16$ at $x=2$ and the absolute min is $-1$ at $x=1$.`,
+**(4)** Compare $f(-1)=1+4=5$, $f(0)=0$, $f(3)=-27$ and $f(4)=256-256=0$. The absolute max is $5$ at $x=-1$ and the absolute min is $-27$ at $x=3$.`,
       },
       {
         topic: "Series and Newton's method", label: 'Q.5', stem: R`Answer each part.`, pts: [2, 3, 2, 3],

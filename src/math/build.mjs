@@ -92,8 +92,8 @@ const entry = (s, v, id, t, p, extra = '') => ({ s, v, id, t, p: clip(p), k: (t 
 // ---------- pieces ----------
 const toggle = (cls, open, close, body) =>
   `<details class="${cls}"><summary><span class="when-closed">${open}</span><span class="when-open">${close}</span>${UI_ICONS.chevron}</summary><div class="${cls}-body">${body}</div></details>`;
-const partsList = (parts) => parts.length
-  ? `<ol class="parts">${parts.map((p, i) => `<li><span class="pn">(${i + 1})</span><span class="pt">${inline(p)}</span></li>`).join('')}</ol>` : '';
+const partsList = (parts, labels) => parts.length
+  ? `<ol class="parts">${parts.map((p, i) => `<li><span class="pn">(${labels ? labels[i] : i + 1})</span><span class="pt">${inline(p)}</span></li>`).join('')}</ol>` : '';
 const answerBox = (answer) => `<div class="answer"><span class="lbl">Answer</span><ul>${answer.map((a) => `<li>${inline(a)}</li>`).join('')}</ul></div>`;
 const MARU = `<svg class="maru" viewBox="0 0 64 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="100" d="M52 7C41 1 15 2 7 14C1 24 13 36 33 35C50 34 61 25 58 14C56 8 49 4 41 4"/></svg>`;
 const band = (en, jp, lede) => `<div class="band"><div class="wrap"><h1 class="band-title"><span class="en">${en}</span><span class="jp" lang="ja">${jp}</span></h1><p class="band-lede">${lede}</p></div></div>`;
@@ -129,9 +129,10 @@ const graphHTML = ([kind, title, note]) => `
 
 // ---------- the page ----------
 // quizzes: the in-class sheets (from src/math/private/inclass.mjs) or null when they aren't available.
-// locked: true for the public site, where in-class sheets become password panels and their HTML goes to `sheets`.
-// lockedNos: quiz numbers that have a locked in-class sheet when `quizzes` is null (taken from math/locked.json).
-function render({ quizzes, locked, lockedNos }) {
+// past: the past midterm papers (src/math/private/past.mjs) or null.
+// locked: true for the public site, where in-class sheets and past papers become password panels and their HTML goes to `sheets`.
+// lockedNos / lockedPast: what is locked when `quizzes` / `past` are null (taken from math/locked.json).
+function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   const INDEX = [];
   const PRIV = [];
 
@@ -251,18 +252,20 @@ function render({ quizzes, locked, lockedNos }) {
     }).join('')}
   </article>`;
   }
-  const lockHTML = (no, days) => `
-  <article class="sheet lock" id="rq${no}" data-seg="0">
-    <header class="sheet-head"><div><h3 class="sheet-title">In-class Quiz ${no}</h3><p class="sheet-sub">${esc(days)} · 10 pt</p></div></header>
+  const unlockForm = (key, text) => `
     <form class="unlock" novalidate>
-      <div class="u-head"><span class="u-icon">${UI_ICONS.lock}</span><div><p class="u-title">Password needed</p><p class="u-text">The in-class sheets are locked. Follow-up A and B are open to everyone.</p></div></div>
+      <div class="u-head"><span class="u-icon">${UI_ICONS.lock}</span><div><p class="u-title">Password needed</p><p class="u-text">${text}</p></div></div>
       <div class="u-row">
-        <div class="u-field"><label class="sr" for="pw-${no}">Password</label><input id="pw-${no}" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Password"><button type="button" class="u-show" aria-pressed="false" aria-controls="pw-${no}">Show</button></div>
+        <div class="u-field"><label class="sr" for="pw-${key}">Password</label><input id="pw-${key}" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Password"><button type="button" class="u-show" aria-pressed="false" aria-controls="pw-${key}">Show</button></div>
         <button type="submit" class="u-go">Unlock</button>
       </div>
       <p class="u-msg" role="status" aria-live="polite"></p>
       <label class="u-remember"><input type="checkbox" name="remember"><span>Remember on this device</span></label>
-    </form>
+    </form>`;
+  const lockHTML = (no, days) => `
+  <article class="sheet lock" id="rq${no}" data-seg="0">
+    <header class="sheet-head"><div><h3 class="sheet-title">In-class Quiz ${no}</h3><p class="sheet-sub">${esc(days)} · 10 pt</p></div></header>
+    ${unlockForm(no, 'The in-class sheets are locked. Follow-up A and B are open to everyone.')}
   </article>`;
   const nos = [...new Set([...Object.keys(followups), ...(quizzes ? quizzes.map((q) => q.no) : lockedNos)])].sort();
   const quizzesHTML = nos.map((no) => {
@@ -307,32 +310,61 @@ function render({ quizzes, locked, lockedNos }) {
         <span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${x.date ? '' : 'Date to be announced'}</span></span>
         <span class="up-left" aria-live="off"></span>
       </li>`).join('');
-  const mockSheets = mocks.map((m, mi) => {
-    const points = m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
+  const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.';
+  const PAST_FOCUS = "A real midterm from an earlier year, retyped. The paper gives no time limit or points, so the timer and the points here are estimates. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.";
+  const totalPts = (m) => m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
+  function examSheet(m, seg, visible, about, focus, searchExtra, index) {
+    const points = totalPts(m);
     const qsHTML = m.qs.map((x, qi) => {
       const id = `${m.id}-q${qi + 1}`;
       const qpts = x.pts.reduce((a, b) => a + b, 0);
-      INDEX.push(entry('Exams', 'exams', id, `${m.title} · ${x.label} — ${x.topic}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' mock midterm exam practice test'));
-      const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">(${pi + 1}) ${p} pt</button>`).join('');
+      const lab = (pi) => (x.labels ? x.labels[pi] : String(pi + 1));
+      index.push(entry('Exams', 'exams', id, `${m.title} · ${x.label} — ${x.topic}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' ' + searchExtra));
+      const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">(${lab(pi)}) ${p} pt</button>`).join('');
       return `
     <div class="rq" id="${id}">
       <div class="stem"><p><b class="ql">${x.label}</b> <span class="qtopic">${esc(x.topic)}</span> ${inline(x.stem)} <span class="pts">(${qpts} pt)</span></p></div>
-      ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`))}
+      ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`), x.labels)}
       <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>
       <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>
     </div>`;
     }).join('');
     return `
-  <article class="sheet mock" id="${m.id}" data-seg="${mi}" data-mock="${m.id}" data-total="${points}"${mi ? ' hidden' : ''}${addedAttr(m)}>
+  <article class="sheet mock" id="${m.id}" data-seg="${seg}" data-mock="${m.id}" data-total="${points}"${visible ? '' : ' hidden'}${addedAttr(m)}>
     <header class="sheet-head">
-      <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${m.minutes} min · ${points} pt · ${span}</p></div>
+      <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${about ? esc(about) + ' · ' : ''}${m.minutes} min · ${points} pt</p></div>
       ${timerHTML(m.minutes * 60)}
     </header>
-    <p class="focus">Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.</p>
+    <p class="focus">${focus}</p>
     ${qsHTML}
     <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
   </article>`;
-  }).join('');
+  }
+  const mockSheets = mocks.map((m, mi) => examSheet(m, mi, mi === 0, span, MOCK_FOCUS, 'mock midterm exam practice test', INDEX)).join('');
+  // past midterms: locked like the in-class sheets (the panel shows only the title until the password opens it)
+  const pastMeta = (p) => ({ id: p.id, seg: p.seg, title: p.title, sub: p.sub, minutes: p.minutes, points: totalPts(p), added: p.added || '' });
+  const pastList = past ? past.map(pastMeta) : lockedPast;
+  const pastLock = locked && pastList.length > 0;
+  const pastLockHTML = (p, seg) => `
+  <article class="sheet lock" id="${p.id}" data-seg="${seg}"${seg ? ' hidden' : ''}${addedAttr(p)}>
+    <header class="sheet-head"><div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${esc(p.sub)} · ${p.minutes} min · ${p.points} pt</p></div></header>
+    ${unlockForm(p.id, 'The past midterms are locked. The mock exams above are open to everyone.')}
+  </article>`;
+  let pastSheets = '';
+  pastList.forEach((p, pi) => {
+    const full = past && past.find((x) => x.id === p.id);
+    if (full) {
+      const html = examSheet(full, pi, pi === 0, full.sub, PAST_FOCUS, 'past midterm exam previous year real paper', locked ? PRIV : INDEX);
+      if (locked) { sheets[p.id] = html.trim(); pastSheets += pastLockHTML(p, pi); } else pastSheets += html;
+    } else pastSheets += pastLockHTML(p, pi);
+  });
+  const pastHTML = pastList.length ? `
+    <section class="qgroup mockgroup" id="past">
+      <header class="qg-head"><p class="kicker">Real papers from earlier years</p><h2>Past midterms</h2></header>
+      <div class="seg" role="tablist" aria-label="Past midterms">${pastList.map((p, pi) =>
+    `<button type="button" class="seg-btn" role="tab" data-seg="${pi}" aria-controls="${p.id}" aria-selected="${pi === 0}">${esc(p.seg)}${pastLock ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : ''}<span class="seg-score"></span></button>`).join('')}</div>
+      ${pastSheets}
+    </section>` : '';
   const examsHTML = `
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
@@ -343,7 +375,7 @@ function render({ quizzes, locked, lockedNos }) {
       <div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">Mock ${mi + 1}<span class="seg-score"></span></button>`).join('')}</div>
       ${mockSheets}
-    </section>`;
+    </section>${pastHTML}`;
 
   const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
   // The newest `added` date in each tab, so the tab can show a dot before its content is built
@@ -353,7 +385,7 @@ function render({ quizzes, locked, lockedNos }) {
     practice: newest(Object.values(practice).flat().map((p) => p.added)),
     formulas: newest([...formulas.map((g) => g.added), TESTBAR_ADDED]),
     quizzes: newest(Object.values(followups).flat().map((f) => f.added)),
-    exams: newest(mocks.map((m) => m.added)),
+    exams: newest([...mocks.map((m) => m.added), ...pastList.map((p) => p.added)]),
   };
   // Summary is built with the page. The other tabs travel as JSON text and are built the first time they open
   // (page.js), so the browser only lays out what is being read; that keeps the first load fast as content grows.
@@ -434,13 +466,13 @@ function render({ quizzes, locked, lockedNos }) {
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length} mock exams for Calculus midterm 1, covering ${span}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', `Upcoming exams with a countdown, ${mocks.length} mock exams for Calculus midterm 1 covering ${span}${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' (password needed)' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 </main>
 ${lazyScripts}
 `;
-  return { body, INDEX, PRIV, sheets, total, hasLocks, nos };
+  return { body, INDEX, PRIV, sheets, total, hasLocks: hasLocks || pastLock, nos, pastList };
 }
 // ---------- KaTeX CSS with embedded fonts, plus its license ----------
 function katexCSS() {
@@ -546,14 +578,17 @@ async function syncSeal(ring) {
   console.log('sealed src/math/private/ into', rel(SEALED));
   return true;
 }
-async function loadQuizzes(ring) {
-  const local = path.join(PRIVATE, 'inclass.mjs');
-  if (fs.existsSync(local)) return (await import(pathToFileURL(local).href + '?t=' + Date.now())).quizzes;
+// a private module: from src/math/private/ when it's open, else from the sealed copy (needs the password)
+async function loadPrivate(ring, file, name) {
+  const local = path.join(PRIVATE, file);
+  if (fs.existsSync(local)) return (await import(pathToFileURL(local).href + '?t=' + Date.now()))[name];
   if (!ring) return null;
   const files = await sealedFiles(ring);
-  if (!files || !files['inclass.mjs']) return null;
-  return (await import('data:text/javascript;base64,' + Buffer.from(files['inclass.mjs']).toString('base64'))).quizzes;
+  if (!files || !files[file]) return null;
+  return (await import('data:text/javascript;base64,' + Buffer.from(files[file]).toString('base64')))[name];
 }
+const loadQuizzes = (ring) => loadPrivate(ring, 'inclass.mjs', 'quizzes');
+const loadPast = (ring) => loadPrivate(ring, 'past.mjs', 'past');
 
 // ---------- commands ----------
 const PASSWORD = process.env.SITE_PASSWORD || '';
@@ -563,14 +598,16 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   if (ring) await syncSeal(ring);
   else if (!afterRekey && readPrivateDir()) console.warn('note: src/math/private/ exists but SITE_PASSWORD is not set, so the locked in-class sheets were not rebuilt.');
   const quizzes = ring ? await loadQuizzes(ring) : null;
+  const past = ring ? await loadPast(ring) : null;
   let box = readJSON(LOCKED);
-  const r = render({ quizzes, locked: true, lockedNos: box ? box.quizzes : [] });
+  const r = render({ quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
   if (quizzes) {
     const payload = { sheets: r.sheets, index: r.PRIV };
     let same = false;
-    if (box) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload); } catch { same = false; } }
+    if (box) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.past || []) === JSON.stringify(r.pastList); } catch { same = false; } }
     if (!same) {
-      box = await sealBox(ring, payload, { quizzes: quizzes.map((q) => q.no) });
+      // `past` (titles, minutes, points) stays readable, so a build without the password can still draw the panels
+      box = await sealBox(ring, payload, { quizzes: quizzes.map((q) => q.no), past: r.pastList });
       fs.mkdirSync(path.dirname(LOCKED), { recursive: true });
       fs.writeFileSync(LOCKED, JSON.stringify(box) + '\n');
       console.log('wrote', rel(LOCKED), (fs.statSync(LOCKED).size / 1024).toFixed(0) + ' KB · in-class entries:', r.PRIV.length);
@@ -618,7 +655,8 @@ async function buildArtifact(out) {
   const ring = PASSWORD ? await keyring(PASSWORD) : null;
   const quizzes = await loadQuizzes(ring);
   if (!quizzes) fail('the in-class sheets are needed: run `open` first, or set SITE_PASSWORD.');
-  const r = render({ quizzes, locked: false, lockedNos: [] });
+  const past = await loadPast(ring);
+  const r = render({ quizzes, past, locked: false, lockedNos: [] });
   const { css, js, kcss } = assets();
   // claude.ai artifact: the host supplies the document skeleton, so the page starts at <title>
   const html = `<title>CLA1 Midterm Review</title>
@@ -663,7 +701,7 @@ async function rekey() {
   const lockedData = lockedBox && await openBox(old.key, lockedBox);
   const sealedData = sealedBox && await openBox(old.key, sealedBox);
   const ring = await keyring(next, { fresh: true });
-  if (lockedData) fs.writeFileSync(LOCKED, JSON.stringify(await sealBox(ring, lockedData, { quizzes: lockedBox.quizzes })) + '\n');
+  if (lockedData) fs.writeFileSync(LOCKED, JSON.stringify(await sealBox(ring, lockedData, { quizzes: lockedBox.quizzes, past: lockedBox.past || [] })) + '\n');
   if (sealedData) fs.writeFileSync(SEALED, JSON.stringify(await sealBox(ring, sealedData)) + '\n');
   console.log('re-encrypted with the new password. Devices that chose "Remember" will ask for it once.');
   await buildSite('', { afterRekey: true });

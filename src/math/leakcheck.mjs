@@ -1,5 +1,5 @@
-// Safety net for the public site: fails if a formula or sentence that exists only in the private in-class sheets
-// appears in math/index.html. Wording the public follow-ups share on purpose ("Compute the limits of the following")
+// Safety net for the public site: fails if a formula or sentence that exists only in the private in-class sheets or
+// past midterms appears in math/index.html. Wording the public follow-ups share on purpose ("Compute the limits of the following")
 // is not counted. Needs the private sources: run `node src/math/build.mjs open` first.
 //   node src/math/leakcheck.mjs
 import fs from 'fs';
@@ -11,6 +11,10 @@ const ROOT = path.resolve(SRC, '..', '..');
 const inclass = path.join(SRC, 'private', 'inclass.mjs');
 if (!fs.existsSync(inclass)) { console.error('error: src/math/private/inclass.mjs is missing; run `node src/math/build.mjs open` first.'); process.exit(1); }
 const { quizzes } = await import(pathToFileURL(inclass).href);
+const pastFile = path.join(SRC, 'private', 'past.mjs');
+const past = fs.existsSync(pastFile) ? (await import(pathToFileURL(pastFile).href)).past : [];
+// every private question, in-class or past paper
+const privateQs = [...quizzes.flatMap((q) => q.qs), ...past.flatMap((p) => p.qs)];
 const page = fs.readFileSync(path.join(ROOT, 'math', 'index.html'), 'utf8');
 // tabs built on first open travel as text (<script id="lazy-…">): include them so they are checked too
 const lazy = [...page.matchAll(/<script type="text\/x-lazy-html" id="lazy-\w+">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
@@ -20,7 +24,7 @@ const index = (page.match(/<script type="application\/json" id="search-index">([
 const shared = ['content.mjs', 'followups.mjs', 'extras.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 let leaks = 0, checked = 0;
-for (const q of quizzes) for (const x of q.qs) {
+for (const x of privateQs) {
   const src = [x.stem, ...x.parts, ...x.answer, x.sol].join('\n');
   const maths = [...src.matchAll(/\$\$([\s\S]*?)\$\$|\$([^$]*)\$/g)].map((m) => (m[1] || m[2]).trim()).filter((t) => t.length >= 10);
   const words = src.split(/\$\$[\s\S]*?\$\$|\$[^$]*\$/).map((s) => s.replace(/\*\*/g, '').replace(/\s+/g, ' ').replace(/^[\s.,:;]+/, '').trim())
@@ -36,6 +40,6 @@ for (const q of quizzes) for (const x of q.qs) {
     if (pub.includes(esc(t))) { leaks++; console.log('text in the public page:', t); }
   }
 }
-const ids = (pub.match(/id="rq\d+-q\d+"/g) || []).length + (index.match(/"id":"rq\d+-q\d+"/g) || []).length;
-console.log(`checked ${checked} in-class-only formulas and sentences: ${leaks} in the public page; in-class question ids: ${ids}`);
+const ids = (pub.match(/id="(rq\d+|p\d{4})-q\d+"/g) || []).length + (index.match(/"id":"(rq\d+|p\d{4})-q\d+"/g) || []).length;
+console.log(`checked ${checked} private formulas and sentences (in-class sheets and ${past.length} past midterms): ${leaks} in the public page; private question ids: ${ids}`);
 process.exit(leaks || ids ? 1 : 0);

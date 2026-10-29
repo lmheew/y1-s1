@@ -184,6 +184,8 @@ with sync_playwright() as p:
         check(f'{label}: Exams builds on first open', pg.locator('#lazy-exams').count() == 0 and pg.locator('#view-exams .sheet.mock').count() == 3)
         check(f'{label}: upcoming list has the five exams', pg.locator('#view-exams .up-item').count() == 5)
         check(f'{label}: mock 1 has six questions and 60 points', pg.locator('#m1 .rq').count() == 6 and '60 pt' in pg.locator('#m1 .sheet-sub').inner_text())
+        check(f'{label}: past midterms are locked: two password panels, no questions', pg.locator('#past .sheet.lock').count() == 2
+              and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 2)
         check(f'{label}: mock sheets show New labels', pg.locator('#m1 .sheet-title .new-pill').count() == 1)
         check(f'{label}: mock timer starts at 60:00', pg.locator('#m1 .time').inner_text() == '60:00')
         pg.locator('#m1 .t-go').click()
@@ -223,6 +225,7 @@ with sync_playwright() as p:
         pg.fill('#search-input', 'mock taylor')
         hits = pg.locator('#search-results .s-t').all_inner_texts()
         check(f'{label}: search finds mock exam questions', any(h.startswith('Mock Midterm') for h in hits), hits[:3])
+        check(f'{label}: public search shows nothing from the locked past midterms', not any(h.startswith('Midterm AY20') for h in hits), hits[:5])
         pg.locator('#search-results .s-hit', has_text='Mock Midterm 2').first.click()
         pg.wait_for_timeout(700)
         check(f'{label}: a search hit opens the right mock', pg.locator('#m2').is_visible() and pg.locator('#view-exams').is_visible())
