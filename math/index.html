@@ -493,7 +493,7 @@ details[open] .when-open { display: inline; }
   background: rgba(44, 50, 46, .8); color: #FFFFFF; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, .18); opacity: .42; cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-  transition: opacity .18s ease, box-shadow .18s ease, transform .34s cubic-bezier(.25, 1.3, .5, 1); }
+  transition: opacity .18s ease, box-shadow .18s ease, transform .34s cubic-bezier(.25, 1.3, .5, 1), translate .26s ease; }
 .calc-fab::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
 .calc-fab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .calc-fab .dots { fill: currentColor; stroke: none; }
@@ -504,10 +504,15 @@ details[open] .when-open { display: inline; }
 .calc-fab.armed, .calc-fab.dragging, .calc-fab.open { opacity: 1; }
 .calc-fab.armed { box-shadow: 0 0 0 3px var(--lime), 0 4px 14px rgba(0, 0, 0, .25); animation: calc-armed 1.2s ease-in-out infinite; }
 .calc-fab.dragging { box-shadow: 0 10px 24px rgba(0, 0, 0, .32); cursor: grabbing; }
-.calc-fab.no-anim, .calc-fab.dragging { transition: opacity .18s ease, box-shadow .18s ease; }
+.calc-fab.no-anim, .calc-fab.dragging { transition: opacity .18s ease, box-shadow .18s ease, translate .26s ease; }
 .calc-fab.off { opacity: .26; }
 .calc-fab.off::after { content: ""; position: absolute; width: 28px; height: 2px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); }
 .calc-fab:focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; opacity: 1; }
+/* tucked into its edge while the page scrolls down, back on the way up (totop.js sets .fab-away on the root);
+   it stays put while it is woken, open, being dragged or focused */
+.fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { opacity: 0; translate: calc(-100% - 16px) 0; pointer-events: none; }
+.fab-away .calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: calc(100% + 16px) 0; }
+.fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) + .calc-tip { opacity: 0; }
 @keyframes calc-armed { 50% { box-shadow: 0 0 0 6px rgba(156, 195, 76, .45), 0 4px 14px rgba(0, 0, 0, .25); } }
 :root[data-theme="dark"] .calc-fab { background: rgba(92, 104, 96, .82); border-color: rgba(255, 255, 255, .36); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .calc-fab { background: rgba(92, 104, 96, .82); border-color: rgba(255, 255, 255, .36); } }
@@ -599,12 +604,15 @@ details[open] .when-open { display: inline; }
 @media (prefers-reduced-motion: reduce) {
   .calc-fab, .calc-tip, .calc-drawer, .calc-drawer.open, .calc-key { transition: none; }
   .calc-fab.armed, .calc-panel.pop { animation: none; }
+  .fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible),
+  .fab-away .calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: none; }
 }
 @media print { .calc-fab, .calc-tip, .calc-panel { display: none !important; } }
 
 /* Back-to-top button: a round button in the bottom-right corner, above the phone tab bar. Hidden near the top of
-   the page; it fades in once the page has been scrolled about half a screen down. A page without a tab bar sets
-   --totop-bottom; the hover and focus colours come from the page's --bar-active and --lime-deep. */
+   the page; it fades in once the page has been scrolled about half a screen down, and tucks away while the page
+   scrolls down. A page without a tab bar sets --totop-bottom; the hover and focus colours come from the page's
+   --bar-active and --lime-deep. */
 .totop { position: fixed; z-index: 35; right: max(14px, calc(env(safe-area-inset-right, 0px) + 10px));
   bottom: var(--totop-bottom, calc(var(--tabbar-h, 60px) + env(safe-area-inset-bottom, 0px) + 14px));
   width: 44px; height: 44px; margin: 0; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%;
@@ -612,6 +620,9 @@ details[open] .when-open { display: inline; }
   -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; transform: translateY(12px) scale(.9);
   transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .15s ease; }
 .totop.show { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .2s ease, visibility 0s, background-color .15s ease; }
+/* tucked into the right edge while the page scrolls down, back on the way up (totop.js sets .fab-away) */
+.fab-away .totop.show:not(:focus-visible) { opacity: 0; visibility: hidden; transform: translateX(calc(100% + 16px));
+  transition: opacity .2s ease, transform .26s ease, visibility 0s linear .26s, background-color .15s ease; }
 .totop:hover { background: var(--bar-active, #2B6638); }
 .totop:active { transform: scale(.94); }
 .totop:focus-visible { outline: 2.5px solid var(--lime-deep, #7BA831); outline-offset: 3px; }
@@ -621,7 +632,7 @@ details[open] .when-open { display: inline; }
 @media (min-width: 860px) {
   .totop { right: max(24px, calc(env(safe-area-inset-right, 0px) + 10px)); bottom: var(--totop-bottom, calc(24px + env(safe-area-inset-bottom, 0px))); }
 }
-@media (prefers-reduced-motion: reduce) { .totop, .totop.show { transition: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .totop, .totop.show, .fab-away .totop.show:not(:focus-visible) { transition: none; transform: none; } }
 @media print { .totop { display: none !important; } }
 </style>
 <style>/* KaTeX 0.16.11 stylesheet and fonts (https://katex.org)
@@ -3952,6 +3963,11 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
 // Back-to-top button for every page: hidden near the top, shown once the page has been scrolled about half a
 // screen down (at least 300 px). A tap scrolls smoothly back to the top (at once with reduced motion) and moves
 // keyboard focus up there too. The floating calculator keeps the bottom of the right edge clear for it.
+//
+// This file also sets the scroll direction for both floating buttons (this one and the calculator's): while the
+// page scrolls down they tuck into the screen edge, so they don't sit on the text being read, and they come back
+// on the way up, near the top and at the end of the page. It puts the class "fab-away" on <html>, and
+// totop.css and calculator.css hide the buttons with it.
 (() => {
   if (typeof document === 'undefined') return;
   const btn = document.createElement('button');
@@ -3965,8 +3981,29 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
   if (getComputedStyle(btn).position !== 'fixed') { btn.remove(); return; }
   const reduced = () => Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const threshold = () => Math.max(300, window.innerHeight * 0.5);
+
+  // scroll direction: the buttons react after 24 px of travel one way, so small nudges don't make them flicker
+  const root = document.documentElement;
+  const TRAVEL = 24, TOP = 80, END = 8;
+  let lastY = Math.max(0, window.scrollY), travel = 0, away = false;
+  const setAway = (v) => { if (v !== away) { away = v; root.classList.toggle('fab-away', v); } };
+  function direction() {
+    const y = Math.max(0, window.scrollY);
+    const end = Math.max(0, root.scrollHeight - window.innerHeight);
+    const dy = y - lastY;
+    lastY = y;
+    if (y < TOP || y >= end - END) { travel = 0; setAway(false); return; }
+    if (dy > 0) travel = Math.max(0, travel) + dy;
+    else if (dy < 0) travel = Math.min(0, travel) + dy;
+    if (travel > TRAVEL) setAway(true);
+    else if (travel < -TRAVEL) setAway(false);
+  }
+
+  // the calculator sends "fabshow" after it has been used, so the buttons stay out until the next scroll down
+  document.addEventListener('fabshow', () => { travel = 0; setAway(false); });
+
   let queued = false;
-  const update = () => { queued = false; btn.classList.toggle('show', window.scrollY > threshold()); };
+  const update = () => { queued = false; direction(); btn.classList.toggle('show', window.scrollY > threshold()); };
   window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
   window.addEventListener('resize', update);
   btn.addEventListener('click', () => {
@@ -4341,6 +4378,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       const b = band(pos.side);
       x = pos.side === 'left' ? b.left : b.right;
       y = b.top + pos.y * (b.bottom - b.top);
+      fab.dataset.side = pos.side; // which edge it tucks into while the page scrolls down (calculator.css)
       fab.classList.toggle('no-anim', !animate || reduced);
       draw();
     }
@@ -4425,7 +4463,11 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       pos.y = b.bottom > b.top ? clamp((y - b.top) / (b.bottom - b.top), 0, 1) : 1;
       savePos();
       place(true);
+      showFabs();
     }
+    // just used (moved, or the window closed): keep the floating buttons out until the page next scrolls down,
+    // rather than tucking this one away at once (totop.js listens)
+    const showFabs = () => document.dispatchEvent(new Event('fabshow'));
     fab.addEventListener('pointerup', (e) => release(e, false));
     fab.addEventListener('pointercancel', (e) => release(e, true));
     fab.addEventListener('click', (e) => { if (e.detail === 0) { if (off) tap('key'); else if (isOpen) closePanel(); else openPanel(); } });
@@ -4664,6 +4706,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       fab.classList.remove('open');
       fab.setAttribute('aria-expanded', 'false');
       if (hadFocus) fab.focus({ preventScroll: true });
+      showFabs();
     }
 
     // keyboard, while the calculator is open and was the last thing used

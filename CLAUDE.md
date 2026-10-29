@@ -101,6 +101,7 @@ A few details about the password:
 - The first tap makes it opaque and shows "Tap again to open". A second tap on it opens the calculator. A tap anywhere else, or 4 seconds without one, cancels. Enter on the focused button opens it at once.
 - The calculator follows the Windows standard layout, with memory (MC MR M+ M− MS and the M▾ list) and no history. It works with exact fractions, so 1 ÷ 3 × 3 = 1 and 0.1 + 0.2 = 0.3. It shows results the way Windows does: 16 digits, and "1.e+16" style above that. `calculator_test.js` holds the Windows cases; keep them passing.
 - The window doesn't block the page. It moves by its title bar and closes with ×, Esc (once it's cleared), or one tap on the button.
+- While the page scrolls down, the button tucks into its edge (with the back-to-top button), so neither covers the text being read. Both come back on the way up (after 24 px), near the top, at the end of the page, and after the calculator is used (closed or moved). The button stays put while it is woken, open, dragged or focused. `totop.js` tracks the scroll direction and sets `fab-away` on `<html>`; the calculator sends a `fabshow` event after use.
 - It is off while a quiz timer runs, since the course is calculator-free; `page.js` sends a `quiztimer` event.
 - It is set up after the page has loaded, so it adds nothing to load time; keep it that way.
 - Browser storage: `study-calc-memory` (memory values) and `study-calc-position` (where the button rests).
@@ -108,6 +109,7 @@ A few details about the password:
 ## Back to top
 
 - A round button in the bottom-right corner, above the tab bar on phones. It is hidden near the top and fades in after about half a screen of scrolling (at least 300 px). A tap scrolls smoothly to the top (at once with reduced motion) and moves keyboard focus to the brand link.
+- Like the calculator button, it tucks away while the page scrolls down and comes back on the way up and at the end of the page.
 - Footers keep enough bottom padding that the last line ends above the floating buttons.
 - A page without a tab bar sets `--totop-bottom`, as the home page does. The hover and focus colours come from the page's `--bar-active` and `--lime-deep`.
 

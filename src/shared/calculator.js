@@ -362,6 +362,7 @@
       const b = band(pos.side);
       x = pos.side === 'left' ? b.left : b.right;
       y = b.top + pos.y * (b.bottom - b.top);
+      fab.dataset.side = pos.side; // which edge it tucks into while the page scrolls down (calculator.css)
       fab.classList.toggle('no-anim', !animate || reduced);
       draw();
     }
@@ -446,7 +447,11 @@
       pos.y = b.bottom > b.top ? clamp((y - b.top) / (b.bottom - b.top), 0, 1) : 1;
       savePos();
       place(true);
+      showFabs();
     }
+    // just used (moved, or the window closed): keep the floating buttons out until the page next scrolls down,
+    // rather than tucking this one away at once (totop.js listens)
+    const showFabs = () => document.dispatchEvent(new Event('fabshow'));
     fab.addEventListener('pointerup', (e) => release(e, false));
     fab.addEventListener('pointercancel', (e) => release(e, true));
     fab.addEventListener('click', (e) => { if (e.detail === 0) { if (off) tap('key'); else if (isOpen) closePanel(); else openPanel(); } });
@@ -685,6 +690,7 @@
       fab.classList.remove('open');
       fab.setAttribute('aria-expanded', 'false');
       if (hadFocus) fab.focus({ preventScroll: true });
+      showFabs();
     }
 
     // keyboard, while the calculator is open and was the last thing used
