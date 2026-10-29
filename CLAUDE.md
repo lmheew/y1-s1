@@ -32,6 +32,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `graphs.js`: the interactive graphs. Which unit shows which graph is set by `GRAPHS` in `build.mjs`.
 - `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`, like everything in `private/`.
 - `build.mjs` (with the short unit names in `SHORT`), `page.css`, `page.js`.
+- Buttons follow one rule (top of the buttons part of `page.css`): the main action of a place is a filled green pill (`.pill`, `.t-go`, `.u-go`), other actions are outlined grey pills (`.linkbtn`, `.t-reset`), a toggle or choice is outlined green and fills green when on (`.chip`, Test me, the switchers), and the app bar has plain outlined icon buttons (`.icon-btn`). `check_site.py` checks the main ones share one colour.
 
 Markup inside the strings:
 

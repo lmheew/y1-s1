@@ -84,6 +84,15 @@ with sync_playwright() as p:
             check(f'{label}: {view} tab shows', page.locator(f'#view-{view}').is_visible())
             check(f'{label}: {view} has no sideways scroll', overflow(page) <= 0, overflow(page))
             shot(page, f'{label}-{view}')
+        # one button style: the main actions share one green, and the two app bar buttons look the same
+        looks = page.evaluate("""(() => {
+          const bg = (s) => { const e = document.querySelector(s); return e && getComputedStyle(e).backgroundColor; };
+          const main = ['#random-btn', '#view-quizzes .t-go', '#view-quizzes .u-go'].map(bg);
+          const bar = ['#theme-btn', '#search-btn'].map((s) => { const c = getComputedStyle(document.querySelector(s)); return [c.backgroundColor, c.borderTopWidth, c.width].join(' '); });
+          return { main, bar };
+        })()""")
+        check(f'{label}: the main buttons share one green, and the app bar buttons match',
+              all(c and c == looks['main'][0] for c in looks['main']) and looks['bar'][0] == looks['bar'][1], looks)
         locks = page.locator('.sheet.lock').count()
         check(f'{label}: in-class sheets are locked ({locks})', locks >= 1)
         in_class = [t for t in search(page, 'quiz') if t.startswith('Quiz ') and 'Follow-up' not in t]

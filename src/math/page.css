@@ -72,10 +72,13 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
 .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .appbar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
-.icon-btn { appearance: none; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+/* Buttons, one rule: actions are green pills, filled for the main action of a place (Random problem, Next step,
+   Start timer, Unlock) and outlined grey for the rest (Reset, Clear, Show all steps); a toggle or choice is outlined
+   green and fills green when on (filters, Test me, the switchers); the app bar's buttons are plain outlined icons. */
+.icon-btn { appearance: none; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+@media (hover: hover) { .icon-btn:hover, .linkbtn:hover, .t-reset:hover { background: var(--tint); } }
 #theme-btn > span { display: none; }
 #theme-btn[data-mode="system"] .t-system, #theme-btn[data-mode="light"] .t-light, #theme-btn[data-mode="dark"] .t-dark { display: grid; }
-.search-btn { appearance: none; width: 44px; height: 44px; border: 0; border-radius: 4px; background: var(--charcoal); color: #FFFFFF; display: grid; place-items: center; cursor: pointer; padding: 0; }
 
 /* tab bar: bottom on phones */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bar); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -159,7 +162,7 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .k-got { background: var(--green); }
 .k-rev { background: var(--amber); }
 .k-un { border: 1.5px solid var(--ink-soft); }
-.pill { appearance: none; justify-self: start; border: 0; border-radius: 999px; background: var(--charcoal); color: #FFFFFF; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--font); cursor: pointer; }
+.pill { appearance: none; justify-self: start; border: 0; border-radius: 999px; background: var(--bar); color: #FFFFFF; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--font); cursor: pointer; }
 .pill .ic { width: 18px; height: 18px; }
 .urings { display: grid; grid-template-columns: repeat(auto-fit, minmax(42px, 1fr)); gap: 6px 4px; padding-top: 12px; border-top: 1px solid var(--line); }
 .uring { appearance: none; position: relative; border: 0; background: none; padding: 0; color: var(--ink); font: inherit; display: grid; justify-items: center; gap: 2px; cursor: pointer; }
@@ -216,7 +219,7 @@ details[open] .when-open { display: inline; }
 .mbtn[data-mark="got"][aria-pressed="true"] { background: var(--bar); border-color: var(--bar); color: #FFFFFF; }
 .mbtn[data-mark="review"][aria-pressed="true"] { background: var(--amber-tint); border-color: var(--amber); color: var(--amber); }
 .reset-row { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 13px; color: var(--ink-soft); }
-.linkbtn { appearance: none; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); padding: 6px 10px; font: 500 13px var(--font); cursor: pointer; }
+.linkbtn { appearance: none; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 7px 12px; font: 700 13px/1.1 var(--font); cursor: pointer; }
 .linkbtn.armed { border-color: var(--warn); color: var(--warn); }
 .flash { animation: flash 1.8s ease-out; }
 @keyframes flash { 0%, 35% { background-color: var(--flash); } 100% { background-color: transparent; } }
@@ -269,9 +272,9 @@ details[open] .when-open { display: inline; }
 .timer { display: flex; align-items: center; gap: 8px; }
 .time { min-width: 3.2em; text-align: right; font-size: 18px; font-weight: 700; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .timer.running .time { color: var(--green-text); }
-.t-go { appearance: none; border: 0; border-radius: 999px; background: var(--charcoal); color: #FFFFFF; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--font); cursor: pointer; }
+.t-go { appearance: none; border: 0; border-radius: 999px; background: var(--bar); color: #FFFFFF; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; font: 700 13px/1 var(--font); cursor: pointer; }
 .t-go .ic { width: 16px; height: 16px; }
-.t-reset { appearance: none; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 7px 11px; font: 700 13px/1 var(--font); cursor: pointer; }
+.t-reset { appearance: none; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 7px 11px; font: 700 13px/1 var(--font); cursor: pointer; }
 .rq { min-width: 0; padding-top: 12px; scroll-margin-top: var(--anchor-top); }
 .rq + .rq { border-top: 1px dashed var(--line); }
 .ql { margin-right: 4px; font-weight: 900; color: var(--green); }
@@ -297,6 +300,7 @@ details[open] .when-open { display: inline; }
 .u-show:hover { background: var(--tint); }
 .u-go { appearance: none; flex: none; min-height: 44px; border: 0; border-radius: 999px; background: var(--bar); color: #FFFFFF; padding: 0 22px; font: 700 14.5px/1 var(--font); cursor: pointer; }
 .u-go:disabled { opacity: .75; cursor: progress; }
+@media (hover: hover) { .pill:hover, .t-go:hover, .u-go:hover:not(:disabled) { background: var(--bar-active); } }
 .u-remember { justify-self: start; display: inline-flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ink); cursor: pointer; }
 .u-remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--green); }
 .u-msg { font-size: 13.5px; color: var(--ink-soft); }
@@ -399,8 +403,9 @@ details[open] .when-open { display: inline; }
 
 /* ---------- Formulas: Test me ---------- */
 .testbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 18px; padding: 12px 14px; border: 1.5px dashed var(--green); border-radius: 4px; }
-.testbar .pill { flex: none; }
-.testbar .pill[aria-pressed="true"] { background: var(--bar); }
+.testbar .pill { flex: none; background: var(--surface); color: var(--green-text); box-shadow: inset 0 0 0 1.5px var(--green); }
+.testbar .pill[aria-pressed="true"] { background: var(--bar); color: #FFFFFF; box-shadow: none; }
+@media (hover: hover) { .testbar .pill[aria-pressed="false"]:hover { background: var(--tint); } }
 .test-hint { flex: 1 1 200px; font-size: 13.5px; color: var(--ink-soft); }
 .testing .frow { cursor: pointer; }
 .testing .frow:not(.shown) .fmath { position: relative; }

@@ -433,7 +433,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   <a class="brand" href="#summary" aria-label="CLA1 Review, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
   <div class="appbar-actions">
     <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
-    <button type="button" class="search-btn" id="search-btn" aria-label="Search everything">${UI_ICONS.search}</button>
+    <button type="button" class="icon-btn" id="search-btn" aria-label="Search everything">${UI_ICONS.search}</button>
   </div>
 </div></header>
 

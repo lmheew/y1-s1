@@ -126,6 +126,7 @@
   .offline p + p { margin-top: 8px; }
   .install { appearance: none; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 0; border-radius: 999px;
     background: var(--bar); color: #FFFFFF; font: 700 14px/1 var(--font); cursor: pointer; }
+  @media (hover: hover) { .install:hover { background: var(--bar-active); } }
   .ok { color: var(--green-text); font-weight: 700; }
 
   .site-foot .wrap { padding-block: 20px calc(80px + env(safe-area-inset-bottom, 0px)); text-align: center; } /* room for the back-to-top button */
