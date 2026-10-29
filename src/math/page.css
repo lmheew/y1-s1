@@ -377,7 +377,7 @@ details[open] .when-open { display: inline; }
 .up-cal .ic { width: 20px; height: 20px; }
 .up-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
 .up-name { font-size: 15.5px; font-weight: 700; }
-.up-when { font-size: 13px; color: var(--ink-soft); }
+.up-when { font-size: 13px; color: var(--ink-soft); white-space: nowrap; } /* a date and time only, kept on one line */
 .up-left { flex: none; font-size: 14px; font-weight: 700; color: var(--green-text); font-variant-numeric: tabular-nums; }
 .up-item.soon { border-color: var(--amber); }
 .up-item.soon .up-left { color: var(--amber); }

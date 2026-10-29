@@ -108,6 +108,8 @@ const probId = (u, p, pi) => p.id || `${u.id.slice(1)}.${pi + 1}`;
 const dayShort = (u) => u.days.replace(/^Day /, '').replace(' & ', '–');
 // anything with `added: 'YYYY-MM-DD'` gets a "New" label on the page for two weeks (page.js decides, at view time)
 const addedAttr = (o) => (o && o.added ? ` data-added="${esc(o.added)}"` : '');
+// a " · " line of short facts ("Day 1 & 2 · 8 & 9 Oct · Quiz 01", "60 min · 60 pt"): it may wrap between them, never inside one
+const meta = (parts) => parts.filter(Boolean).map((t) => (t.length <= 24 ? `<span class="nw">${esc(t)}</span>` : esc(t))).join(' · ');
 // interactive graphs (graphs.js draws them when they scroll into view), placed after a unit's key ideas
 const GRAPHS = {
   u2: [['secant', 'Secant to tangent', String.raw`Drag $h$ toward $0$. The secant slope $\frac{f(1+h)-f(1)}{h}$ of $f(x)=x^2$ approaches the tangent slope $f'(1)=2$.`]],
@@ -153,7 +155,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     }).join('');
     return `
 <section class="unit" id="su-${u.id}"${addedAttr(u)}>
-  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${[u.days, u.dates, u.quiz, u.note].filter(Boolean).map(esc).join(' · ')}</p><h2>${esc(u.title)}</h2></div></header>
+  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${meta([u.days, u.dates, u.quiz, u.note])}</p><h2>${esc(u.title)}</h2></div></header>
   ${u.intro ? `<p class="unit-note">${inline(u.intro)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
   ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
@@ -195,7 +197,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     }).join('');
     return `
 <section class="punit" id="p${u.id}">
-  <header class="punit-head"><div><p class="kicker">${[u.days, u.quiz ? `like ${u.quiz}` : '', (u.note || '').toLowerCase()].filter(Boolean).map(esc).join(' · ')}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
+  <header class="punit-head"><div><p class="kicker">${meta([u.days, u.quiz ? `like ${u.quiz}` : '', (u.note || '').toLowerCase()])}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
   <div class="probs">${cards}</div>
 </section>`;
   }).join('');
@@ -236,7 +238,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     return `
   <article class="sheet" id="${sheetId}" data-seg="${seg}"${visible ? '' : ' hidden'}>
     <header class="sheet-head">
-      <div><h3 class="sheet-title">${title}</h3><p class="sheet-sub">${sub}</p></div>
+      <div><h3 class="sheet-title">${title}</h3><p class="sheet-sub">${meta(sub.split(' · '))}</p></div>
       ${timerHTML(0)}
     </header>
     ${focus ? `<p class="focus">${esc(focus)}</p>` : ''}
@@ -264,7 +266,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     </form>`;
   const lockHTML = (no, days) => `
   <article class="sheet lock" id="rq${no}" data-seg="0">
-    <header class="sheet-head"><div><h3 class="sheet-title">In-class Quiz ${no}</h3><p class="sheet-sub">${esc(days)} · 10 pt</p></div></header>
+    <header class="sheet-head"><div><h3 class="sheet-title">In-class Quiz ${no}</h3><p class="sheet-sub">${meta([days, '10 pt'])}</p></div></header>
     ${unlockForm(no, 'The in-class sheets are locked. Follow-up A and B are open to everyone.')}
   </article>`;
   const nos = [...new Set([...Object.keys(followups), ...(quizzes ? quizzes.map((q) => q.no) : lockedNos)])].sort();
@@ -290,7 +292,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     const lockMark = hasInClass && locked ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : '';
     return `
 <section class="qgroup" id="qg${no}">
-  <header class="qg-head"><p class="kicker">Quiz ${no}${u.days ? ' · ' + esc(u.days) : ''}</p><h2>${esc(u.title)}</h2></header>
+  <header class="qg-head"><p class="kicker">${meta([`Quiz ${no}`, u.days])}</p><h2>${esc(u.title)}</h2></header>
   <div class="seg" role="tablist" aria-label="Quiz ${no} sheets">${kinds.map(([seg, s, label]) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${seg}" aria-controls="rq${no}${s}" aria-selected="${seg === first}">${label}${seg === '0' ? lockMark : ''}</button>`).join('')}</div>
   ${group}
@@ -335,7 +337,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     return `
   <article class="sheet mock" id="${m.id}" data-seg="${seg}" data-mock="${m.id}" data-total="${points}"${visible ? '' : ' hidden'}${addedAttr(m)}>
     <header class="sheet-head">
-      <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${about ? esc(about) + ' · ' : ''}${m.minutes} min · ${points} pt</p></div>
+      <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${meta([about, `${m.minutes} min`, `${points} pt`])}</p></div>
       ${timerHTML(m.minutes * 60)}
     </header>
     <p class="focus">${focus}</p>
@@ -350,7 +352,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   const pastLock = locked && pastList.length > 0;
   const pastLockHTML = (p, seg) => `
   <article class="sheet lock" id="${p.id}" data-seg="${seg}"${seg ? ' hidden' : ''}${addedAttr(p)}>
-    <header class="sheet-head"><div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${esc(p.sub)} · ${p.minutes} min · ${p.points} pt</p></div></header>
+    <header class="sheet-head"><div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${meta([p.sub, `${p.minutes} min`, `${p.points} pt`])}</p></div></header>
     ${unlockForm(p.id, 'The past midterms are locked. The mock exams above are open to everyone.')}
   </article>`;
   let pastSheets = '';
@@ -457,7 +459,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', `Every formula from ${daySpan} on one page, plus the exact trig values you need without a calculator.`)}
+    ${band('Formulas', '公式集', `Every formula from <span class="nw">${daySpan}</span> on one page, plus the exact trig values you need without a calculator.`)}
     ${lazyBox('formulas')}
   </section>
 
@@ -469,7 +471,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, ${mocks.length} mock exams for Calculus midterm 1 covering ${span}${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' (password needed)' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', `Upcoming exams with a countdown, ${mocks.length} mock exams for Calculus midterm 1 covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 </main>

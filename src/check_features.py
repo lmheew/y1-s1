@@ -69,6 +69,9 @@ with sync_playwright() as p:
         check(f'{label}: home shows What\'s new grouped by day, one New label for the day', pg.locator('#news .n-items li').count() == 6
               and pg.locator('#news .n-day').count() == 1 and pg.locator('#news .new-pill').count() == 1)
         check(f'{label}: Math card has a New label', pg.locator('#card-math .new-pill').count() == 1)
+        check(f'{label}: home exams skip the course name while there is one course, and dates and the link stay whole',
+              'Linear Algebra 1 ·' not in pg.locator('#up-list').inner_text()
+              and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, .up-more a')].every((e) => e.getClientRects().length === 1)"))
         check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
         shot('home', True)

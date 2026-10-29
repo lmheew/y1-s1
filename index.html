@@ -110,7 +110,8 @@
   .up-item.soon .up-left { color: var(--amber); }
   .up-item.past { opacity: .6; }
   .up-more { margin-top: 10px; font-size: 13.5px; color: var(--ink-soft); }
-  .up-more a { color: var(--green-text); font-weight: 700; }
+  .up-more a { color: var(--green-text); font-weight: 700; white-space: nowrap; }
+  .nw { white-space: nowrap; }
 
   .news, .n-items { list-style: none; margin: 0; padding: 0; display: grid; }
   .news { gap: 14px; }
@@ -205,6 +206,8 @@
     function exams(list) {
       const ul = $('#up-list');
       const today = todayJST();
+      // the course name only tells exams apart once there is more than one course
+      const several = new Set(list.map((x) => x.course)).size > 1;
       const rows = list.map((x) => {
         let when = 'Date to be announced', left = '', cls = '', sort = Infinity;
         if (x.date) {
@@ -215,7 +218,7 @@
           sort = days < 0 ? 1e9 + days : days;
         }
         const href = COURSE_PAGE[x.subject];
-        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${esc(x.course)} · ${esc(when)}</span></span><span class="up-left">${left}</span>`;
+        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${several ? esc(x.course) + ' · ' : ''}<span class="nw">${esc(when)}</span></span></span><span class="up-left">${left}</span>`;
         return { sort, html: href ? `<li><a class="up-item${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item${cls}">${inner}</li>` };
       });
       rows.sort((a, b) => a.sort - b.sort);
@@ -249,7 +252,7 @@
           const text = `<span class="n-text">${esc(n.text)}</span>`;
           return `<li>${n.link ? `<a href="${esc(n.link)}">${text}</a>` : text}</li>`;
         }).join('');
-        return `<li class="n-day"><p class="n-date"><time datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
+        return `<li class="n-day"><p class="n-date"><time class="nw" datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
       }).join('');
       const newest = latest.length ? latest[0].date : '';
       if (newest && !(seen.news >= newest)) {
