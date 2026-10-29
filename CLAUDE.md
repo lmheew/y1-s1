@@ -6,6 +6,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `/math/` is the CLA1 review (Calculus & Linear Algebra 1). It is built by `src/math/build.mjs`. Never edit `math/index.html` by hand.
 - Physics (Engineering Physics 1) is planned as `/physics/`, in a darker blue theme. Build it only when asked.
 - The floating calculator (`src/shared/calculator.js` and `calculator.css`) is shared by every subject page. The build inlines it; a new subject's build should too.
+- The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Subject builds inline it like the calculator. The home page links the two files instead, so they are in `CORE` in `sw.js`.
 - `site.json` holds exam dates and the "What's new" list, for the home page and the Math page's Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 
@@ -89,13 +90,19 @@ A few details about the password:
 
 ## The floating calculator
 
-- It's a ghost button parked on the left or right edge, bottom left by default. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across.
+- It's a ghost button parked on the left or right edge, bottom left by default. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across. On the right edge it stays above the back-to-top button.
 - The first tap makes it opaque and shows "Tap again to open". A second tap on it opens the calculator. A tap anywhere else, or 4 seconds without one, cancels. Enter on the focused button opens it at once.
 - The calculator follows the Windows standard layout, with memory (MC MR M+ M− MS and the M▾ list) and no history. It works with exact fractions, so 1 ÷ 3 × 3 = 1 and 0.1 + 0.2 = 0.3. It shows results the way Windows does: 16 digits, and "1.e+16" style above that. `calculator_test.js` holds the Windows cases; keep them passing.
 - The window doesn't block the page. It moves by its title bar and closes with ×, Esc (once it's cleared), or one tap on the button.
 - It is off while a quiz timer runs, since the course is calculator-free; `page.js` sends a `quiztimer` event.
 - It is set up after the page has loaded, so it adds nothing to load time; keep it that way.
 - Browser storage: `study-calc-memory` (memory values) and `study-calc-position` (where the button rests).
+
+## Back to top
+
+- A round button in the bottom-right corner, above the tab bar on phones. It is hidden near the top and fades in after about half a screen of scrolling (at least 300 px). A tap scrolls smoothly to the top (at once with reduced motion) and moves keyboard focus to the brand link.
+- Footers keep enough bottom padding that the last line ends above the floating buttons.
+- A page without a tab bar sets `--totop-bottom`, as the home page does. The hover and focus colours come from the page's `--bar-active` and `--lime-deep`.
 
 ## A private, unlocked copy
 

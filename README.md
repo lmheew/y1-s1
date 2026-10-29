@@ -19,7 +19,7 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `math/locked.json`: the in-class quiz sheets, encrypted. The Quizzes tab opens them with the password.
 - `src/math/`: the content (`content.mjs`, `followups.mjs`, `exams.mjs`, `extras.mjs`), the interactive graphs (`graphs.js`), the page style and script, the build, and numeric checks for every answer.
 - `src/math/private.sealed.json`: the source of the in-class sheets, encrypted.
-- `src/shared/`: the floating calculator used on every subject page, with a test of its arithmetic.
+- `src/shared/`: the floating calculator used on every subject page (with a test of its arithmetic), and the back-to-top button used on every page.
 - `src/check_site.py` and `src/check_features.py`: browser checks of the built site.
 - `src/vendor/katex/`: KaTeX 0.16.11, used at build time to typeset the math.
 

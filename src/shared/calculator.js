@@ -328,8 +328,9 @@
     }
     const vw = () => document.documentElement.clientWidth || window.innerWidth;
     const vh = () => window.innerHeight;
-    // where the button may rest: clear of the app bar and the tab bar (bottom on phones, top on wide screens)
-    function band() {
+    // where the button may rest: clear of the app bar and the tab bar (bottom on phones, top on wide screens);
+    // on the right edge it also stays above the back-to-top button in the bottom-right corner
+    function band(side) {
       const ins = insets();
       const wide = window.matchMedia('(min-width: 860px)').matches;
       let top, bottom;
@@ -341,6 +342,7 @@
         top = (bar ? bar.getBoundingClientRect().bottom : ins.t) + 12;
         bottom = (tabs ? tabs.getBoundingClientRect().top : vh() - ins.b) - 14 - SIZE;
       }
+      if (side === 'right' && $('.totop')) bottom -= 58;
       return { left: 10 + ins.l, right: vw() - 10 - ins.r - SIZE, top, bottom: Math.max(top, bottom) };
     }
 
@@ -357,7 +359,7 @@
       placeTip();
     }
     function place(animate) {
-      const b = band();
+      const b = band(pos.side);
       x = pos.side === 'left' ? b.left : b.right;
       y = b.top + pos.y * (b.bottom - b.top);
       fab.classList.toggle('no-anim', !animate || reduced);
@@ -440,7 +442,7 @@
       const [x0, t0] = trail[0], [x1, t1] = trail[trail.length - 1];
       const speed = t1 - t0 > 0 && e.timeStamp - t1 < 80 ? (x1 - x0) / (t1 - t0) : 0;
       pos.side = x + SIZE / 2 + speed * 160 < vw() / 2 ? 'left' : 'right';
-      const b = band();
+      const b = band(pos.side);
       pos.y = b.bottom > b.top ? clamp((y - b.top) / (b.bottom - b.top), 0, 1) : 1;
       savePos();
       place(true);
@@ -737,6 +739,7 @@
       if (isOpen) { positionPanel(); fit(); }
     });
     place(false);
+    fab.getBoundingClientRect(); // settle it at its spot now, or turning the glide on next frame flies it in from the corner
     requestAnimationFrame(() => fab.classList.remove('no-anim'));
     syncTimers();
   }

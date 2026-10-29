@@ -55,6 +55,11 @@ with sync_playwright() as p:
         ctx = browser.new_context(viewport=vp)
         # outside requests (web fonts) get an empty answer, so a sandbox without internet doesn't log errors
         ctx.route(re.compile(r'^https?://(?!localhost[:/])'), lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+        # notes what animates on the calculator button just after it is added (it should appear in place, not glide in)
+        ctx.add_init_script("""document.addEventListener('DOMContentLoaded', () => { window.__fabAnim = null;
+          new MutationObserver((ms, mo) => { const f = document.querySelector('.calc-fab'); if (!f) return; mo.disconnect();
+            setTimeout(() => { window.__fabAnim = f.getAnimations().map((a) => a.transitionProperty || a.animationName || ''); }, 120); })
+          .observe(document.body, { childList: true }); });""")
         page = ctx.new_page()
         errors = []
         page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
@@ -64,6 +69,14 @@ with sync_playwright() as p:
         check(f'{label}: home has the Math card', page.locator('a.subject[href="math/"]').count() == 1)
         check(f'{label}: home has no sideways scroll', overflow(page) <= 0, overflow(page))
         shot(page, f'{label}-home')
+        totop_on = lambda: page.evaluate("Boolean(document.querySelector('.totop.show'))")
+        page.wait_for_selector('.totop', state='attached')
+        check(f'{label}: home: back-to-top is hidden at the top', not totop_on())
+        page.evaluate('scrollTo(0, document.documentElement.scrollHeight)')
+        page.wait_for_timeout(300)
+        far = page.evaluate('scrollY > Math.max(300, innerHeight * 0.5)')
+        check(f'{label}: home: back-to-top ' + ('shows once scrolled down' if far else 'stays hidden on a short page'), totop_on() == far)
+        page.evaluate('scrollTo(0, 0)')
         page.click('a.subject[href="math/"]')
         page.wait_for_selector('#view-summary')
         for view in ['summary', 'practice', 'formulas', 'quizzes']:
@@ -86,6 +99,8 @@ with sync_playwright() as p:
         # floating calculator: first tap wakes it, a tap elsewhere cancels, two taps open it, a drag snaps to a side
         page.click('#tab-summary')
         page.wait_for_selector('.calc-fab')
+        page.wait_for_function('Array.isArray(window.__fabAnim)', timeout=8000)
+        check(f'{label}: calculator button appears in place, without gliding in from a corner', not any('transform' in a for a in page.evaluate('window.__fabAnim')), page.evaluate('window.__fabAnim'))
         page.wait_for_timeout(400)
         fab = page.locator('.calc-fab')
         is_armed = lambda: page.evaluate("document.querySelector('.calc-fab').classList.contains('armed')")
@@ -114,6 +129,36 @@ with sync_playwright() as p:
         page.wait_for_timeout(500)
         box = fab.bounding_box()
         check(f'{label}: dragged past the middle, it sticks to the right side', abs(box['x'] + box['width'] - (vw - 10)) <= 2, box)
+
+        # back-to-top: hidden at the top, shown after scrolling down, a tap goes smoothly back up; the calculator
+        # parked in the bottom-right corner stays above it
+        page.evaluate('scrollTo(0, 0)')
+        page.wait_for_timeout(300)
+        check(f'{label}: back-to-top is hidden at the top', not totop_on())
+        vh = page.evaluate('innerHeight')
+        fx, fy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        page.mouse.move(fx, fy)
+        page.mouse.down()
+        for i in range(1, 13):
+            page.mouse.move(fx + (vw - 20 - fx) * i / 12, fy + (vh - 10 - fy) * i / 12)
+            page.wait_for_timeout(20)
+        page.wait_for_timeout(150)
+        page.mouse.up()
+        page.wait_for_timeout(500)
+        page.evaluate('scrollTo(0, 2000)')
+        page.wait_for_timeout(300)
+        check(f'{label}: back-to-top shows after scrolling down', totop_on())
+        t, c = page.locator('.totop').bounding_box(), fab.bounding_box()
+        check(f'{label}: calculator parked bottom right sits above back-to-top', c['y'] + c['height'] <= t['y'] and abs(t['width'] - 44) < 1, (c, t))
+        start = page.evaluate('scrollY')  # graphs drawn on the way can move it a little (scroll anchoring)
+        page.locator('.totop').click()
+        between = page.evaluate("""(start) => new Promise((done) => {
+          let n = 0, frames = 0;
+          const tick = () => { frames++; if (scrollY > 0 && scrollY < start) n++; if (scrollY === 0 || frames > 600) done(n); else requestAnimationFrame(tick); };
+          requestAnimationFrame(tick);
+        })""", start)
+        page.wait_for_timeout(300)
+        check(f'{label}: back-to-top scrolls smoothly to the top, then hides', between >= 3 and page.evaluate('scrollY') == 0 and not totop_on(), (start, between))
         page.evaluate("localStorage.removeItem('study-calc-position'); localStorage.removeItem('study-calc-memory')")
         page.click('#tab-quizzes')
 

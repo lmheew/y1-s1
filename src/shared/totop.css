@@ -1,0 +1,21 @@
+/* Back-to-top button: a round button in the bottom-right corner, above the phone tab bar. Hidden near the top of
+   the page; it fades in once the page has been scrolled about half a screen down. A page without a tab bar sets
+   --totop-bottom; the hover and focus colours come from the page's --bar-active and --lime-deep. */
+.totop { position: fixed; z-index: 35; right: max(14px, calc(env(safe-area-inset-right, 0px) + 10px));
+  bottom: var(--totop-bottom, calc(var(--tabbar-h, 60px) + env(safe-area-inset-bottom, 0px) + 14px));
+  width: 44px; height: 44px; margin: 0; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: var(--bar, #377E46); color: #FFFFFF; box-shadow: 0 4px 14px rgba(0, 0, 0, .22); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; transform: translateY(12px) scale(.9);
+  transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .15s ease; }
+.totop.show { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .2s ease, visibility 0s, background-color .15s ease; }
+.totop:hover { background: var(--bar-active, #2B6638); }
+.totop:active { transform: scale(.94); }
+.totop:focus-visible { outline: 2.5px solid var(--lime-deep, #7BA831); outline-offset: 3px; }
+.totop svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+:root[data-theme="dark"] .totop { box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .5); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .totop { box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .5); } }
+@media (min-width: 860px) {
+  .totop { right: max(24px, calc(env(safe-area-inset-right, 0px) + 10px)); bottom: var(--totop-bottom, calc(24px + env(safe-area-inset-bottom, 0px))); }
+}
+@media (prefers-reduced-motion: reduce) { .totop, .totop.show { transition: none; transform: none; } }
+@media print { .totop { display: none !important; } }

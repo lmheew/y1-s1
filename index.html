@@ -14,6 +14,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="src/shared/totop.css">
+<script src="src/shared/totop.js" defer></script>
 <script>
   // follow the theme picked on a subject page (light / dark / system)
   try {
@@ -25,22 +27,23 @@
   /* Home: subjects, upcoming exams, what's new, and offline use. Same KUAS-style palette as the subject pages;
      each subject keeps its own colour (Math green, Physics a darker blue). Hand-written: edit it directly. */
   :root {
-    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --bar: #377E46;
+    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --lime-deep: #7BA831; --bar: #377E46; --bar-active: #2B6638;
     --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8; --amber: #8F5B0D; --charcoal: #505050;
     --blue: #1F4B8F; --blue-text: #1C437F; --blue-soft: #8FB4EC; --blue-tint: #EAF0FA;
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+    --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); /* no tab bar here, so the back-to-top button sits lower */
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337;
+      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
       --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
       --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337;
+    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
     --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
     --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
     color-scheme: dark;
@@ -124,7 +127,7 @@
     background: var(--bar); color: #FFFFFF; font: 700 14px/1 var(--font); cursor: pointer; }
   .ok { color: var(--green-text); font-weight: 700; }
 
-  .site-foot .wrap { padding-block: 20px 32px; text-align: center; }
+  .site-foot .wrap { padding-block: 20px calc(80px + env(safe-area-inset-bottom, 0px)); text-align: center; } /* room for the back-to-top button */
   .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
 </style>
 </head>

@@ -275,6 +275,15 @@ with sync_playwright() as p:
     pg.wait_for_function("navigator.serviceWorker && navigator.serviceWorker.controller !== undefined")
     pg.evaluate("navigator.serviceWorker.ready")
     pg.wait_for_timeout(1500)
+    saved = pg.evaluate("""async () => {
+      const want = ['./', './math/', 'site.json', 'src/shared/totop.css', 'src/shared/totop.js'].map((u) => new URL(u, location.href).href);
+      for (const name of await caches.keys()) {
+        const c = await caches.open(name);
+        if ((await Promise.all(want.map((u) => c.match(u)))).every(Boolean)) return true;
+      }
+      return false;
+    }""")
+    check('offline: pages and the shared back-to-top files are saved on the first visit', saved)
     pg.reload()  # now controlled by the service worker
     pg.wait_for_timeout(800)
     controlled = pg.evaluate("Boolean(navigator.serviceWorker.controller)")
@@ -289,6 +298,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
     check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 5)
+    check('offline: the home page keeps its back-to-top button', pg.evaluate("(() => { const b = document.querySelector('.totop'); return Boolean(b) && getComputedStyle(b).position === 'fixed'; })()"))
     ctx.set_offline(False)
     ctx.close()
     b.close()

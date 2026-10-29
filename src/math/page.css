@@ -48,7 +48,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; padding-bottom: calc(var(--tabbar-h) + 8px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 8px); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
 body.noscroll { overflow: hidden; }
 .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -303,8 +303,8 @@ details[open] .when-open { display: inline; }
 .u-msg:empty { margin-top: -12px; }
 .u-msg.err { color: var(--warn); font-weight: 500; }
 
-/* footer */
-.site-foot .wrap { padding-block: 18px 28px; text-align: center; }
+/* footer; its bottom padding leaves room for the floating buttons (calculator, back to top), so the last line stays clear */
+.site-foot .wrap { padding-block: 18px 64px; text-align: center; }
 .cheer { margin-bottom: 10px; font-size: 18px; color: var(--green-text); }
 .foot-links { margin-bottom: 12px; }
 .foot-links a { display: inline-block; padding: 6px 14px; border: 1.5px solid var(--green); border-radius: 999px; color: var(--green-text); font-size: 14px; font-weight: 700; text-decoration: none; }
@@ -333,6 +333,7 @@ details[open] .when-open { display: inline; }
 /* wide screens: tab bar moves under the app bar */
 @media (min-width: 860px) {
   body { padding-bottom: 0; }
+  .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   body::before { background: var(--bar); }
   :root { --anchor-top: 72px; }
   .appbar { position: static; }

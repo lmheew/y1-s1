@@ -64,7 +64,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; padding-bottom: calc(var(--tabbar-h) + 8px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 8px); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
 body.noscroll { overflow: hidden; }
 .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -319,8 +319,8 @@ details[open] .when-open { display: inline; }
 .u-msg:empty { margin-top: -12px; }
 .u-msg.err { color: var(--warn); font-weight: 500; }
 
-/* footer */
-.site-foot .wrap { padding-block: 18px 28px; text-align: center; }
+/* footer; its bottom padding leaves room for the floating buttons (calculator, back to top), so the last line stays clear */
+.site-foot .wrap { padding-block: 18px 64px; text-align: center; }
 .cheer { margin-bottom: 10px; font-size: 18px; color: var(--green-text); }
 .foot-links { margin-bottom: 12px; }
 .foot-links a { display: inline-block; padding: 6px 14px; border: 1.5px solid var(--green); border-radius: 999px; color: var(--green-text); font-size: 14px; font-weight: 700; text-decoration: none; }
@@ -349,6 +349,7 @@ details[open] .when-open { display: inline; }
 /* wide screens: tab bar moves under the app bar */
 @media (min-width: 860px) {
   body { padding-bottom: 0; }
+  .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   body::before { background: var(--bar); }
   :root { --anchor-top: 72px; }
   .appbar { position: static; }
@@ -600,6 +601,28 @@ details[open] .when-open { display: inline; }
   .calc-fab.armed, .calc-panel.pop { animation: none; }
 }
 @media print { .calc-fab, .calc-tip, .calc-panel { display: none !important; } }
+
+/* Back-to-top button: a round button in the bottom-right corner, above the phone tab bar. Hidden near the top of
+   the page; it fades in once the page has been scrolled about half a screen down. A page without a tab bar sets
+   --totop-bottom; the hover and focus colours come from the page's --bar-active and --lime-deep. */
+.totop { position: fixed; z-index: 35; right: max(14px, calc(env(safe-area-inset-right, 0px) + 10px));
+  bottom: var(--totop-bottom, calc(var(--tabbar-h, 60px) + env(safe-area-inset-bottom, 0px) + 14px));
+  width: 44px; height: 44px; margin: 0; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: var(--bar, #377E46); color: #FFFFFF; box-shadow: 0 4px 14px rgba(0, 0, 0, .22); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; opacity: 0; visibility: hidden; transform: translateY(12px) scale(.9);
+  transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .15s ease; }
+.totop.show { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .2s ease, visibility 0s, background-color .15s ease; }
+.totop:hover { background: var(--bar-active, #2B6638); }
+.totop:active { transform: scale(.94); }
+.totop:focus-visible { outline: 2.5px solid var(--lime-deep, #7BA831); outline-offset: 3px; }
+.totop svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+:root[data-theme="dark"] .totop { box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .5); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .totop { box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 4px 14px rgba(0, 0, 0, .5); } }
+@media (min-width: 860px) {
+  .totop { right: max(24px, calc(env(safe-area-inset-right, 0px) + 10px)); bottom: var(--totop-bottom, calc(24px + env(safe-area-inset-bottom, 0px))); }
+}
+@media (prefers-reduced-motion: reduce) { .totop, .totop.show { transition: none; transform: none; } }
+@media print { .totop { display: none !important; } }
 </style>
 <style>/* KaTeX 0.16.11 stylesheet and fonts (https://katex.org)
 
@@ -3884,6 +3907,34 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
   }
 })();
 
+// Back-to-top button for every page: hidden near the top, shown once the page has been scrolled about half a
+// screen down (at least 300 px). A tap scrolls smoothly back to the top (at once with reduced motion) and moves
+// keyboard focus up there too. The floating calculator keeps the bottom of the right edge clear for it.
+(() => {
+  if (typeof document === 'undefined') return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'totop';
+  btn.setAttribute('aria-label', 'Back to top');
+  btn.title = 'Back to top';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5.5M5.5 12L12 5.5l6.5 6.5"/></svg>';
+  document.body.append(btn);
+  // without its stylesheet (offline before the files were saved, say) it would sit unstyled at the end of the page
+  if (getComputedStyle(btn).position !== 'fixed') { btn.remove(); return; }
+  const reduced = () => Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const threshold = () => Math.max(300, window.innerHeight * 0.5);
+  let queued = false;
+  const update = () => { queued = false; btn.classList.toggle('show', window.scrollY > threshold()); };
+  window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', update);
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
+    const top = document.querySelector('.brand');
+    if (top) top.focus({ preventScroll: true });
+  });
+  update();
+})();
+
 // Floating calculator for the subject pages. A small ghost button sticks to a side of the screen: drag it anywhere
 // and it snaps back to the nearest side. Tap it once to wake it, tap again to open a standard calculator laid out
 // like the one in Windows (memory, no history). The engine comes from the "Tally Calculator" artifact, changed to
@@ -4214,8 +4265,9 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     }
     const vw = () => document.documentElement.clientWidth || window.innerWidth;
     const vh = () => window.innerHeight;
-    // where the button may rest: clear of the app bar and the tab bar (bottom on phones, top on wide screens)
-    function band() {
+    // where the button may rest: clear of the app bar and the tab bar (bottom on phones, top on wide screens);
+    // on the right edge it also stays above the back-to-top button in the bottom-right corner
+    function band(side) {
       const ins = insets();
       const wide = window.matchMedia('(min-width: 860px)').matches;
       let top, bottom;
@@ -4227,6 +4279,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
         top = (bar ? bar.getBoundingClientRect().bottom : ins.t) + 12;
         bottom = (tabs ? tabs.getBoundingClientRect().top : vh() - ins.b) - 14 - SIZE;
       }
+      if (side === 'right' && $('.totop')) bottom -= 58;
       return { left: 10 + ins.l, right: vw() - 10 - ins.r - SIZE, top, bottom: Math.max(top, bottom) };
     }
 
@@ -4243,7 +4296,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       placeTip();
     }
     function place(animate) {
-      const b = band();
+      const b = band(pos.side);
       x = pos.side === 'left' ? b.left : b.right;
       y = b.top + pos.y * (b.bottom - b.top);
       fab.classList.toggle('no-anim', !animate || reduced);
@@ -4326,7 +4379,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       const [x0, t0] = trail[0], [x1, t1] = trail[trail.length - 1];
       const speed = t1 - t0 > 0 && e.timeStamp - t1 < 80 ? (x1 - x0) / (t1 - t0) : 0;
       pos.side = x + SIZE / 2 + speed * 160 < vw() / 2 ? 'left' : 'right';
-      const b = band();
+      const b = band(pos.side);
       pos.y = b.bottom > b.top ? clamp((y - b.top) / (b.bottom - b.top), 0, 1) : 1;
       savePos();
       place(true);
@@ -4623,6 +4676,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       if (isOpen) { positionPanel(); fit(); }
     });
     place(false);
+    fab.getBoundingClientRect(); // settle it at its spot now, or turning the glide on next frame flies it in from the corner
     requestAnimationFrame(() => fab.classList.remove('no-anim'));
     syncTimers();
   }

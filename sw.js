@@ -1,9 +1,10 @@
 // Offline copy of the study site. Pages and data (HTML, JSON): network first, so changes show as soon as you're
 // online, with the saved copy when the network is down or slow. Images and fonts: saved copy first.
 // Bump CACHE when the list below changes; old caches are deleted on activate.
-const CACHE = 'study-notes-v1';
+const CACHE = 'study-notes-v2';
 const FONTS = 'study-notes-fonts';
-const CORE = ['./', './math/', './site.json', './manifest.webmanifest', './favicon.svg', './apple-touch-icon.png', './icon-192.png'];
+const CORE = ['./', './math/', './site.json', './manifest.webmanifest', './favicon.svg', './apple-touch-icon.png', './icon-192.png',
+  './src/shared/totop.css', './src/shared/totop.js']; // the home page links these two; subject pages have them built in
 const TIMEOUT = 3500;
 
 self.addEventListener('install', (e) => {

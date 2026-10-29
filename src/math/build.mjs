@@ -478,11 +478,11 @@ const FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">`;
 const indexScript = (index) => `<script type="application/json" id="search-index">${JSON.stringify(index).replace(/</g, '\\u003c')}</script>`;
-// page.css/page.js are this subject's; the floating calculator in src/shared is common to every subject page
+// page.css/page.js are this subject's; the floating calculator and the back-to-top button in src/shared are common to every subject page
 const SHARED = path.join(ROOT, 'src', 'shared');
 const assets = () => ({
-  css: fs.readFileSync(path.join(SRC, 'page.css'), 'utf8') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.css'), 'utf8'),
-  js: ['page.js', 'graphs.js'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n') + '\n' + fs.readFileSync(path.join(SHARED, 'calculator.js'), 'utf8'),
+  css: [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css')].map((f) => fs.readFileSync(f, 'utf8')).join('\n'),
+  js: [path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')].map((f) => fs.readFileSync(f, 'utf8')).join('\n'),
   kcss: katexCSS(),
 });
 const KATEX_TWEAK = '<style>.katex{font-size:1.07em}.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}</style>';
