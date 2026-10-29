@@ -32,9 +32,17 @@ const katex = require(path.join(KATEX_DIR, 'katex.min.js'));
 const rel = (p) => path.relative(ROOT, p);
 // site.json (repository root): exam dates and the "What's new" list, shared with the home page
 const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
+const LAST_UPDATED = [
+  ...SITE.news.filter((n) => n.subject === 'math' || n.subject === 'all').map((n) => n.date),
+  ...units.map((u) => u.added), ...Object.values(practice).flat().map((p) => p.added),
+  ...formulas.map((g) => g.added), ...mocks.map((m) => m.added),
+].filter(Boolean).sort().pop() || '2026-10-01';
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 // the live site, for the link preview (Open Graph) that apps show when the page is shared; the image is drawn by src/og.py
 const SITE_URL = 'https://lmheew.github.io/y1-s1/';
+// "Last updated": the newest date in What's new for this page (site.json) or on anything in it (`added`)
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fmtDate = (d) => { const [y, m, day] = d.split('-').map(Number); return `${day} ${MONTHS[m - 1]} ${y}`; };
 
 // ---------- markup ----------
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -452,7 +460,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   </div>
 </div></header>
 
-<nav class="tabbar" aria-label="Sections"><div class="tabbar-row" role="tablist">
+<nav class="tabbar" aria-label="Sections" data-updated="${LAST_UPDATED}"><div class="tabbar-row" role="tablist">
   ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'summary'}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>
 
@@ -511,6 +519,7 @@ function foot(site) {
   <p class="deco cheer">Good luck on the midterm!</p>
   ${site ? '<p class="foot-links"><a href="../">← All subjects</a></p>' : ''}
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
+  <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
   <p class="fine">Math typeset with KaTeX (${site ? '<a href="../src/vendor/katex/LICENSE.txt">MIT License</a>' : 'MIT License'}).</p>
 </div></footer>
 

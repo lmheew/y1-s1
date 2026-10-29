@@ -66,8 +66,12 @@ with sync_playwright() as p:
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
         check(f'{label}: home lists 5 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 5 and 'Date to be announced' in pg.locator('#up-list').inner_text())
-        check(f'{label}: home shows What\'s new grouped by day, one New label for the day', pg.locator('#news .n-items li').count() == 6
-              and pg.locator('#news .n-day').count() == 1 and pg.locator('#news .new-pill').count() == 1)
+        days = sorted({n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'][:6]})
+        check(f'{label}: home shows What\'s new grouped by day, one New label per day', pg.locator('#news .n-items li').count() == 6
+              and pg.locator('#news .n-day').count() == len(days) and pg.locator('#news .new-pill').count() == len(days), days)
+        newest = max(n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'])
+        check(f'{label}: home footer says when the site was last updated', pg.locator('#updated').is_visible()
+              and pg.locator('#updated time').get_attribute('datetime') == newest)
         check(f'{label}: Math card has a New label', pg.locator('#card-math .new-pill').count() == 1)
         check(f'{label}: home exams skip the course name while there is one course, and dates and the link stay whole',
               'Linear Algebra 1 ·' not in pg.locator('#up-list').inner_text()
@@ -265,7 +269,7 @@ with sync_playwright() as p:
     dots = lambda page: page.evaluate("Array.from(document.querySelectorAll('.tab.has-new')).map((t) => t.dataset.view)")
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new: first visit: the Math card and the day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == 1)
+    check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == pg.locator('#news .n-day').count())
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.calc-fab')
     check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
@@ -284,6 +288,23 @@ with sync_playwright() as p:
     pg2.wait_for_selector('#news .n-day')
     check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
     ctx.close()
+
+    # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
+    MOUNT = tempfile.mkdtemp(prefix='check-404-')
+    os.symlink(REPO, os.path.join(MOUNT, 'y1-s1'))
+    srv4, BASE4 = serve(MOUNT)
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE4 + '/y1-s1/404.html')
+    links = pg.locator('a').evaluate_all("(as) => as.map((a) => a.getAttribute('href'))")
+    check('404: says the page was not found and links home and to the Math page', 'Page not found' in pg.locator('h1').inner_text()
+          and '/y1-s1/' in links and '/y1-s1/math/' in links and overflow(pg) <= 0, links)
+    pg.locator('a.go.main').click()
+    pg.wait_for_selector('#news li')
+    check('404: its home link opens the home page from any address', pg.url.endswith('/y1-s1/'))
+    ctx.close()
+    srv4.shutdown()
 
     # ---- side menu: from 1100 px only; lists the open tab's sections, follows the reading, jumps on a tap ----
     for w, h in [(1280, 900), (1024, 1366)]:

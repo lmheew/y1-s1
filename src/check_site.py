@@ -6,7 +6,7 @@
 
 Serves the repository root on localhost (WebCrypto needs a secure context, and localhost is one) and fails
 on console errors, sideways scrolling, or anything below that doesn't behave."""
-import functools, http.server, os, re, sys, threading
+import functools, http.server, json, os, re, sys, threading
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,6 +104,9 @@ with sync_playwright() as p:
         check(f'{label}: switcher opens Follow-up A', first.locator('.sheet[data-seg="1"]').is_visible())
         first.locator('.seg-btn[data-seg="0"]').click()
         check(f'{label}: footer links home', page.locator('.foot-links a[href="../"]').count() == 1)
+        ft = page.locator('.site-foot time').get_attribute('datetime') or ''
+        math_news = [n['date'] for n in json.load(open(os.path.join(ROOT, 'site.json')))['news'] if n.get('subject') in ('math', 'all')]
+        check(f'{label}: footer says when the page was last updated', ft == page.locator('.tabbar').get_attribute('data-updated') and ft >= max(math_news), ft)
 
         # floating calculator: first tap wakes it, a tap elsewhere cancels, two taps open it, a drag snaps to a side
         page.click('#tab-summary')

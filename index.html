@@ -142,6 +142,7 @@
 
   .site-foot .wrap { padding-block: 20px calc(80px + env(safe-area-inset-bottom, 0px)); text-align: center; } /* room for the back-to-top button */
   .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
+  .fine + .fine { margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -201,6 +202,7 @@
 
 <footer class="site-foot"><div class="wrap">
   <p class="fine">Unofficial study notes. Not an official Kyoto University of Advanced Science page.</p>
+  <p class="fine" id="updated" hidden>Last updated <time></time>.</p>
 </div></footer>
 
 <script>
@@ -265,6 +267,12 @@
         return `<li class="n-day"><p class="n-date"><time class="nw" datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
       }).join('');
       const newest = latest.length ? latest[0].date : '';
+      if (newest) {
+        const t = $('#updated time');
+        t.dateTime = newest;
+        t.textContent = new Date(newest + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
+        $('#updated').hidden = false;
+      }
       if (newest && !(seen.news >= newest)) {
         seen.news = newest;
         try { storage('localStorage').setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* ignore */ }

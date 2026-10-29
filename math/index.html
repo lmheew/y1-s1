@@ -766,7 +766,7 @@ SOFTWARE.
   </div>
 </div></header>
 
-<nav class="tabbar" aria-label="Sections"><div class="tabbar-row" role="tablist">
+<nav class="tabbar" aria-label="Sections" data-updated="2026-10-30"><div class="tabbar-row" role="tablist">
   <button type="button" class="tab" role="tab" id="tab-summary" data-view="summary" aria-controls="view-summary" aria-selected="true" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M3.5 5.5c0-.8.7-1.5 1.5-1.5h6.2v15.5H5a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M20.5 5.5c0-.8-.7-1.5-1.5-1.5h-6.2v15.5H19a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M6.5 8.5h2.2M15.3 8.5h2.2M15.3 12h2.2"/></svg><span>Summary</span></button><button type="button" class="tab" role="tab" id="tab-practice" data-view="practice" aria-controls="view-practice" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="4" y="3" width="12.5" height="18" rx="2"/><path d="M7.5 8h5.5M7.5 11.5h5.5M7.5 15h3"/><path d="M14.2 19.8l6.1-6.1 1.6 1.6-6.1 6.1h-1.6z"/></svg><span>Practice</span></button><button type="button" class="tab" role="tab" id="tab-formulas" data-view="formulas" aria-controls="view-formulas" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M15.5 8H8.8l3.6 4-3.6 4h6.7"/></svg><span>Formulas</span></button><button type="button" class="tab" role="tab" id="tab-quizzes" data-view="quizzes" aria-controls="view-quizzes" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4M8.5 16.2h7"/></svg><span>Quizzes</span></button><button type="button" class="tab" role="tab" id="tab-exams" data-view="exams" aria-controls="view-exams" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2.2 2.2 4.8-4.8"/></svg><span>Exams</span></button>
 </div></nav>
 
@@ -3197,6 +3197,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">‚Ä
   <p class="deco cheer">Good luck on the midterm!</p>
   <p class="foot-links"><a href="../">‚Üê All subjects</a></p>
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
+  <p class="fine">Last updated <time datetime="2026-10-30">30 Oct 2026</time>.</p>
   <p class="fine">Math typeset with KaTeX (<a href="../src/vendor/katex/LICENSE.txt">MIT License</a>).</p>
 </div></footer>
 
@@ -3449,7 +3450,8 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">‚Ä
   }
   tabs.forEach((t) => t.classList.toggle('has-new', unseen(t.dataset.newest, 'math:' + t.dataset.view, seen)));
   // for the home page's Math card: the newest date on this page when it was last opened
-  const newestHere = tabs.map((t) => t.dataset.newest || '').sort().pop();
+  // (the build also puts the page's latest What's new date on the tab bar, for updates that add no new item)
+  const newestHere = [...tabs.map((t) => t.dataset.newest || ''), ($('.tabbar') || {}).dataset ? $('.tabbar').dataset.updated || '' : ''].sort().pop();
   if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;

@@ -9,6 +9,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Subject builds inline it like the calculator. The home page links the two files instead, so they are in `CORE` in `sw.js`.
 - `site.json` holds exam dates and the "What's new" list, for the home page and the Math page's Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
+- `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
 - Link previews (what LINE, Discord and others show when a link is shared): `og-home.png` and `og-math.png` (1200 × 630) are drawn by `python3 src/og.py` and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when Physics arrives. They use the site's own badge, never the KUAS logo.
 
 ## Rules
@@ -94,6 +95,7 @@ A few details about the password:
 ## Exam dates, What's new, and speed
 
 - **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild the Math page. Countdowns, sorting and "Done" are worked out in the browser.
+- **Last updated.** Both footers give a date. The home page shows the newest What's new date. The Math page shows the newest of its What's new dates (`math` or `all`) and its `added` dates, written at build time (`LAST_UPDATED` in `build.mjs`, also on the tab bar as `data-updated`, which lets the home page's Math card know the page has been seen). An update that adds no item still moves it once it has a What's new line.
 - **Fast first load.** Only the Summary tab is built with the page. Practice, Formulas, Quizzes and Exams travel as text (`<script type="text/x-lazy-html">`) and are built the first time they open. `page.js` `VIEW_INIT` switches on each tab's features then. Keep new tabs lazy too. `leakcheck.mjs` reads the lazy text as well.
 - **Offline.** `sw.js` serves pages and data network-first, with the saved copy when offline, and images and fonts cache-first. Bump `CACHE` in `sw.js` when its `CORE` list changes.
 

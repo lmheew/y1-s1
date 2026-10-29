@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found · Study Notes</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
+<!-- GitHub Pages serves this file for any address that doesn't exist, at that address, so every link is absolute -->
+<link rel="icon" href="/y1-s1/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/y1-s1/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<script>
+  // follow the theme picked on a subject page (light / dark / system)
+  try {
+    const t = (JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {}).theme;
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) { /* storage unavailable */ }
+</script>
+<style>
+  /* Page not found: the home page's look (palette, app bar, band), with the way back. Hand-written. */
+  :root {
+    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --bar: #377E46; --bar-active: #2B6638;
+    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8;
+    --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
+      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
+    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+  p { margin: 0; }
+  .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  :where(a):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+  .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .appbar-row { display: flex; align-items: center; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+  .brand svg { width: 36px; height: 36px; flex: none; }
+  .brand-text { display: grid; line-height: 1.2; }
+  .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
+  .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
+  .band { background: var(--band); border-bottom: 5px solid var(--green); }
+  .band .wrap { padding-block: 24px 20px; }
+  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; line-height: 1.15; }
+  .band-title .en { font-size: clamp(32px, 9vw, 44px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
+  .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; }
+  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
+  main { padding-block: 28px 48px; display: grid; gap: 18px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 52ch; }
+  .code { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--green-text); }
+  .ways { display: flex; flex-wrap: wrap; gap: 10px; }
+  .go { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1; text-decoration: none; }
+  .go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .go.main { background: var(--bar); color: #FFFFFF; }
+  .go.main:hover { background: var(--bar-active); }
+  .go.alt { border: 1.5px solid var(--green); color: var(--green-text); }
+  .go.alt:hover { background: var(--tint); }
+  .fine { font-size: 12.5px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<header class="appbar"><div class="wrap appbar-row">
+  <a class="brand" href="/y1-s1/" aria-label="Study Notes, home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg>
+    <span class="brand-text"><b>Study Notes</b><small>Year 1 · Semester 1</small></span>
+  </a>
+</div></header>
+
+<div class="band"><div class="wrap">
+  <h1 class="band-title"><span class="en">Page not found</span><span class="jp" lang="ja">ページが見つかりません</span></h1>
+</div></div>
+
+<main class="wrap">
+  <p class="code">Error 404</p>
+  <p class="lede">There's nothing at this address. The link may have a typo, or the page may have moved. Everything on the site starts from the home page.</p>
+  <p class="ways">
+    <a class="go main" href="/y1-s1/">Home page<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+    <a class="go alt" href="/y1-s1/math/">CLA1 Review</a>
+  </p>
+  <p class="fine">Unofficial study notes. Not an official Kyoto University of Advanced Science page.</p>
+</main>
+</body>
+</html>

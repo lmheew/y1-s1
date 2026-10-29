@@ -239,7 +239,8 @@
   }
   tabs.forEach((t) => t.classList.toggle('has-new', unseen(t.dataset.newest, 'math:' + t.dataset.view, seen)));
   // for the home page's Math card: the newest date on this page when it was last opened
-  const newestHere = tabs.map((t) => t.dataset.newest || '').sort().pop();
+  // (the build also puts the page's latest What's new date on the tab bar, for updates that add no new item)
+  const newestHere = [...tabs.map((t) => t.dataset.newest || ''), ($('.tabbar') || {}).dataset ? $('.tabbar').dataset.updated || '' : ''].sort().pop();
   if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;
