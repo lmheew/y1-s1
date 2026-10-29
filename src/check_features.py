@@ -269,6 +269,26 @@ with sync_playwright() as p:
     check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
     ctx.close()
 
+    # ---- a narrow phone with every answer and every sheet open: full-size math never pushes the page sideways ----
+    ctx = b.new_context(viewport={'width': 360, 'height': 800})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.calc-fab')
+    wide = {}
+    for v in ['summary', 'practice', 'formulas', 'quizzes', 'exams']:
+        pg.click(f'#tab-{v}')
+        pg.wait_for_timeout(200)
+        wide[v] = pg.evaluate("""() => {
+          document.querySelectorAll('details').forEach((d) => { d.open = true; });
+          document.querySelectorAll('.sheet[hidden], .steps [hidden]').forEach((e) => { e.hidden = false; });
+          return document.documentElement.scrollWidth - document.documentElement.clientWidth;
+        }""")
+    check('narrow phone: no sideways scroll with every answer open', all(x <= 0 for x in wide.values()), wide)
+    check('summary: key formulas sit full size on their own line', pg.locator('#su-u2 .ideas .katex-display').count() >= 6
+          and pg.locator('#su-u5 .ideas .katex-display').count() >= 3)
+    ctx.close()
+
     # ---- countdowns with real dates (copy of the site) ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2)
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))

@@ -202,7 +202,7 @@ $f=\cos 2x$, and $2\cdot\frac{\pi}{6}=\frac{\pi}{3}$.
         sol: R`
 The first term is $a_1=-\frac{1}{2}$ (not $1$), and the ratio is $-\frac{1}{2}$.
 
-$$s_N=-\frac{1}{2}\cdot\frac{1-(-1/2)^N}{1-(-1/2)}=-\frac{1}{3}\left[1-\left(-\frac{1}{2}\right)^N\right]$$
+$$\begin{aligned}s_N&=-\frac{1}{2}\cdot\frac{1-(-1/2)^N}{1-(-1/2)}\\[4pt]&=-\frac{1}{3}\left[1-\left(-\frac{1}{2}\right)^N\right]\end{aligned}$$
 
 Since $\left|-\frac{1}{2}\right|<1$, the series equals $-\frac{1}{3}$. Check: $s_2=-\frac{1}{2}+\frac{1}{4}=-\frac{1}{4}$, and the formula gives $-\frac{1}{3}\cdot\frac{3}{4}=-\frac{1}{4}$.` },
       { label: 'Q.2', pts: '3pt', stem: R`Apply Newton's method to $f(x)$ and compute the second approximation, $x_2$, of the root of $f(x)$ in the domain $D$, where the initial position is $x_1=1$.

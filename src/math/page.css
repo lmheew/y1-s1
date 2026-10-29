@@ -126,6 +126,13 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .ideas { list-style: none; margin: 0; padding: 0; }
 .ideas li { position: relative; padding: 11px 0 11px 20px; border-bottom: 1px solid var(--line); min-width: 0; scroll-margin-top: var(--anchor-top); }
 .ideas li::before { content: ""; position: absolute; left: 3px; top: 1.32em; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
+/* key formulas sit full size on their own line; a wide one scrolls inside its line rather than widening the page */
+.katex-display { overflow-x: auto; overflow-y: hidden; padding-block: 2px; }
+.ideas .katex-display, .watch .katex-display { margin: .45em 0 .35em; }
+/* full-size fractions in running text: a little room above and below, so two on neighbouring lines don't touch
+   (the padding only shows where a formula is taller than the line, and the math can still wrap between its parts) */
+.katex .base { padding-block: 2px; }
+.katex-display .base { padding-block: 0; }
 .watch { margin-top: 16px; background: var(--warn-tint); border-radius: 4px; padding: 12px 14px; }
 .watch h3 { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--warn); }
 .watch ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -211,7 +218,7 @@ details[open] .when-open { display: inline; }
 .answer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .steps { display: grid; gap: 8px; min-width: 0; }
 .steps ul { margin: 0; padding-left: 1.15em; display: grid; gap: 6px; }
-.stem > *, .sol-body > *, .hint-body > *, .steps li, .answer li, .habits li { min-width: 0; }
+.stem > *, .sol-body > *, .hint-body > *, .steps > *, .steps li, .answer li, .habits li { min-width: 0; }
 .markrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .markrow > span { margin-right: 2px; font-size: 14px; color: var(--ink-soft); }
 .mbtn { appearance: none; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 8px 14px 8px 11px; display: inline-flex; align-items: center; gap: 7px; font: 700 14px/1 var(--font); cursor: pointer; }

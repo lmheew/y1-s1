@@ -36,7 +36,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 
 Markup inside the strings:
 
-- `$inline$` and `$$display$$` for math.
+- `$inline$` and `$$display$$` for math. Fractions in inline math are drawn full size (`\displaystyle`) in problems, hints, answers and solutions. The Summary's running text keeps small inline fractions (such as π/2) and puts each key formula full size on its own line as `$$…$$`; stack several with `aligned` or `gathered` so a phone never has to scroll sideways. A `.` or `,` right after longer inline math is drawn inside it, so it can't start a line by itself.
 - `**bold**`.
 - Lines starting with `- ` are list items, and continuation lines join the item.
 - A blank line starts a new block.

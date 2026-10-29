@@ -37,10 +37,18 @@ const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 // ---------- markup ----------
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const tex = (t, display) => katex.renderToString(t, { displayMode: display, throwOnError: true, output: 'htmlAndMathml', strict: 'ignore' });
-function inline(src) {
+// big: fractions in inline math are drawn full size (\displaystyle), as in problems, answers and solutions; the
+// Summary's running text passes false and keeps its small fractions such as π/2, with its key formulas on their own lines
+function inline(src, big = true) {
   const store = [];
   let s = src.replace(/\$\$([\s\S]+?)\$\$/g, (_, t) => { store.push({ html: tex(t.trim(), true), short: false }); return `\u0001${store.length - 1}\u0002`; });
-  s = s.replace(/\$([^$]+?)\$/g, (_, t) => { store.push({ html: tex(t, false), short: t.length <= 16 }); return `\u0001${store.length - 1}\u0002`; });
+  // a . or , right after longer math goes inside it, so the mark can't start a line by itself (the math may wrap)
+  s = s.replace(/\$([^$]+?)\$([.,])?/g, (_, t, p) => {
+    const short = t.length <= 16, glue = Boolean(p) && !short;
+    const full = big && /\\frac/.test(t) && !/\\displaystyle/.test(t) ? '\\displaystyle ' : '';
+    store.push({ html: tex(full + t + (glue ? p : ''), false), short });
+    return `\u0001${store.length - 1}\u0002` + (p && !glue ? p : '');
+  });
   if (s.includes('$')) throw new Error('Unbalanced $ in: ' + src);
   s = esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\((\d+pt[^()]*)\)/g, '<span class="pts">($1)</span>');
@@ -55,10 +63,10 @@ function items(src) {
   }
   return out;
 }
-function blocks(src) {
+function blocks(src, big = true) {
   return src.trim().split(/\n\s*\n/).map((b) => {
-    if (b.trim().startsWith('- ')) return '<ul>' + items(b).map((i) => `<li>${inline(i)}</li>`).join('') + '</ul>';
-    return `<p>${inline(b)}</p>`;
+    if (b.trim().startsWith('- ')) return '<ul>' + items(b).map((i) => `<li>${inline(i, big)}</li>`).join('') + '</ul>';
+    return `<p>${inline(b, big)}</p>`;
   }).join('');
 }
 const withPts = (stem, pts) => {
@@ -126,7 +134,7 @@ const graphHTML = ([kind, title, note]) => `
   <figure class="explore" id="gx-${kind}" data-graph="${kind}" data-added="${GRAPHS_ADDED}">
     <figcaption class="gx-title"><span class="kicker">Explore</span>${esc(title)}</figcaption>
     <div class="gx-stage"><p class="gx-wait">Loading the graph…</p></div>
-    <p class="gx-note">${inline(note)}</p>
+    <p class="gx-note">${inline(note, false)}</p>
   </figure>`;
 
 // ---------- the page ----------
@@ -146,17 +154,17 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
       const id = `su-${u.id}-k${i + 1}`;
       const label = (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => texPlain(m.slice(1, -1)));
       INDEX.push(entry('Summary', 'summary', id, `${label || 'Key idea'} — ${u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), u.quiz || u.days));
-      return `<li id="${id}">${inline(it)}</li>`;
+      return `<li id="${id}">${inline(it, false)}</li>`;
     }).join('');
     const watch = items(u.watch).map((it, i) => {
       const id = `su-${u.id}-w${i + 1}`;
       INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + (u.quiz || u.days)));
-      return `<li id="${id}">${inline(it)}</li>`;
+      return `<li id="${id}">${inline(it, false)}</li>`;
     }).join('');
     return `
 <section class="unit" id="su-${u.id}"${addedAttr(u)}>
   <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${meta([u.days, u.dates, u.quiz, u.note])}</p><h2>${esc(u.title)}</h2></div></header>
-  ${u.intro ? `<p class="unit-note">${inline(u.intro)}</p>` : ''}
+  ${u.intro ? `<p class="unit-note">${inline(u.intro, false)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
   ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
@@ -165,7 +173,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
 <section class="habits" id="su-habits"><h2 class="deco">Exam-day habits</h2><ul>${items(habits).map((it, i) => {
     const id = `su-habits-${i + 1}`;
     INDEX.push(entry('Summary', 'summary', id, 'Exam-day habit', plain(it), 'exam habit tip'));
-    return `<li id="${id}">${inline(it)}</li>`;
+    return `<li id="${id}">${inline(it, false)}</li>`;
   }).join('')}</ul></section>`;
 
   // Practice
@@ -227,7 +235,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
 <section class="fgroup" id="fg-exact">
   <h2><span class="kicker">No calculator</span>Exact values</h2>
   <div class="table-wrap">${exactWide}${exactTall}</div>
-  <p class="exact-note">${inline(String.raw`A slash means undefined: $\tan\frac{\pi}{2}$ doesn't exist because $\cos\frac{\pi}{2}=0$. The forms $\frac{1}{\sqrt{2}}=\frac{\sqrt{2}}{2}$ and $\frac{1}{\sqrt{3}}=\frac{\sqrt{3}}{3}$ are equal, so either is fine in an answer.`)}</p>
+  <p class="exact-note">${inline(String.raw`A slash means undefined: $\tan\frac{\pi}{2}$ doesn't exist because $\cos\frac{\pi}{2}=0$. The forms $\frac{1}{\sqrt{2}}=\frac{\sqrt{2}}{2}$ and $\frac{1}{\sqrt{3}}=\frac{\sqrt{3}}{3}$ are equal, so either is fine in an answer.`, false)}</p>
 </section>`;
 
   // Quizzes: per quiz, the in-class sheet (or its password panel) plus Follow-up A and B behind a switcher

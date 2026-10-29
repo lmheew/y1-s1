@@ -12,8 +12,10 @@ export const units = [
 - **Plug in carefully.** "·" means multiply, so look for a zero factor first: $\ln 1=0$, $\sin 0=0$, $\cos\frac{\pi}{2}=0$, while $e^0=1$.
 - **Inverse trig ranges:** $\arcsin$ lands in $[-\frac{\pi}{2},\frac{\pi}{2}]$, $\arccos$ in $[0,\pi]$, $\arctan$ in $(-\frac{\pi}{2},\frac{\pi}{2})$.
 - **Limits:** plug in first. A $\frac{0}{0}$ result means simplify (factor and cancel, or use the conjugate), then plug in. The limit exists only when the left and right limits agree.
-- **Limit laws:** if $f\to L$ and $g\to M$ (numbers), then $f\pm g\to L\pm M$, $fg\to LM$, and $\frac{f}{g}\to\frac{L}{M}$ only when $M\ne0$.
-- **Special limits:** $\displaystyle\lim_{x\to0}\frac{\sin x}{x}=1$, $\displaystyle\lim_{x\to0}\frac{1-\cos x}{x}=0$, $\displaystyle\lim_{x\to0}\frac{e^x-1}{x}=1$.
+- **Limit laws:** if $f\to L$ and $g\to M$ (numbers), then
+$$\begin{gathered}f\pm g\to L\pm M,\qquad fg\to LM\\[4pt]\frac{f}{g}\to\frac{L}{M}\quad(M\ne0)\end{gathered}$$
+- **Special limits:**
+$$\begin{aligned}\lim_{x\to0}\frac{\sin x}{x}&=1\\[4pt]\lim_{x\to0}\frac{1-\cos x}{x}&=0\\[4pt]\lim_{x\to0}\frac{e^x-1}{x}&=1\end{aligned}$$
 - **Continuity at $a$:** $f(a)$ is defined, $\lim_{x\to a}f(x)$ exists, and the two are equal. A break is removable (a hole), a jump, or infinite.`,
     watch: R`
 - Reading "·" as "+" is an easy slip. Rewrite products with × before you plug in.
@@ -23,10 +25,18 @@ export const units = [
     id: 'u2', quiz: 'Quiz 02', days: 'Day 3 & 4', dates: '12 & 13 Oct',
     title: 'Derivatives of functions and chain rule',
     ideas: R`
-- **Definition:** $f'(x)=\lim\limits_{h\to0}\frac{f(x+h)-f(x)}{h}$. Tangent line at $x_0$: $y=f(x_0)+f'(x_0)(x-x_0)$.
-- **Rules:** $(x^n)'=nx^{n-1}$, $(fg)'=f'g+fg'$, $\left(\frac{f}{g}\right)'=\frac{f'g-fg'}{g^2}$.
-- **Basic derivatives:** $(\sin x)'=\cos x$, $(\cos x)'=-\sin x$, $(\tan x)'=\sec^2x$, $(e^x)'=e^x$, $(a^x)'=a^x\ln a$, $(\ln x)'=\frac{1}{x}$.
-- **Chain rule:** $\big(f(g(x))\big)'=f'(g(x))\cdot g'(x)$. You only need the base formulas: each "u-version" is the base formula times $u'$. Example: $\big(\ln(\cos x)\big)'=\frac{-\sin x}{\cos x}=-\tan x$.
+- **Definition:**
+$$f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}$$
+Tangent line at $x_0$:
+$$y=f(x_0)+f'(x_0)(x-x_0)$$
+- **Rules:**
+$$\begin{aligned}(x^n)'&=nx^{n-1}\\[2pt](fg)'&=f'g+fg'\\[2pt]\left(\frac{f}{g}\right)'&=\frac{f'g-fg'}{g^2}\end{aligned}$$
+- **Basic derivatives:**
+$$\begin{aligned}(\sin x)'&=\cos x&\quad(\cos x)'&=-\sin x\\[2pt](\tan x)'&=\sec^2x&\quad(e^x)'&=e^x\\[2pt](a^x)'&=a^x\ln a&\quad(\ln x)'&=\frac{1}{x}\end{aligned}$$
+- **Chain rule:**
+$$\big(f(g(x))\big)'=f'(g(x))\cdot g'(x)$$
+You only need the base formulas: each "u-version" is the base formula times $u'$. Example:
+$$\big(\ln(\cos x)\big)'=\frac{-\sin x}{\cos x}=-\tan x$$
 - **Higher-order derivatives:** $f''=(f')'$ and $f'''=(f'')'$.`,
     watch: R`
 - The product rule always has two terms: $(x^2\cdot x^3)'=2x\cdot x^3+x^2\cdot 3x^2=5x^4$.
@@ -39,18 +49,22 @@ export const units = [
     title: 'Implicit differentiation and parametric curve',
     ideas: R`
 - **Implicit differentiation:** differentiate both sides with respect to $x$ and attach $y'$ to every $y$-term: $(y^3)'=3y^2y'$, $(\sin y)'=\cos y\cdot y'$, $(xy)'=y+xy'$. Then collect the $y'$ terms and factor.
-- **Tangent lines:** put both $x_0$ and $y_0$ into $y'$, then use $y-y_0=m(x-x_0)$. On a circle $x^2+y^2=r^2$, $y'=-\frac{x}{y}$ and the tangent is perpendicular to the radius.
-- **Vertical tangent:** if $y'=\frac{N}{D}$ has $D=0$ but $N\ne0$ at a point, $\frac{dy}{dx}$ doesn't exist and the tangent is vertical. A double root when you plug in $x$ is the warning sign.
-- **Inverse functions:** if $f(a)=b$, then $(f^{-1})'(b)=\frac{1}{f'(a)}$. Solve $f(a)=b$ first.
-- **Inverse trig:** $(\arcsin x)'=\frac{1}{\sqrt{1-x^2}}$, $(\arccos x)'=-\frac{1}{\sqrt{1-x^2}}$, $(\arctan x)'=\frac{1}{1+x^2}$.
+- **Tangent lines:** put both $x_0$ and $y_0$ into $y'$, then use $y-y_0=m(x-x_0)$. On a circle $x^2+y^2=r^2$, $y'=-\dfrac{x}{y}$ and the tangent is perpendicular to the radius.
+- **Vertical tangent:** if $y'=\dfrac{N}{D}$ has $D=0$ but $N\ne0$ at a point, $\frac{dy}{dx}$ doesn't exist and the tangent is vertical. A double root when you plug in $x$ is the warning sign.
+- **Inverse functions:** if $f(a)=b$, then
+$$(f^{-1})'(b)=\frac{1}{f'(a)}$$
+Solve $f(a)=b$ first.
+- **Inverse trig:**
+$$\begin{aligned}(\arcsin x)'&=\frac{1}{\sqrt{1-x^2}}\\[4pt](\arccos x)'&=-\frac{1}{\sqrt{1-x^2}}\\[4pt](\arctan x)'&=\frac{1}{1+x^2}\end{aligned}$$
 - **Reciprocal trig:** $(\cot x)'=-\csc^2x$, $(\sec x)'=\sec x\tan x$, $(\csc x)'=-\csc x\cot x$.
 - **Parametric curves:** slope and second derivative:
 $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\frac{\frac{d}{dt}\!\left(\frac{dy}{dx}\right)}{dx/dt}\end{gathered}$$`,
     watch: R`
 - Every $y$-term gets a $y'$: $\sin y=x$ gives $\cos y\cdot y'=1$, not $\cos y=0$. And $\frac{dx}{dx}=1$.
-- Signs at negative points: on $x^2+y^2=10$ at $(1,-3)$, $y'=-\frac{1}{-3}=+\frac{1}{3}$.
+- Signs at negative points: on $x^2+y^2=10$ at $(1,-3)$, $y'=-\dfrac{1}{-3}=+\dfrac{1}{3}$.
 - In the inverse formula use $f'(a)$, not $f'(b)$.
-- $\frac{d^2y}{dx^2}$ is not $\frac{d^2y/dt^2}{d^2x/dt^2}$.`,
+- The second derivative is not a ratio of second derivatives:
+$$\frac{d^2y}{dx^2}\ne\frac{d^2y/dt^2}{d^2x/dt^2}$$`,
   },
   {
     id: 'u4', quiz: 'Quiz 04', days: 'Day 7 & 8', dates: '19 & 20 Oct',
@@ -76,27 +90,38 @@ $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\fra
     ideas: R`
 - **Sequence limits:** divide every term by the highest power of $n$, or by the biggest base. $r^n\to0$ when $|r|<1$.
 - **Partial sums:** $s_N=\sum_{n=0}^{N}a_n$, and the infinite series is $\lim_{N\to\infty}s_N$.
-- **Geometric:** $\sum_{n=0}^{N}r^n=\frac{1-r^{N+1}}{1-r}$. The infinite sum is $\frac{1}{1-r}$ when $|r|<1$ and diverges when $|r|\ge1$.
-- **Tests:** if $a_n\not\to0$, the series diverges. Ratio test with $r=\lim\left|\frac{a_{n+1}}{a_n}\right|$: $r<1$ converges, $r>1$ diverges, $r=1$ says nothing.
-- **Typical series:** $\sum\frac{1}{n^p}$ converges only when $p>1$, so the harmonic series $\sum\frac{1}{n}$ diverges. Telescoping: $\sum_{n=1}^{\infty}\frac{1}{n(n+1)}=1$.
+- **Geometric:** the partial sum, and the infinite sum when $|r|<1$:
+$$\begin{aligned}\sum_{n=0}^{N}r^n&=\frac{1-r^{N+1}}{1-r}\\[4pt]\sum_{n=0}^{\infty}r^n&=\frac{1}{1-r}\end{aligned}$$
+When $|r|\ge1$ it diverges.
+- **Tests:** if $a_n\not\to0$, the series diverges. Ratio test:
+$$r=\lim_{n\to\infty}\left|\frac{a_{n+1}}{a_n}\right|$$
+$r<1$ converges, $r>1$ diverges, $r=1$ says nothing.
+- **Typical series:** $\sum\dfrac{1}{n^p}$ converges only when $p>1$, so the harmonic series $\sum\dfrac{1}{n}$ diverges. Telescoping:
+$$\sum_{n=1}^{\infty}\frac{1}{n(n+1)}=1$$
 - **Power series:** $\sum c_nx^n$ converges for $|x|<R$. Find the radius $R$ with the ratio test, then check $x=\pm R$ separately.`,
     watch: R`
-- Divide every term, constants included. $\left(\frac{2}{3}\right)^n$ shrinks to $0$.
+- Divide every term, constants included. $\left(\dfrac{2}{3}\right)^n$ shrinks to $0$.
 - Check where the sum starts. From $n=0$ the first term is $1$, and the exponent in $s_N$ is $N+1$.
-- $a_n\to0$ alone doesn't make a series converge: $\frac{1}{n}\to0$, but $\sum\frac{1}{n}$ diverges.`,
+- $a_n\to0$ alone doesn't make a series converge: $\dfrac{1}{n}\to0$, but $\sum\dfrac{1}{n}$ diverges.`,
   },
   {
     id: 'u5', quiz: 'Quiz 05', days: 'Day 10 & 11', dates: '26 & 27 Oct',
     title: "Newton's method and Taylor series",
     ideas: R`
-- **Newton's method:** $x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$. Each $x_n$ is an approximation of the root, not the root.
+- **Newton's method:**
+$$x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$$
+Each $x_n$ is an approximation of the root, not the root.
 - **When it's guaranteed on $[a,b]$:** $f(a)$ and $f(b)$ have opposite signs, and $f'$ and $f''$ don't change sign. Start at the endpoint where $f(x_1)\,f''(x_1)>0$.
 - **Linear approximation:** $f(x)\approx f(a)+f'(a)(x-a)$. Concave down means the estimate is too big; concave up, too small.
-- **Taylor coefficients:** $c_k=\frac{f^{(k)}(a)}{k!}$. Simplify first: $\cos^2x-\sin^2x=\cos 2x$ and $\sin x\cos x=\frac{1}{2}\sin 2x$.
-- **Taylor polynomial:** $p_n(x)=\sum_{k=0}^{n}c_k(x-a)^k$. With $a=0$ it's called a Maclaurin polynomial.`,
+- **Taylor coefficients:**
+$$c_k=\frac{f^{(k)}(a)}{k!}$$
+Simplify first: $\cos^2x-\sin^2x=\cos 2x$ and $\sin x\cos x=\frac{1}{2}\sin 2x$.
+- **Taylor polynomial:**
+$$p_n(x)=\sum_{k=0}^{n}c_k(x-a)^k$$
+With $a=0$ it's called a Maclaurin polynomial.`,
     watch: R`
-- Watch the signs in $x-\frac{f}{f'}$ when $f$ is negative, and the decimals: $\frac{1}{10}=0.1$.
-- Divide by $k!$: $c_2=\frac{f''(a)}{2}$ and $c_3=\frac{f'''(a)}{6}$.`,
+- Watch the signs in $x-\dfrac{f}{f'}$ when $f$ is negative, and the decimals: $\frac{1}{10}=0.1$.
+- Divide by $k!$: $c_2=\dfrac{f''(a)}{2}$ and $c_3=\dfrac{f'''(a)}{6}$.`,
   },
   // A lesson that no quiz or exam covers: quiz is null, so it has no Quizzes entry and stays out of the mocks.
   {
@@ -108,7 +133,7 @@ $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\fra
 - **Checking a solution:** differentiate the given $y$ and substitute it into both sides. For $y=Ce^{2x}$, $y'=2Ce^{2x}=2y$, so it solves $y'=2y$ for every $C$.
 - **Ambiguity of the solution:** the equation alone doesn't fix one function, because constants disappear when you differentiate. $y'=2x$ is solved by $y=x^2+C$ for any $C$. The general solution has as many free constants as the order.
 - **Initial conditions:** a value such as $y(0)=3$ picks one curve from the family. Solve first and keep $C$, then substitute the condition, solve for $C$ and write the function. You need one condition per constant, usually $y(0)$ and $y'(0)$ for second order.
-- **$y'=f(x)$:** integrate, $y=\int f(x)\,dx+C$. With $f'(x)=\frac{1}{x}$ and $f(1)=0$, $f(x)=\ln x$. With $f'(x)=e^x$ and $f(0)=e$, $f(x)=e^x+e-1$.
+- **$y'=f(x)$:** integrate, $y=\int f(x)\,dx+C$. With $f'(x)=\dfrac{1}{x}$ and $f(1)=0$, $f(x)=\ln x$. With $f'(x)=e^x$ and $f(0)=e$, $f(x)=e^x+e-1$.
 - **$y'=\lambda y$:** since $(e^{\lambda x})'=\lambda e^{\lambda x}$, the general solution is $y=Ce^{\lambda x}$, and $C=y(0)$. Here $C$ multiplies instead of being added. It grows for $\lambda>0$ and decays for $\lambda<0$.
 - **Why only $Ce^{\lambda x}$:** dividing by $y$ gives $(\ln|y|)'=\lambda$, so $\ln|y|=\lambda x+c$ and $y=\pm e^{c}e^{\lambda x}$. Together with $y=0$, that is $Ce^{\lambda x}$ for any real $C$.
 - **Second order, $y''+ay'+by=0$:** try $y=e^{\lambda x}$. Then $(\lambda^2+a\lambda+b)e^{\lambda x}=0$, and since $e^{\lambda x}\ne0$, the **characteristic equation** $\lambda^2+a\lambda+b=0$ must hold. If $y_1$ and $y_2$ are solutions, so is $C_1y_1+C_2y_2$.
