@@ -279,7 +279,11 @@ details[open] .when-open { display: inline; }
 .nw { white-space: nowrap; }
 
 /* locked in-class sheets (public site): password panel in place of the sheet */
-.unlock { display: grid; gap: 12px; padding: 14px 0 14px; }
+.unlock { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px 0 14px; }
+/* Safari can size a grid's auto column to a wrapping row's full one-line width, which pushed the password row and
+   its text past the card on iPhone. A 0 minimum keeps these columns, and what's in them, inside their box. */
+.unlock > *, .u-head > div, .u-row, .overview > *, .reveal > * { min-width: 0; }
+.overview, .reveal { grid-template-columns: minmax(0, 1fr); }
 .u-head { display: flex; align-items: flex-start; gap: 12px; }
 .u-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--tint); color: var(--green-text); }
 .u-icon .ic { width: 20px; height: 20px; }
