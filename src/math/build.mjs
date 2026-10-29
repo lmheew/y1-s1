@@ -279,10 +279,12 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     if (fb) kinds.push(['2', 'b', 'Follow-up B']);
     const first = kinds[0][0];
     let group = '';
+    // the schedule's day label ("Day 1 & 2"), so a build with or without the password draws the same card
+    const days = u.days || (q && q.days) || '';
     if (q) {
-      const html = sheetHTML(`rq${no}`, '0', true, `In-class Quiz ${no}`, `${q.days} · 10 pt`, '', q.qs, `Quiz ${no}`, 'real quiz test in-class', locked ? PRIV : INDEX);
-      if (locked) { sheets[`rq${no}`] = html.trim(); group += lockHTML(no, q.days); } else group += html;
-    } else if (hasInClass) group += lockHTML(no, u.days);
+      const html = sheetHTML(`rq${no}`, '0', true, `In-class Quiz ${no}`, `${days} · 10 pt`, '', q.qs, `Quiz ${no}`, 'real quiz test in-class', locked ? PRIV : INDEX);
+      if (locked) { sheets[`rq${no}`] = html.trim(); group += lockHTML(no, days); } else group += html;
+    } else if (hasInClass) group += lockHTML(no, days);
     if (fa) group += sheetHTML(`rq${no}a`, '1', first === '1', `Follow-up Quiz ${no}-A`, 'Same skills, new numbers · 10 pt', '', fa.qs, `Quiz ${no} Follow-up A`, 'follow-up remedial extra quiz', INDEX);
     if (fb) group += sheetHTML(`rq${no}b`, '2', first === '2', `Follow-up Quiz ${no}-B`, 'Targets common mistakes · 10 pt', fb.focus.replace(/^Targets the usual slips: /, 'Watch for '), fb.qs, `Quiz ${no} Follow-up B`, 'follow-up remedial extra quiz slips', INDEX);
     const lockMark = hasInClass && locked ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : '';
