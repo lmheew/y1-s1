@@ -115,6 +115,12 @@ A few details about the password:
 - Footers keep enough bottom padding that the last line ends above the floating buttons.
 - A page without a tab bar sets `--totop-bottom`, as the home page does. The hover and focus colours come from the page's `--bar-active` and `--lime-deep`.
 
+## Side menu (wide screens)
+
+- From 1100 px wide (computers, iPads held sideways), each tab gets a menu on the left that stays in view: the tab's sections (`TOC_SECTIONS` in `page.js`: lessons, Practice units, formula groups, quizzes, and in Exams the mock and past-paper groups with each paper listed), with the one being read highlighted. Narrower screens never show it. The layout widens to 1040 px there, so the text keeps its usual width.
+- It is built from each tab's own sections when the tab is built, labelled with their kicker's first part (the day or quiz) and heading, so a new unit or group appears without changes here. A section needs an `id` and an `h2`.
+- Jumps (the menu, Summary tiles, search) go through `jumpTo`: it asks `graphs.js` to draw the graphs above the target first (`buildgraphs` event), so the page doesn't grow during the glide, and corrects the position once it settles.
+
 ## Printing
 
 - Every mock and past midterm has two buttons under its note: **Print paper** (the questions with room to write under each part and a score line, without answers, timer or buttons) and **Print with answers** (the questions with every answer and all solution steps). `printSheet` in `page.js` marks the sheet `.printing`, the elements around it `.print-path` and the kind in `data-print` on `<html>`; the print part at the end of `page.css` does the rest. The marks go when the page is next used after printing, because an iPhone reports the end of printing while its print sheet is still open.

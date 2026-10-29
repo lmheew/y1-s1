@@ -518,3 +518,32 @@ details[open] .when-open { display: inline; }
   :root[data-print="key"] .printing summary { display: none; }
   :root[data-print="key"] .printing .step-hidden { display: revert !important; }
 }
+
+/* ---------- side menu: wide screens only (1100 px and up: computers, iPads held sideways) ----------
+   The whole layout widens so the menu fits on the left and the text keeps its usual width. The menu stays in view
+   while the tab scrolls, and highlights the section being read; it ends above the calculator button's corner. */
+.toc { display: none; }
+@media (min-width: 1100px) {
+  .wrap, .tabbar-row { max-width: 1040px; }
+  .content.has-toc { position: relative; padding-left: calc(max(16px, env(safe-area-inset-left, 0px)) + 276px); }
+  .has-toc > .toc { display: block; position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 22px; bottom: 24px; width: 236px; }
+  .toc-inner { position: sticky; top: var(--anchor-top); max-height: calc(100vh - var(--anchor-top) - 100px); overflow-y: auto; padding: 4px 4px 8px 0; }
+  .toc-h { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  .toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+  .toc a { display: grid; gap: 1px; margin-left: -2px; padding: 7px 10px 7px 14px; border-left: 3px solid transparent; color: var(--ink); text-decoration: none; line-height: 1.35; }
+  .toc a:hover { background: var(--tint); }
+  .toc a[aria-current="true"] { border-left-color: var(--green); background: var(--tint); }
+  .toc a[aria-current="true"] .toc-t { color: var(--green-text); font-weight: 700; }
+  .toc-k { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
+  .toc-t { font-size: 14px; }
+  .has-toc .qjump { display: none; } /* the menu lists the quizzes already */
+}
+@media print { .toc { display: none !important; } .content.has-toc { padding-left: 0 !important; } }
+@media (min-width: 1100px) {
+  .toc .toc-papers { list-style: none; margin: 0 0 6px; padding: 0 0 0 17px; border: 0; }
+  .toc-paper { appearance: none; display: block; width: 100%; border: 0; border-radius: 4px; background: none; color: var(--ink-soft);
+    padding: 4px 8px; text-align: left; font: 500 13.5px/1.3 var(--font); cursor: pointer; }
+  .toc-paper:hover { background: var(--tint); color: var(--ink); }
+  .toc-paper.sel { color: var(--green-text); font-weight: 700; }
+  .toc-paper.sel::before { content: "› "; }
+}

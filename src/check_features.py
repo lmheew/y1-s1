@@ -285,6 +285,39 @@ with sync_playwright() as p:
     check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
     ctx.close()
 
+    # ---- side menu: from 1100 px only; lists the open tab's sections, follows the reading, jumps on a tap ----
+    for w, h in [(1280, 900), (1024, 1366)]:
+        ctx = b.new_context(viewport={'width': w, 'height': h})
+        ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+        pg = ctx.new_page()
+        pg.goto(BASE + '/math/#summary')
+        pg.wait_for_selector('.calc-fab')
+        toc = pg.locator('#view-summary .toc')
+        if w < 1100:
+            check(f'side menu: hidden at {w} px (an upright iPad or a phone)', toc.count() == 1 and not toc.is_visible())
+            ctx.close()
+            continue
+        check('side menu: shown on a wide screen with every lesson and the exam-day habits', toc.is_visible() and toc.locator('a').count() == 8)
+        pg.evaluate("document.getElementById('su-u3').scrollIntoView()")
+        pg.wait_for_timeout(300)
+        cur = pg.locator('#view-summary .toc a[aria-current="true"]')
+        check('side menu: highlights the lesson being read', cur.count() == 1 and 'Day 5 & 6' in cur.inner_text(), cur.all_inner_texts())
+        toc.locator('a', has_text='Infinite series').click()
+        pg.wait_for_timeout(1500)
+        top = pg.evaluate("document.getElementById('su-u7').getBoundingClientRect().top")
+        check('side menu: a tap jumps to that section', abs(top - 72) < 30, top)
+        pg.click('#tab-exams')
+        pg.wait_for_timeout(400)
+        etoc = pg.locator('#view-exams .toc')
+        check('side menu: Exams lists each mock and past paper', etoc.locator('.toc-paper').count() == 5)
+        etoc.locator('.toc-paper', has_text='Mock 2').click()
+        pg.wait_for_timeout(500)
+        check('side menu: tapping a paper opens it', pg.locator('#m2').is_visible() and not pg.locator('#m1').is_visible()
+              and 'sel' in (etoc.locator('.toc-paper', has_text='Mock 2').get_attribute('class') or ''))
+        check('side menu: no sideways scroll', overflow(pg) <= 0)
+        pg.evaluate("localStorage.clear()")
+        ctx.close()
+
     # ---- printing a mock: the paper (questions only, room to write) or with answers; the marks go after printing ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='dark')
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))

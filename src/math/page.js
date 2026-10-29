@@ -55,7 +55,79 @@
     const scope = box || panels[view];
     markNew(scope);
     if (VIEW_INIT[view]) VIEW_INIT[view](scope);
+    buildToc(view);
   }
+
+  // ----- side menu on wide screens (page.css shows it from 1100 px): the sections of the open tab, the one being
+  // read highlighted. Built from the page itself when the tab is built; narrower screens never show it. -----
+  const TOC_SECTIONS = { summary: '.unit, .habits', practice: '.punit', formulas: '.fgroup', quizzes: '.qgroup', exams: '#ex-upcoming, .mockgroup' };
+  const tocOf = {};
+  function buildToc(view) {
+    const box = $('.content', panels[view]);
+    if (!box || tocOf[view]) return;
+    const secs = $$(TOC_SECTIONS[view], box).filter((sec) => sec.id && $('h2', sec));
+    if (secs.length < 2) return;
+    const label = (sec) => {
+      const h = $('h2', sec).cloneNode(true);
+      $$('.kicker, .new-pill', h).forEach((x) => x.remove());
+      const k = $('.kicker', sec);
+      const day = k ? ($('.nw', k) || k).textContent.split(' · ')[0].trim() : '';
+      return { day: sec.classList.contains('habits') ? 'Before the exam' : day, title: h.textContent.trim() };
+    };
+    const nav = document.createElement('nav');
+    nav.className = 'toc';
+    nav.setAttribute('aria-label', 'On this page');
+    nav.innerHTML = '<div class="toc-inner"><p class="toc-h">On this page</p><ol>' + secs.map((sec) => {
+      const l = label(sec);
+      const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      // Exams: each mock and past paper too, as a switch to that paper
+      const papers = sec.classList.contains('mockgroup') ? $$('.seg-btn', sec).map((b) => {
+        const c = b.cloneNode(true);
+        $$('.seg-score, .seg-lock', c).forEach((x) => x.remove());
+        return `<li><button type="button" class="toc-paper" data-group="${sec.id}" data-seg="${b.dataset.seg}">${esc(c.textContent.trim())}</button></li>`;
+      }).join('') : '';
+      return `<li><a href="#${sec.id}" data-toc="${sec.id}">${l.day ? `<span class="toc-k">${esc(l.day)}</span>` : ''}<span class="toc-t">${esc(l.title)}</span></a>${papers ? `<ol class="toc-papers">${papers}</ol>` : ''}</li>`;
+    }).join('') + '</ol></div>';
+    nav.addEventListener('click', (e) => {
+      const paper = e.target.closest('.toc-paper');
+      if (paper) {
+        const group = document.getElementById(paper.dataset.group);
+        const btn = group && $(`.seg-btn[data-seg="${paper.dataset.seg}"]`, group);
+        if (btn) { btn.click(); jumpTo(group); paintToc(); }
+        return;
+      }
+      const a = e.target.closest('a[data-toc]');
+      const el = a && document.getElementById(a.dataset.toc);
+      if (!el) return;
+      e.preventDefault();
+      jumpTo(el);
+    });
+    box.prepend(nav);
+    box.classList.add('has-toc');
+    tocOf[view] = { nav, links: $$('a[data-toc]', nav), secs };
+    paintToc();
+  }
+  const wide = window.matchMedia('(min-width: 1100px)');
+  function paintToc() {
+    const t = tocOf[st.tab];
+    if (!t || !wide.matches) return;
+    const line = (parseFloat(getComputedStyle(root).getPropertyValue('--anchor-top')) || 72) + 12;
+    let on = -1;
+    t.secs.forEach((sec, i) => {
+      const shown = sec.offsetParent !== null;
+      t.links[i].parentElement.hidden = !shown; // a Practice filter can hide a whole unit
+      if (shown && sec.getBoundingClientRect().top <= line) on = i;
+    });
+    if (window.innerHeight + window.scrollY >= root.scrollHeight - 4) on = t.secs.reduce((last, sec, i) => (sec.offsetParent !== null ? i : last), on);
+    t.links.forEach((a, i) => { if (i === Math.max(on, 0)) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    $$('.toc-paper', t.nav).forEach((b) => {
+      const s = $(`#${b.dataset.group} .seg-btn[data-seg="${b.dataset.seg}"]`);
+      b.classList.toggle('sel', Boolean(s) && s.getAttribute('aria-selected') === 'true');
+    });
+  }
+  let tocQueued = false;
+  window.addEventListener('scroll', () => { if (!tocQueued) { tocQueued = true; requestAnimationFrame(() => { tocQueued = false; paintToc(); }); } }, { passive: true });
+  window.addEventListener('resize', paintToc);
   function show(view) {
     if (!VIEWS.includes(view)) view = 'summary';
     materialize(view);
@@ -63,6 +135,7 @@
     st.tab = view; save();
     tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
+    paintToc();
   }
   function setHash(view) { try { if (location.hash !== '#' + view) location.hash = view; } catch (e) { /* ignore */ } }
   tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); window.scrollTo({ top: 0 }); setHash(t.dataset.view); }));
@@ -78,6 +151,27 @@
     if (VIEWS.includes(h) && h !== st.tab) { show(h); window.scrollTo({ top: 0 }); }
   });
 
+  // Scroll so an element's top meets the anchor line under the bars. Graphs are drawn as they come near, which can
+  // move what's below them while the page glides, so once it settles the position is checked and set again (unless
+  // the reader has started scrolling themselves).
+  function jumpTo(el) {
+    let tries = 0, cancelled = false;
+    const stop = () => { cancelled = true; };
+    ['wheel', 'touchstart', 'keydown'].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
+    document.dispatchEvent(new CustomEvent('buildgraphs', { detail: el })); // graphs.js draws the ones above it first
+    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    const settle = () => {
+      if (cancelled) return;
+      const off = el.getBoundingClientRect().top - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
+      const atEnd = window.innerHeight + window.scrollY >= root.scrollHeight - 2;
+      if (Math.abs(off) > 6 && !(atEnd && off > 0) && tries++ < 3) {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        setTimeout(settle, 250);
+      } else ['wheel', 'touchstart', 'keydown'].forEach((t) => window.removeEventListener(t, stop));
+    };
+    setTimeout(settle, reduced ? 60 : 900);
+  }
+
   // jump to an element in a view and flash it
   function goTo(view, id) {
     show(view);
@@ -90,7 +184,7 @@
     const det = el.closest('details');
     if (det) det.open = true;
     requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      jumpTo(el);
       el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
       setTimeout(() => el.classList.remove('flash'), 1900);
     });
@@ -149,6 +243,7 @@
   if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;
+  buildToc('summary');
 
   // ----- Practice: marks, progress rings, filter -----
   let probs = [];

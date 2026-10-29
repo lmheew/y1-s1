@@ -314,6 +314,13 @@
       entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); build(en.target); } });
     }, { rootMargin: '300px 0px' });
     figs.forEach((f) => io.observe(f));
+    // before a jump to a section further down (page.js sends "buildgraphs" with it), draw every graph above it, so
+    // the page doesn't grow under the glide and the jump lands on the section
+    document.addEventListener('buildgraphs', (e) => {
+      const target = e.detail;
+      if (!target || !target.compareDocumentPosition) return;
+      figs.forEach((f) => { if (!f.dataset.drawn && (f.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING)) { io.unobserve(f); build(f); } });
+    });
   } else {
     window.addEventListener('load', () => figs.forEach(build));
   }

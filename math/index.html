@@ -545,6 +545,35 @@ details[open] .when-open { display: inline; }
   :root[data-print="key"] .printing .step-hidden { display: revert !important; }
 }
 
+/* ---------- side menu: wide screens only (1100 px and up: computers, iPads held sideways) ----------
+   The whole layout widens so the menu fits on the left and the text keeps its usual width. The menu stays in view
+   while the tab scrolls, and highlights the section being read; it ends above the calculator button's corner. */
+.toc { display: none; }
+@media (min-width: 1100px) {
+  .wrap, .tabbar-row { max-width: 1040px; }
+  .content.has-toc { position: relative; padding-left: calc(max(16px, env(safe-area-inset-left, 0px)) + 276px); }
+  .has-toc > .toc { display: block; position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 22px; bottom: 24px; width: 236px; }
+  .toc-inner { position: sticky; top: var(--anchor-top); max-height: calc(100vh - var(--anchor-top) - 100px); overflow-y: auto; padding: 4px 4px 8px 0; }
+  .toc-h { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  .toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+  .toc a { display: grid; gap: 1px; margin-left: -2px; padding: 7px 10px 7px 14px; border-left: 3px solid transparent; color: var(--ink); text-decoration: none; line-height: 1.35; }
+  .toc a:hover { background: var(--tint); }
+  .toc a[aria-current="true"] { border-left-color: var(--green); background: var(--tint); }
+  .toc a[aria-current="true"] .toc-t { color: var(--green-text); font-weight: 700; }
+  .toc-k { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
+  .toc-t { font-size: 14px; }
+  .has-toc .qjump { display: none; } /* the menu lists the quizzes already */
+}
+@media print { .toc { display: none !important; } .content.has-toc { padding-left: 0 !important; } }
+@media (min-width: 1100px) {
+  .toc .toc-papers { list-style: none; margin: 0 0 6px; padding: 0 0 0 17px; border: 0; }
+  .toc-paper { appearance: none; display: block; width: 100%; border: 0; border-radius: 4px; background: none; color: var(--ink-soft);
+    padding: 4px 8px; text-align: left; font: 500 13.5px/1.3 var(--font); cursor: pointer; }
+  .toc-paper:hover { background: var(--tint); color: var(--ink); }
+  .toc-paper.sel { color: var(--green-text); font-weight: 700; }
+  .toc-paper.sel::before { content: "â€º "; }
+}
+
 /* Floating calculator: a ghost button parked on a screen edge, and a small window laid out like the Windows
    standard calculator, drawn in the site's palette (white or dark green-black keys, green "=" key, band-coloured
    title bar). Uses the page's colour tokens, so it follows light and dark mode. */
@@ -3236,7 +3265,79 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     const scope = box || panels[view];
     markNew(scope);
     if (VIEW_INIT[view]) VIEW_INIT[view](scope);
+    buildToc(view);
   }
+
+  // ----- side menu on wide screens (page.css shows it from 1100 px): the sections of the open tab, the one being
+  // read highlighted. Built from the page itself when the tab is built; narrower screens never show it. -----
+  const TOC_SECTIONS = { summary: '.unit, .habits', practice: '.punit', formulas: '.fgroup', quizzes: '.qgroup', exams: '#ex-upcoming, .mockgroup' };
+  const tocOf = {};
+  function buildToc(view) {
+    const box = $('.content', panels[view]);
+    if (!box || tocOf[view]) return;
+    const secs = $$(TOC_SECTIONS[view], box).filter((sec) => sec.id && $('h2', sec));
+    if (secs.length < 2) return;
+    const label = (sec) => {
+      const h = $('h2', sec).cloneNode(true);
+      $$('.kicker, .new-pill', h).forEach((x) => x.remove());
+      const k = $('.kicker', sec);
+      const day = k ? ($('.nw', k) || k).textContent.split(' Â· ')[0].trim() : '';
+      return { day: sec.classList.contains('habits') ? 'Before the exam' : day, title: h.textContent.trim() };
+    };
+    const nav = document.createElement('nav');
+    nav.className = 'toc';
+    nav.setAttribute('aria-label', 'On this page');
+    nav.innerHTML = '<div class="toc-inner"><p class="toc-h">On this page</p><ol>' + secs.map((sec) => {
+      const l = label(sec);
+      const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      // Exams: each mock and past paper too, as a switch to that paper
+      const papers = sec.classList.contains('mockgroup') ? $$('.seg-btn', sec).map((b) => {
+        const c = b.cloneNode(true);
+        $$('.seg-score, .seg-lock', c).forEach((x) => x.remove());
+        return `<li><button type="button" class="toc-paper" data-group="${sec.id}" data-seg="${b.dataset.seg}">${esc(c.textContent.trim())}</button></li>`;
+      }).join('') : '';
+      return `<li><a href="#${sec.id}" data-toc="${sec.id}">${l.day ? `<span class="toc-k">${esc(l.day)}</span>` : ''}<span class="toc-t">${esc(l.title)}</span></a>${papers ? `<ol class="toc-papers">${papers}</ol>` : ''}</li>`;
+    }).join('') + '</ol></div>';
+    nav.addEventListener('click', (e) => {
+      const paper = e.target.closest('.toc-paper');
+      if (paper) {
+        const group = document.getElementById(paper.dataset.group);
+        const btn = group && $(`.seg-btn[data-seg="${paper.dataset.seg}"]`, group);
+        if (btn) { btn.click(); jumpTo(group); paintToc(); }
+        return;
+      }
+      const a = e.target.closest('a[data-toc]');
+      const el = a && document.getElementById(a.dataset.toc);
+      if (!el) return;
+      e.preventDefault();
+      jumpTo(el);
+    });
+    box.prepend(nav);
+    box.classList.add('has-toc');
+    tocOf[view] = { nav, links: $$('a[data-toc]', nav), secs };
+    paintToc();
+  }
+  const wide = window.matchMedia('(min-width: 1100px)');
+  function paintToc() {
+    const t = tocOf[st.tab];
+    if (!t || !wide.matches) return;
+    const line = (parseFloat(getComputedStyle(root).getPropertyValue('--anchor-top')) || 72) + 12;
+    let on = -1;
+    t.secs.forEach((sec, i) => {
+      const shown = sec.offsetParent !== null;
+      t.links[i].parentElement.hidden = !shown; // a Practice filter can hide a whole unit
+      if (shown && sec.getBoundingClientRect().top <= line) on = i;
+    });
+    if (window.innerHeight + window.scrollY >= root.scrollHeight - 4) on = t.secs.reduce((last, sec, i) => (sec.offsetParent !== null ? i : last), on);
+    t.links.forEach((a, i) => { if (i === Math.max(on, 0)) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    $$('.toc-paper', t.nav).forEach((b) => {
+      const s = $(`#${b.dataset.group} .seg-btn[data-seg="${b.dataset.seg}"]`);
+      b.classList.toggle('sel', Boolean(s) && s.getAttribute('aria-selected') === 'true');
+    });
+  }
+  let tocQueued = false;
+  window.addEventListener('scroll', () => { if (!tocQueued) { tocQueued = true; requestAnimationFrame(() => { tocQueued = false; paintToc(); }); } }, { passive: true });
+  window.addEventListener('resize', paintToc);
   function show(view) {
     if (!VIEWS.includes(view)) view = 'summary';
     materialize(view);
@@ -3244,6 +3345,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     st.tab = view; save();
     tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
+    paintToc();
   }
   function setHash(view) { try { if (location.hash !== '#' + view) location.hash = view; } catch (e) { /* ignore */ } }
   tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); window.scrollTo({ top: 0 }); setHash(t.dataset.view); }));
@@ -3259,6 +3361,27 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     if (VIEWS.includes(h) && h !== st.tab) { show(h); window.scrollTo({ top: 0 }); }
   });
 
+  // Scroll so an element's top meets the anchor line under the bars. Graphs are drawn as they come near, which can
+  // move what's below them while the page glides, so once it settles the position is checked and set again (unless
+  // the reader has started scrolling themselves).
+  function jumpTo(el) {
+    let tries = 0, cancelled = false;
+    const stop = () => { cancelled = true; };
+    ['wheel', 'touchstart', 'keydown'].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
+    document.dispatchEvent(new CustomEvent('buildgraphs', { detail: el })); // graphs.js draws the ones above it first
+    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    const settle = () => {
+      if (cancelled) return;
+      const off = el.getBoundingClientRect().top - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0);
+      const atEnd = window.innerHeight + window.scrollY >= root.scrollHeight - 2;
+      if (Math.abs(off) > 6 && !(atEnd && off > 0) && tries++ < 3) {
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        setTimeout(settle, 250);
+      } else ['wheel', 'touchstart', 'keydown'].forEach((t) => window.removeEventListener(t, stop));
+    };
+    setTimeout(settle, reduced ? 60 : 900);
+  }
+
   // jump to an element in a view and flash it
   function goTo(view, id) {
     show(view);
@@ -3271,7 +3394,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     const det = el.closest('details');
     if (det) det.open = true;
     requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      jumpTo(el);
       el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
       setTimeout(() => el.classList.remove('flash'), 1900);
     });
@@ -3330,6 +3453,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
   if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;
+  buildToc('summary');
 
   // ----- Practice: marks, progress rings, filter -----
   let probs = [];
@@ -4126,6 +4250,13 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       entries.forEach((en) => { if (en.isIntersecting) { io.unobserve(en.target); build(en.target); } });
     }, { rootMargin: '300px 0px' });
     figs.forEach((f) => io.observe(f));
+    // before a jump to a section further down (page.js sends "buildgraphs" with it), draw every graph above it, so
+    // the page doesn't grow under the glide and the jump lands on the section
+    document.addEventListener('buildgraphs', (e) => {
+      const target = e.detail;
+      if (!target || !target.compareDocumentPosition) return;
+      figs.forEach((f) => { if (!f.dataset.drawn && (f.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING)) { io.unobserve(f); build(f); } });
+    });
   } else {
     window.addEventListener('load', () => figs.forEach(build));
   }
