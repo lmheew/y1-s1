@@ -33,6 +33,8 @@ const rel = (p) => path.relative(ROOT, p);
 // site.json (repository root): exam dates and the "What's new" list, shared with the home page
 const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
+// the live site, for the link preview (Open Graph) that apps show when the page is shared; the image is drawn by src/og.py
+const SITE_URL = 'https://lmheew.github.io/y1-s1/';
 
 // ---------- markup ----------
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -638,7 +640,17 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CLA1 Midterm Review</title>
-<meta name="description" content="Midterm review for Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas and quizzes.">
+<meta name="description" content="Midterm review for Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Study Notes">
+<meta property="og:title" content="CLA1 Review · Calculus &amp; Linear Algebra 1">
+<meta property="og:description" content="Unofficial review notes: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
+<meta property="og:url" content="${SITE_URL}math/">
+<meta property="og:image" content="${SITE_URL}og-math.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CLA1 Review, Calculus and Linear Algebra 1: summary, practice, formulas, quizzes and exams">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">

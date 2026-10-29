@@ -72,6 +72,22 @@ with sync_playwright() as p:
         check(f'{label}: home exams skip the course name while there is one course, and dates and the link stay whole',
               'Linear Algebra 1 ·' not in pg.locator('#up-list').inner_text()
               and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, .up-more a')].every((e) => e.getClientRects().length === 1)"))
+        if label == 'phone':
+            # link previews: both pages name a 1200 x 630 image that is in the repository, by its address on the live site
+            for url in ['/', '/math/']:
+                pg.goto(BASE + url)
+                og = pg.evaluate("Object.fromEntries([...document.querySelectorAll('meta[property^=\"og:\"], meta[name=\"twitter:card\"]')].map((m) => [m.getAttribute('property') || m.getAttribute('name'), m.content]))")
+                img = og.get('og:image', '')
+                local = os.path.join(REPO, img.replace('https://lmheew.github.io/y1-s1/', '')) if img.startswith('https://lmheew.github.io/y1-s1/') else ''
+                size = None
+                if local and os.path.exists(local):
+                    with open(local, 'rb') as fh:
+                        head = fh.read(24)
+                    size = (int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big'))
+                check(f'link preview for {url}: title, description, card and a 1200 x 630 image', all(og.get(k) for k in ['og:title', 'og:description', 'og:url'])
+                      and og.get('twitter:card') == 'summary_large_image' and size == (1200, 630), (og.get('og:title'), img, size))
+            pg.goto(BASE + '/')
+            pg.wait_for_selector('#news li')
         check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
         shot('home', True)

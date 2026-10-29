@@ -9,6 +9,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Subject builds inline it like the calculator. The home page links the two files instead, so they are in `CORE` in `sw.js`.
 - `site.json` holds exam dates and the "What's new" list, for the home page and the Math page's Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
+- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png` and `og-math.png` (1200 × 630) are drawn by `python3 src/og.py` and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when Physics arrives. They use the site's own badge, never the KUAS logo.
 
 ## Rules
 
