@@ -385,8 +385,14 @@ details[open] .when-open { display: inline; }
 
 /* ---------- Exams: mock midterms ---------- */
 .mockgroup { padding-top: 22px; }
-.qtopic { display: inline-block; margin-right: 4px; padding: 1px 8px; border-radius: 999px; background: var(--tint); color: var(--green-text);
-  font-size: 12px; font-weight: 700; line-height: 1.5; vertical-align: 1px; white-space: nowrap; }
+/* a question's head, like a printed paper: number, topic and points on one line, the instruction below it */
+.rq-head { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 4px; }
+.rq-head .ql { flex: none; margin: 0; font-size: 17px; line-height: 1.3; }
+/* the topic tag takes the room between; on a narrow phone a long one wraps, and each line keeps its own rounded tag */
+.qtopic-wrap { min-width: 0; font-size: 12.5px; line-height: 1.95; }
+.qtopic { padding: 2px 9px; border-radius: 999px; background: var(--tint); color: var(--green-text); font-weight: 700;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.rq-head .pts { flex: none; margin-left: auto; padding-left: 4px; font-size: 13px; font-weight: 700; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .seg-score { font-weight: 500; font-variant-numeric: tabular-nums; }
 .mkrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .mkrow > span { margin-right: 2px; font-size: 14px; color: var(--ink-soft); }

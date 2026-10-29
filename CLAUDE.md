@@ -27,7 +27,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - A lesson without a quiz has no Quizzes entry and stays out of the mocks and the "Quizzes 01–05" span. One that isn't on the midterm also gets a `note` ("Not on the midterm") and an optional `intro`, like Day 12. Quizzes find their unit by `quiz`.
 - `followups.mjs`: Follow-up A (same skills, new numbers) and Follow-up B (targets common mistakes) for each quiz. Each is worth 10 pt, like the in-class sheet.
 - `extras.mjs`: search tags for the practice problems, the Formulas tab, the exact-values table and the icons.
-- `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points.
+- `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points. On the page, each question's head shows its number, topic tag and points on one line, like a printed paper, with the `stem` (the instruction) below it.
 - `private/past.mjs`: past midterm papers (AY2022 spring, AY2023 fall), retyped with worked answers, in the same shape as the mocks plus `seg` (the switcher label), `sub` and optional `labels` for parts the paper letters ((a), (1a)). The papers give no time or points, so 60 min and 100 pt are estimates. Checked in `private/verify_past.py`. They show in the Exams tab under "Past midterms", locked with the same password, and work like the mocks once opened.
 - `graphs.js`: the interactive graphs. Which unit shows which graph is set by `GRAPHS` in `build.mjs`.
 - `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`, like everything in `private/`.

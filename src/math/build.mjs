@@ -325,7 +325,8 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
       const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">(${lab(pi)}) ${p} pt</button>`).join('');
       return `
     <div class="rq" id="${id}">
-      <div class="stem"><p><b class="ql">${x.label}</b> <span class="qtopic">${esc(x.topic)}</span> ${inline(x.stem)} <span class="pts">(${qpts} pt)</span></p></div>
+      <div class="rq-head"><b class="ql">${x.label}</b><span class="qtopic-wrap"><span class="qtopic">${esc(x.topic)}</span></span><span class="pts">${qpts} pt</span></div>
+      ${x.stem ? `<div class="stem"><p>${inline(x.stem)}</p></div>` : ''}
       ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`), x.labels)}
       <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>
       <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>

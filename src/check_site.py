@@ -122,7 +122,10 @@ with sync_playwright() as p:
         fx, fy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
         page.mouse.click(fx, fy)
         check(f'{label}: calculator button wakes on the first tap', is_armed() and page.locator('.calc-tip.show').count() == 1)
-        page.mouse.click(fx + 150, fy - 250)
+        # a tap on plain text (the band's description): a tile there would scroll the page down, which tucks the
+        # button away before the next taps
+        lede = page.locator('#view-summary .band-lede').bounding_box()
+        page.mouse.click(lede['x'] + 20, lede['y'] + lede['height'] / 2)
         check(f'{label}: a tap elsewhere cancels it', not is_armed() and page.locator('.calc-panel').count() == 0)
         page.mouse.click(fx, fy)
         page.mouse.click(fx, fy)
