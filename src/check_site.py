@@ -230,6 +230,8 @@ with sync_playwright() as p:
             p1 = past.locator('#p2022')
             check(f'{label}: past midterm AY2022 has four questions, a 60-minute countdown and 100 points',
                   p1.locator('.rq').count() == 4 and p1.locator('.time').inner_text() == '60:00' and '100 pt' in p1.locator('.sheet-sub').inner_text())
+            check(f'{label}: an opened past midterm has the Print buttons and the new question heads',
+                  p1.locator('.print-btn').count() == 2 and p1.locator('.rq-head').count() == 4)
             q1 = p1.locator('.rq').first
             q1.locator('details.sol > summary').click()
             q1.locator('.mk').first.click()

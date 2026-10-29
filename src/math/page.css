@@ -482,3 +482,39 @@ details[open] .when-open { display: inline; }
 .gx-note { margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
 .lazy-wait { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ink-soft); }
 .new-pill.lead { margin: 0 4px 0 0; }
+
+/* ---------- printing ---------- */
+/* A mock or past midterm prints on its own from its Print buttons: "paper" is the questions with room to write
+   and a score line, "key" is the questions with their answers and every solution step. page.js marks the sheet
+   (.printing), the elements around it (.print-path) and the kind (data-print on <html>). Any other printout
+   (the browser's own Print) gets the open tab without the app's bars and buttons. Always dark ink on white. */
+.sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; }
+.print-btn .ic { width: 16px; height: 16px; }
+.print-only { display: none; }
+@page { margin: 14mm 14mm 16mm; }
+@media print {
+  html:root:root { --bg: #FFFFFF; --surface: #FFFFFF; --band: #FFFFFF; --ink: #111111; --ink-soft: #444444; --line: #BBBBBB;
+    --tint: #F1F5EE; --green: #2F6F3D; --green-text: #2F6F3D; --lime: #7BA831; --warn: #9E3B22; --warn-tint: #FFFFFF; color-scheme: light; }
+  body { background: #FFFFFF; color: var(--ink); padding: 0; }
+  body::before, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
+  .band { border-bottom-width: 2px; }
+  .sheet { border: 0; padding: 0; }
+  /* pages break between parts and steps, never inside one, and a question's head stays with what follows it */
+  .prob, .ideas li, .frow, .parts li, .answer, .steps li, .steps > p, .katex-display { break-inside: avoid; }
+  .rq-head, .stem { break-after: avoid; }
+
+  /* one sheet only */
+  :root[data-print] body *:not(.print-path):not(.printing):not(.printing *) { display: none !important; }
+  :root[data-print] .print-path { display: block !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }
+  :root[data-print] .printing .focus { display: none; }
+  :root[data-print] .printing .sheet-head { border-bottom: 1.5px solid #111111; }
+  :root[data-print] .printing .sheet-title { font-size: 20pt; }
+  :root[data-print="paper"] .printing .reveal { display: none !important; }
+  :root[data-print="paper"] .printing .parts li { padding-bottom: 24mm; }
+  :root[data-print="paper"] .printing .rq + .rq { border-top: 1px solid #BBBBBB; }
+  :root[data-print="paper"] .print-score { display: block; margin: 8px 0 4px; text-align: right; font-size: 11pt; }
+  .print-score .blank { display: inline-block; width: 22mm; border-bottom: 1px solid #111111; }
+  :root[data-print="key"] .printing summary { display: none; }
+  :root[data-print="key"] .printing .step-hidden { display: revert !important; }
+}

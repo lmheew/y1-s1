@@ -287,6 +287,35 @@
     });
   }
 
+  // ----- Print: a mock or past midterm on its own, as a paper to write on or with its answers (see the print
+  // part of page.css). The marks stay until the page is used again after printing, since some browsers (iPhone)
+  // report the end of printing while their print sheet still shows. -----
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.print-btn');
+    const sheet = btn && btn.closest('.sheet');
+    if (sheet) printSheet(sheet, btn.dataset.print);
+  });
+  function printSheet(sheet, kind) {
+    const path = [];
+    for (let el = sheet.parentElement; el && el !== document.body; el = el.parentElement) { el.classList.add('print-path'); path.push(el); }
+    sheet.classList.add('printing');
+    root.dataset.print = kind;
+    const opened = kind === 'key' ? $$('details', sheet).filter((d) => !d.open) : [];
+    opened.forEach((d) => { d.open = true; });
+    const cleanup = () => {
+      path.forEach((el) => el.classList.remove('print-path'));
+      sheet.classList.remove('printing');
+      delete root.dataset.print;
+      opened.forEach((d) => { d.open = false; });
+    };
+    window.addEventListener('afterprint', () => {
+      const later = () => { document.removeEventListener('pointerdown', later, true); document.removeEventListener('keydown', later, true); cleanup(); };
+      document.addEventListener('pointerdown', later, true);
+      document.addEventListener('keydown', later, true);
+    }, { once: true });
+    window.print();
+  }
+
   // ----- solutions open one step at a time (the answer itself shows at once) -----
   function stepper(det) {
     if (det.dataset.stepped) return;

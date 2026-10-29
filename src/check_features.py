@@ -269,6 +269,33 @@ with sync_playwright() as p:
     check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
     ctx.close()
 
+    # ---- printing a mock: the paper (questions only, room to write) or with answers; the marks go after printing ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='dark')
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.add_init_script("window.print = () => { window.__printed = (window.__printed || []).concat(document.documentElement.dataset.print); };")
+    pg.goto(BASE + '/math/#exams')
+    pg.wait_for_selector('#m1 .print-btn')
+    shown = lambda sel: pg.evaluate(f"[...document.querySelectorAll('{sel}')].filter((e) => getComputedStyle(e).display !== 'none' && e.getClientRects().length).length")
+    pg.locator('#m1 .print-btn[data-print="paper"]').click()
+    pg.emulate_media(media='print')
+    check('print: Print paper prints the sheet on its own', pg.evaluate('window.__printed') == ['paper'] and shown('.appbar, .tabbar, #m2, #m3, .band') == 0 and shown('#m1 .rq') == 6)
+    check('print: the paper has no answers, timer or buttons, and has a score line', shown('#m1 .reveal, #m1 .timer, #m1 .sheet-tools') == 0 and shown('#m1 .print-score') == 1)
+    check('print: dark ink on white even in dark mode', pg.evaluate("getComputedStyle(document.body).color") == 'rgb(17, 17, 17)')
+    pg.emulate_media(media='screen')
+    pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    pg.mouse.click(5, 300)
+    check('print: the marks go once the page is used again', pg.evaluate("!document.documentElement.dataset.print && !document.querySelector('.printing, .print-path')"))
+    pg.locator('#m1 .print-btn[data-print="key"]').click()
+    pg.emulate_media(media='print')
+    check('print: Print with answers opens every answer, with all its steps', pg.locator('#m1 details.sol[open]').count() == 6
+          and shown('#m1 .answer') == 6 and shown('#m1 .step-hidden') == pg.locator('#m1 .step-hidden').count() and shown('#m1 summary, #m1 .mkrow') == 0)
+    pg.emulate_media(media='screen')
+    pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    pg.mouse.click(5, 300)
+    check('print: afterwards the answers close again', pg.locator('#m1 details.sol[open]').count() == 0)
+    ctx.close()
+
     # ---- a narrow phone with every answer and every sheet open: full-size math never pushes the page sideways ----
     ctx = b.new_context(viewport={'width': 360, 'height': 800})
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))

@@ -499,6 +499,42 @@ details[open] .when-open { display: inline; }
 .lazy-wait { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ink-soft); }
 .new-pill.lead { margin: 0 4px 0 0; }
 
+/* ---------- printing ---------- */
+/* A mock or past midterm prints on its own from its Print buttons: "paper" is the questions with room to write
+   and a score line, "key" is the questions with their answers and every solution step. page.js marks the sheet
+   (.printing), the elements around it (.print-path) and the kind (data-print on <html>). Any other printout
+   (the browser's own Print) gets the open tab without the app's bars and buttons. Always dark ink on white. */
+.sheet-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.print-btn { display: inline-flex; align-items: center; gap: 6px; }
+.print-btn .ic { width: 16px; height: 16px; }
+.print-only { display: none; }
+@page { margin: 14mm 14mm 16mm; }
+@media print {
+  html:root:root { --bg: #FFFFFF; --surface: #FFFFFF; --band: #FFFFFF; --ink: #111111; --ink-soft: #444444; --line: #BBBBBB;
+    --tint: #F1F5EE; --green: #2F6F3D; --green-text: #2F6F3D; --lime: #7BA831; --warn: #9E3B22; --warn-tint: #FFFFFF; color-scheme: light; }
+  body { background: #FFFFFF; color: var(--ink); padding: 0; }
+  body::before, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
+  .band { border-bottom-width: 2px; }
+  .sheet { border: 0; padding: 0; }
+  /* pages break between parts and steps, never inside one, and a question's head stays with what follows it */
+  .prob, .ideas li, .frow, .parts li, .answer, .steps li, .steps > p, .katex-display { break-inside: avoid; }
+  .rq-head, .stem { break-after: avoid; }
+
+  /* one sheet only */
+  :root[data-print] body *:not(.print-path):not(.printing):not(.printing *) { display: none !important; }
+  :root[data-print] .print-path { display: block !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }
+  :root[data-print] .printing .focus { display: none; }
+  :root[data-print] .printing .sheet-head { border-bottom: 1.5px solid #111111; }
+  :root[data-print] .printing .sheet-title { font-size: 20pt; }
+  :root[data-print="paper"] .printing .reveal { display: none !important; }
+  :root[data-print="paper"] .printing .parts li { padding-bottom: 24mm; }
+  :root[data-print="paper"] .printing .rq + .rq { border-top: 1px solid #BBBBBB; }
+  :root[data-print="paper"] .print-score { display: block; margin: 8px 0 4px; text-align: right; font-size: 11pt; }
+  .print-score .blank { display: inline-block; width: 22mm; border-bottom: 1px solid #111111; }
+  :root[data-print="key"] .printing summary { display: none; }
+  :root[data-print="key"] .printing .step-hidden { display: revert !important; }
+}
+
 /* Floating calculator: a ghost button parked on a screen edge, and a small window laid out like the Windows
    standard calculator, drawn in the site's palette (white or dark green-black keys, green "=" key, band-coloured
    title bar). Uses the page's colour tokens, so it follows light and dark mode. */
@@ -695,7 +731,7 @@ SOFTWARE.
   <button type="button" class="tab" role="tab" id="tab-summary" data-view="summary" aria-controls="view-summary" aria-selected="true" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M3.5 5.5c0-.8.7-1.5 1.5-1.5h6.2v15.5H5a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M20.5 5.5c0-.8-.7-1.5-1.5-1.5h-6.2v15.5H19a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M6.5 8.5h2.2M15.3 8.5h2.2M15.3 12h2.2"/></svg><span>Summary</span></button><button type="button" class="tab" role="tab" id="tab-practice" data-view="practice" aria-controls="view-practice" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="4" y="3" width="12.5" height="18" rx="2"/><path d="M7.5 8h5.5M7.5 11.5h5.5M7.5 15h3"/><path d="M14.2 19.8l6.1-6.1 1.6 1.6-6.1 6.1h-1.6z"/></svg><span>Practice</span></button><button type="button" class="tab" role="tab" id="tab-formulas" data-view="formulas" aria-controls="view-formulas" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M15.5 8H8.8l3.6 4-3.6 4h6.7"/></svg><span>Formulas</span></button><button type="button" class="tab" role="tab" id="tab-quizzes" data-view="quizzes" aria-controls="view-quizzes" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4M8.5 16.2h7"/></svg><span>Quizzes</span></button><button type="button" class="tab" role="tab" id="tab-exams" data-view="exams" aria-controls="view-exams" aria-selected="false" data-newest="2026-10-29"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2.2 2.2 4.8-4.8"/></svg><span>Exams</span></button>
 </div></nav>
 
-<main data-locked="locked.json?v=a52f47857a">
+<main data-locked="locked.json?v=9a09cf20e7">
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
     <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Summary</span><span class="jp" lang="ja">まとめ</span></h1><p class="band-lede">One section per lesson in the course schedule: the key ideas, and the common mistakes to avoid.</p></div></div>
     <div class="wrap content">
@@ -2597,7 +2633,9 @@ c-10,0,-16.667,5,-20,15z M188 15 H145 v585 v1200 v585 h43z"/></svg></span></span
       <div><h3 class="sheet-title">Mock Midterm 1</h3><p class="sheet-sub"><span class="nw">Quizzes 01–05</span> · <span class="nw">60 min</span> · <span class="nw">60 pt</span></p></div>
       <div class="timer" data-timer data-limit="3600"><span class="time" aria-live="off">60:00</span><button type="button" class="t-go"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4.2l2.6 1.6M9.5 2.5h5"/></svg><span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>
     </header>
+    <p class="print-only print-score">Score: <span class="blank"></span> / 60 pt</p>
     <p class="focus">Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.</p>
+    <div class="sheet-tools"><button type="button" class="linkbtn print-btn" data-print="paper"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print paper</span></button><button type="button" class="linkbtn print-btn" data-print="key"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print with answers</span></button></div>
     
     <div class="rq" id="m1-q1">
       <div class="rq-head"><b class="ql">Q.1</b><span class="qtopic-wrap"><span class="qtopic">Limits and continuity</span></span><span class="pts">10 pt</span></div>
@@ -2780,7 +2818,9 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
       <div><h3 class="sheet-title">Mock Midterm 2</h3><p class="sheet-sub"><span class="nw">Quizzes 01–05</span> · <span class="nw">60 min</span> · <span class="nw">60 pt</span></p></div>
       <div class="timer" data-timer data-limit="3600"><span class="time" aria-live="off">60:00</span><button type="button" class="t-go"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4.2l2.6 1.6M9.5 2.5h5"/></svg><span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>
     </header>
+    <p class="print-only print-score">Score: <span class="blank"></span> / 60 pt</p>
     <p class="focus">Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.</p>
+    <div class="sheet-tools"><button type="button" class="linkbtn print-btn" data-print="paper"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print paper</span></button><button type="button" class="linkbtn print-btn" data-print="key"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print with answers</span></button></div>
     
     <div class="rq" id="m2-q1">
       <div class="rq-head"><b class="ql">Q.1</b><span class="qtopic-wrap"><span class="qtopic">Limits and continuity</span></span><span class="pts">10 pt</span></div>
@@ -2933,7 +2973,9 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
       <div><h3 class="sheet-title">Mock Midterm 3</h3><p class="sheet-sub"><span class="nw">Quizzes 01–05</span> · <span class="nw">60 min</span> · <span class="nw">60 pt</span></p></div>
       <div class="timer" data-timer data-limit="3600"><span class="time" aria-live="off">60:00</span><button type="button" class="t-go"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4.2l2.6 1.6M9.5 2.5h5"/></svg><span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>
     </header>
+    <p class="print-only print-score">Score: <span class="blank"></span> / 60 pt</p>
     <p class="focus">Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.</p>
+    <div class="sheet-tools"><button type="button" class="linkbtn print-btn" data-print="paper"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print paper</span></button><button type="button" class="linkbtn print-btn" data-print="key"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print with answers</span></button></div>
     
     <div class="rq" id="m3-q1">
       <div class="rq-head"><b class="ql">Q.1</b><span class="qtopic-wrap"><span class="qtopic">Limits and continuity</span></span><span class="pts">10 pt</span></div>
@@ -3414,6 +3456,35 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
         document.dispatchEvent(new Event('quiztimer'));
       });
     });
+  }
+
+  // ----- Print: a mock or past midterm on its own, as a paper to write on or with its answers (see the print
+  // part of page.css). The marks stay until the page is used again after printing, since some browsers (iPhone)
+  // report the end of printing while their print sheet still shows. -----
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.print-btn');
+    const sheet = btn && btn.closest('.sheet');
+    if (sheet) printSheet(sheet, btn.dataset.print);
+  });
+  function printSheet(sheet, kind) {
+    const path = [];
+    for (let el = sheet.parentElement; el && el !== document.body; el = el.parentElement) { el.classList.add('print-path'); path.push(el); }
+    sheet.classList.add('printing');
+    root.dataset.print = kind;
+    const opened = kind === 'key' ? $$('details', sheet).filter((d) => !d.open) : [];
+    opened.forEach((d) => { d.open = true; });
+    const cleanup = () => {
+      path.forEach((el) => el.classList.remove('print-path'));
+      sheet.classList.remove('printing');
+      delete root.dataset.print;
+      opened.forEach((d) => { d.open = false; });
+    };
+    window.addEventListener('afterprint', () => {
+      const later = () => { document.removeEventListener('pointerdown', later, true); document.removeEventListener('keydown', later, true); cleanup(); };
+      document.addEventListener('pointerdown', later, true);
+      document.addEventListener('keydown', later, true);
+    }, { once: true });
+    window.print();
   }
 
   // ----- solutions open one step at a time (the answer itself shows at once) -----

@@ -114,6 +114,13 @@ A few details about the password:
 - Footers keep enough bottom padding that the last line ends above the floating buttons.
 - A page without a tab bar sets `--totop-bottom`, as the home page does. The hover and focus colours come from the page's `--bar-active` and `--lime-deep`.
 
+## Printing
+
+- Every mock and past midterm has two buttons under its note: **Print paper** (the questions with room to write under each part and a score line, without answers, timer or buttons) and **Print with answers** (the questions with every answer and all solution steps). `printSheet` in `page.js` marks the sheet `.printing`, the elements around it `.print-path` and the kind in `data-print` on `<html>`; the print part at the end of `page.css` does the rest. The marks go when the page is next used after printing, because an iPhone reports the end of printing while its print sheet is still open.
+- The browser's own Print gets the open tab without the app bar, tab bar, search and floating buttons. Printouts always use dark ink on white, also in dark mode.
+- Pages break between parts and solution steps, never inside one.
+- `check_features.py` checks both kinds of printout with print media emulated.
+
 ## A private, unlocked copy
 
 `node src/math/build.mjs artifact out.html` writes one self-contained page with the in-class sheets in plain view. It needs `private/`, or `SITE_PASSWORD`. Never commit that page.

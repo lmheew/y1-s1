@@ -348,7 +348,9 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
       <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${meta([about, `${m.minutes} min`, `${points} pt`])}</p></div>
       ${timerHTML(m.minutes * 60)}
     </header>
+    <p class="print-only print-score">Score: <span class="blank"></span> / ${points} pt</p>
     <p class="focus">${focus}</p>
+    <div class="sheet-tools"><button type="button" class="linkbtn print-btn" data-print="paper">${UI_ICONS.print}<span>Print paper</span></button><button type="button" class="linkbtn print-btn" data-print="key">${UI_ICONS.print}<span>Print with answers</span></button></div>
     ${qsHTML}
     <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
   </article>`;
