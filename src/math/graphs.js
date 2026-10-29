@@ -1,5 +1,6 @@
 // Interactive graphs in the Summary tab: plain SVG, each drawn the first time it scrolls into view.
-// secant (u2), implicit (u3), concavity (u4), newton and taylor (u5). The build places <figure data-graph="…">.
+// secant (u2), implicit (u3), concavity (u4), newton and taylor (u5), family and second (u6).
+// The build places <figure data-graph="…">.
 (() => {
   const figs = Array.from(document.querySelectorAll('figure.explore[data-graph]'));
   if (!figs.length) return;
@@ -236,6 +237,71 @@
         read.innerHTML = `P${sub(deg)}(x) = ${terms.join('')}`;
         return String(deg);
       });
+    },
+    // y′ = λy: the family y = Ce^(λx); the initial condition y(0) = y₀ picks the curve with C = y₀
+    family(fig) {
+      const g = plot(fig.querySelector('.gx-stage'), { x0: -2.2, x1: 2.2, y0: -4.4, y1: 4.4 });
+      g.grid(1, 1);
+      const read = readout(fig);
+      let lam = 0.8, y0 = 1.5;
+      const draw = () => {
+        g.clear();
+        for (let k = -6; k <= 6; k++) {
+          const C = k / 2;
+          if (Math.abs(C - y0) > 1e-9) g.liveCurve((x) => C * Math.exp(lam * x), 'gx-family');
+        }
+        g.liveCurve((x) => y0 * Math.exp(lam * x), 'gx-curve');
+        g.dot(0, y0, 'gx-dot solid');
+        g.label(0, y0, `(0, ${fix(y0)})`, 'gx-label', 7, y0 >= 0 ? 14 : -7);
+        const ex = Math.abs(lam) < 0.005 ? '' : `e<sup>${fix(lam, 1)}x</sup>`;
+        const lhs = Math.abs(lam) < 0.005 ? 'y′ = 0' : `y′ = ${fix(lam, 1)}y`;
+        read.innerHTML = `${lhs} with y(0) = ${fix(y0)} gives <b>y = ${fix(y0)}${ex}</b>`;
+      };
+      // each slider is placed right under the graph, so the last one made sits on top
+      slider(fig, 'λ', -1.5, 1.5, 0.1, lam, (v) => { lam = v; draw(); return fix(v, 1); });
+      slider(fig, 'y(0)', -3, 3, 0.25, y0, (v) => { y0 = v; draw(); return fix(v); });
+    },
+    // y″ + ay′ + by = 0 from y(0) = 1, y′(0) = 0: the sign of Δ = a² − 4b decides the shape
+    second(fig) {
+      const g = plot(fig.querySelector('.gx-stage'), { x0: -1.6, x1: 12.5, y0: -1.3, y1: 1.3 });
+      g.grid(2, 0.5);
+      const read = readout(fig);
+      const sg = (v) => (v < 0 ? ' − ' : ' + ') + fix(Math.abs(v));
+      const ex = (r) => (Math.abs(r) < 0.005 ? '' : `e<sup>${fix(r)}x</sup>`);
+      let a = 0.5, b = 1;
+      const draw = () => {
+        g.clear();
+        let D = a * a - 4 * b;
+        if (Math.abs(D) < 1e-9) D = 0;
+        let f, env = null, roots, kind, gen;
+        if (D > 0) {
+          const s = Math.sqrt(D), r1 = (-a + s) / 2, r2 = (-a - s) / 2;
+          const c1 = -r2 / (r1 - r2), c2 = r1 / (r1 - r2);
+          f = (x) => c1 * Math.exp(r1 * x) + c2 * Math.exp(r2 * x);
+          roots = `λ = ${fix(r1)}, ${fix(r2)}`;
+          kind = 'Δ &gt; 0: two real roots, no oscillation';
+          gen = `y = C₁${ex(r1)} + C₂${ex(r2)}`;
+        } else if (D === 0) {
+          const r = -a / 2;
+          f = (x) => (1 - r * x) * Math.exp(r * x);
+          roots = `λ = ${fix(r)} (repeated)`;
+          kind = 'Δ = 0: one repeated root';
+          gen = `y = (C₁ + C₂x)${ex(r)}`;
+        } else {
+          const al = -a / 2, be = Math.sqrt(-D) / 2, c2 = -al / be, A = Math.sqrt(1 + c2 * c2);
+          f = (x) => Math.exp(al * x) * (Math.cos(be * x) + c2 * Math.sin(be * x));
+          if (Math.abs(al) >= 0.005) env = (x) => A * Math.exp(al * x);
+          roots = `λ = ${fix(al)} ± ${fix(be)}i`;
+          kind = 'Δ &lt; 0: complex roots, it oscillates';
+          gen = `y = ${ex(al)}${ex(al) ? '(' : ''}C₁cos ${fix(be)}x + C₂sin ${fix(be)}x${ex(al) ? ')' : ''}`;
+        }
+        if (env) { g.liveCurve(env, 'gx-env', 0, 12.5); g.liveCurve((x) => -env(x), 'gx-env', 0, 12.5); }
+        g.liveCurve(f, 'gx-curve', 0, 12.5);
+        g.dot(0, 1, 'gx-dot solid');
+        read.innerHTML = `λ²${sg(a)}λ${sg(b)} = 0, Δ = ${fix(D)}<br>${roots}<br><b>${kind}</b><br>${gen}`;
+      };
+      slider(fig, 'b', 0.25, 4, 0.05, b, (v) => { b = v; draw(); return fix(v); });
+      slider(fig, 'a', 0, 4, 0.05, a, (v) => { a = v; draw(); return fix(v); });
     },
   };
   function build(fig) {

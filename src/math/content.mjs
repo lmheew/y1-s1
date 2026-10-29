@@ -85,6 +85,30 @@ $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\fra
 - Watch the signs in $x-\frac{f}{f'}$ when $f$ is negative, and the decimals: $\frac{1}{10}=0.1$.
 - Divide by $k!$: $c_2=\frac{f''(a)}{2}$ and $c_3=\frac{f'''(a)}{6}$.`,
   },
+  // A lesson that no quiz or exam covers: quiz is null, so it has no Quizzes entry and stays out of the mocks.
+  {
+    id: 'u6', no: '06', quiz: null, days: 'Day12', note: 'Not on the midterm', short: 'Diff. equations', added: '2026-10-29',
+    title: 'Introduction to differential equations',
+    intro: R`An introduction only. It isn't on the midterm, and differential equations are covered in full in a later semester.`,
+    ideas: R`
+- **What it is:** an equation linking an unknown function $y(x)$ with its derivatives, like $y'=2y$. Solving it means finding every function that makes it true. The **order** is the highest derivative: $y'=2y$ is first order, and $y''+y=0$ is second order.
+- **Checking a solution:** differentiate the given $y$ and substitute it into both sides. For $y=Ce^{2x}$, $y'=2Ce^{2x}=2y$, so it solves $y'=2y$ for every $C$.
+- **Ambiguity of the solution:** the equation alone doesn't fix one function, because constants disappear when you differentiate. $y'=2x$ is solved by $y=x^2+C$ for any $C$. The general solution has as many free constants as the order.
+- **Initial conditions:** a value such as $y(0)=3$ picks one curve from the family. Solve first and keep $C$, then substitute the condition, solve for $C$ and write the function. You need one condition per constant, usually $y(0)$ and $y'(0)$ for second order.
+- **$y'=f(x)$:** integrate, $y=\int f(x)\,dx+C$. With $f'(x)=\frac{1}{x}$ and $f(1)=0$, $f(x)=\ln x$. With $f'(x)=e^x$ and $f(0)=e$, $f(x)=e^x+e-1$.
+- **$y'=\lambda y$:** since $(e^{\lambda x})'=\lambda e^{\lambda x}$, the general solution is $y=Ce^{\lambda x}$, and $C=y(0)$. Here $C$ multiplies instead of being added. It grows for $\lambda>0$ and decays for $\lambda<0$.
+- **Why only $Ce^{\lambda x}$:** dividing by $y$ gives $(\ln|y|)'=\lambda$, so $\ln|y|=\lambda x+c$ and $y=\pm e^{c}e^{\lambda x}$. Together with $y=0$, that is $Ce^{\lambda x}$ for any real $C$.
+- **Second order, $y''+ay'+by=0$:** try $y=e^{\lambda x}$. Then $(\lambda^2+a\lambda+b)e^{\lambda x}=0$, and since $e^{\lambda x}\ne0$, the **characteristic equation** $\lambda^2+a\lambda+b=0$ must hold. If $y_1$ and $y_2$ are solutions, so is $C_1y_1+C_2y_2$.
+- **Three cases,** by the sign of $\Delta=a^2-4b$, writing complex roots as $\lambda=\alpha\pm\beta i$:
+$$\begin{aligned}\Delta>0&:\ y=C_1e^{\lambda_1x}+C_2e^{\lambda_2x}\\ \Delta=0&:\ y=(C_1+C_2x)e^{\lambda x}\\ \Delta<0&:\ y=e^{\alpha x}(C_1\cos\beta x+C_2\sin\beta x)\end{aligned}$$
+For $\Delta=0$, $xe^{\lambda x}$ is a second solution because $2\lambda+a=0$. For $\Delta<0$, Euler's formula $e^{i\theta}=\cos\theta+i\sin\theta$ turns the complex exponentials into $\cos$ and $\sin$.`,
+    watch: R`
+- Solve the equation first, then use the condition, and end with the function itself, not just "$C=\dots$".
+- The given value goes on the right: $f(0)=e$ means $1+C=e$, so $C=e-1$, not $-1$.
+- $C$ is the starting value only when the condition is at $x=0$. For $y=Ce^{-2x}$ with $y(1)=5$, $Ce^{-2}=5$ gives $C=5e^{2}$, not $e^{-2}$.
+- A condition on $y'$ goes into the formula for $y'$, so differentiate the general solution first.
+- With a repeated root, $C_1e^{\lambda x}+C_2e^{\lambda x}$ is really one constant. The second solution is $xe^{\lambda x}$.`,
+  },
 ];
 
 export const habits = R`
@@ -337,5 +361,51 @@ $$f'(x)=\tfrac{4}{3}x^{1/3}-\tfrac{4}{3}x^{-2/3}=\frac{4(x-1)}{3x^{2/3}}$$
       sol: R`
 - (1) With $f=\sin 2x$: $f\left(\frac{\pi}{12}\right)=\sin\frac{\pi}{6}=\frac{1}{2}$. $f'=2\cos 2x\to\sqrt3$. $f''=-4\sin 2x\to-2$, so $c_2=\frac{-2}{2!}=-1$. $f'''=-8\cos 2x\to-4\sqrt3$, so $c_3=\frac{-4\sqrt3}{3!}=-\frac{2\sqrt3}{3}$.
 - (2) $f=x^{-1}\to1$. $f'=-x^{-2}\to-1$. $f''=2x^{-3}\to2$, so $c_2=1$. $f'''=-6x^{-4}\to-6$, so $c_3=-1$.` },
+  ],
+  u6: [
+    { src: 'Integrate, then use the condition', added: '2026-10-29',
+      stem: R`Find $f(x)$.`,
+      parts: [R`$f'(x)=\frac{1}{x}$;  $f(1)=0$`, R`$f'(x)=e^x$;  $f(0)=e$`],
+      hint: R`Integrate first and keep the $+C$. Then substitute the condition and solve for $C$.`,
+      answer: [R`(1) $f(x)=\ln x$`, R`(2) $f(x)=e^x+e-1$`],
+      sol: R`
+- (1) $f(x)=\ln x+C$. In general it's $\ln|x|$, but the condition is at $x=1>0$. Then $f(1)=\ln 1+C=C=0$, so $f(x)=\ln x$.
+- (2) $f(x)=e^x+C$. Then $f(0)=e^0+C=1+C$, which must equal $e$, so $C=e-1$ and $f(x)=e^x+e-1$. Check: $f(0)=1+e-1=e$.` },
+    { src: "First order: y' = λy", added: '2026-10-29',
+      stem: R`Solve each initial value problem.`,
+      parts: [R`$y'=-3y$;  $y(0)=4$`, R`$y'=2y$;  $y(1)=e$`],
+      hint: R`$y'=\lambda y$ has the general solution $y=Ce^{\lambda x}$. When the condition isn't at $x=0$, $C$ isn't the given value.`,
+      answer: [R`(1) $y=4e^{-3x}$`, R`(2) $y=e^{2x-1}$`],
+      sol: R`
+- (1) $y=Ce^{-3x}$, and $y(0)=C=4$, so $y=4e^{-3x}$.
+- (2) $y=Ce^{2x}$, and $y(1)=Ce^2=e$, so $C=\frac{e}{e^2}=e^{-1}$. Then $y=e^{-1}e^{2x}=e^{2x-1}$. Check: $y(1)=e^{1}=e$.` },
+    { src: 'General solution, second order', added: '2026-10-29',
+      stem: R`Find the general solution.`,
+      parts: [R`$y''-5y'+6y=0$`, R`$y''+6y'+9y=0$`, R`$y''+4y=0$`, R`$y''-2y'+5y=0$`],
+      hint: R`Write the characteristic equation $\lambda^2+a\lambda+b=0$ and check the sign of $\Delta=a^2-4b$ first.`,
+      answer: [R`(1) $y=C_1e^{2x}+C_2e^{3x}$`, R`(2) $y=(C_1+C_2x)e^{-3x}$`, R`(3) $y=C_1\cos 2x+C_2\sin 2x$`, R`(4) $y=e^{x}(C_1\cos 2x+C_2\sin 2x)$`],
+      sol: R`
+- (1) $\lambda^2-5\lambda+6=(\lambda-2)(\lambda-3)=0$ gives two real roots, $2$ and $3$.
+- (2) $\lambda^2+6\lambda+9=(\lambda+3)^2=0$ gives the repeated root $-3$, so the second solution is $xe^{-3x}$.
+- (3) $\lambda^2+4=0$ gives $\lambda=\pm2i$, so $\alpha=0$ and $\beta=2$.
+- (4) $\lambda^2-2\lambda+5=0$ has $\Delta=4-20=-16$, so $\lambda=\frac{2\pm4i}{2}=1\pm2i$. Then $\alpha=1$ and $\beta=2$.` },
+    { src: 'Second order with initial conditions', added: '2026-10-29',
+      stem: R`Solve with the initial conditions.`,
+      parts: [R`$y''-y'-2y=0$;  $y(0)=3$, $y'(0)=0$`, R`$y''-4y'+4y=0$;  $y(0)=1$, $y'(0)=5$`, R`$y''+9y=0$;  $y(0)=2$, $y'(0)=3$`],
+      hint: R`Find the general solution, then differentiate it before you use the condition on $y'(0)$.`,
+      answer: [R`(1) $y=e^{2x}+2e^{-x}$`, R`(2) $y=(1+3x)e^{2x}$`, R`(3) $y=2\cos 3x+\sin 3x$`],
+      sol: R`
+- (1) $\lambda^2-\lambda-2=(\lambda-2)(\lambda+1)$, so $y=C_1e^{2x}+C_2e^{-x}$ and $y'=2C_1e^{2x}-C_2e^{-x}$. The conditions give $C_1+C_2=3$ and $2C_1-C_2=0$, so $C_1=1$ and $C_2=2$.
+- (2) $(\lambda-2)^2=0$, so $y=(C_1+C_2x)e^{2x}$ and $y'=C_2e^{2x}+2(C_1+C_2x)e^{2x}$. Then $y(0)=C_1=1$, and $y'(0)=C_2+2C_1=5$ gives $C_2=3$.
+- (3) $\lambda=\pm3i$, so $y=C_1\cos 3x+C_2\sin 3x$ and $y'=-3C_1\sin 3x+3C_2\cos 3x$. Then $y(0)=C_1=2$, and $y'(0)=3C_2=3$ gives $C_2=1$.` },
+    { src: 'Build the equation from its solutions', added: '2026-10-29',
+      stem: R`Find $a$ and $b$ so that $y''+ay'+by=0$ has these solutions.`,
+      parts: [R`both $e^{2x}$ and $e^{-3x}$`, R`the general solution $y=(C_1+C_2x)e^{-x}$`, R`the general solution $y=C_1\cos 3x+C_2\sin 3x$`],
+      hint: R`Work backwards: the solutions give the roots $\lambda$, and the roots give $\lambda^2+a\lambda+b=0$.`,
+      answer: [R`(1) $a=1$, $b=-6$`, R`(2) $a=2$, $b=1$`, R`(3) $a=0$, $b=9$`],
+      sol: R`
+- (1) The roots are $2$ and $-3$, and $(\lambda-2)(\lambda+3)=\lambda^2+\lambda-6$.
+- (2) $-1$ is a repeated root, and $(\lambda+1)^2=\lambda^2+2\lambda+1$.
+- (3) The roots are $\pm3i$, and $(\lambda-3i)(\lambda+3i)=\lambda^2+9$.` },
   ],
 };

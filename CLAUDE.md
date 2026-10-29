@@ -22,6 +22,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 ## Content (src/math)
 
 - `content.mjs`: units (Summary key ideas and "Watch out" lists), exam-day habits, practice problems.
+- A lesson that no quiz or exam covers (Day 12, the introduction to differential equations) is a unit with `quiz: null`, its `days` and a `note` such as "Not on the midterm", plus an optional `intro`. It shows its day instead of a quiz, has no Quizzes entry, and stays out of the mocks and the "Quizzes 01–05" span. Quizzes find their unit by `quiz`, not by `no`.
 - `followups.mjs`: Follow-up A (same skills, new numbers) and Follow-up B (targets common mistakes) for each quiz. Each is worth 10 pt, like the in-class sheet.
 - `extras.mjs`: search tags for the practice problems, the Formulas tab, the exact-values table and the icons.
 - `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points.

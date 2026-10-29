@@ -102,7 +102,7 @@ const ring = (r, id, cls) => {
   const size = 2 * r + 8;
   return `<svg ${id ? `id="${id}" ` : ''}class="ring ${cls}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="ring-val" data-c="${c}" cx="${size / 2}" cy="${size / 2}" r="${r}" style="stroke-dasharray:${c};stroke-dashoffset:${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
 };
-const SHORT = { u1: 'Limits & continuity', u2: 'Derivative rules', u3: 'Implicit & parametric', u4: 'Extrema & concavity', u5: 'Series & Taylor' };
+const SHORT = { u1: 'Limits & continuity', u2: 'Derivative rules', u3: 'Implicit & parametric', u4: 'Extrema & concavity', u5: 'Series & Taylor', u6: 'Differential equations' };
 // anything with `added: 'YYYY-MM-DD'` gets a "New" label on the page for two weeks (page.js decides, at view time)
 const addedAttr = (o) => (o && o.added ? ` data-added="${esc(o.added)}"` : '');
 // interactive graphs (graphs.js draws them when they scroll into view), placed after a unit's key ideas
@@ -112,6 +112,8 @@ const GRAPHS = {
   u4: [['concavity', 'Slope and concavity', String.raw`Slide along $f(x)=x^3-3x$. The sign of $f'$ tells increasing or decreasing; the sign of $f''$ tells concave up or down.`]],
   u5: [['newton', "Newton's method", String.raw`Each step follows the tangent at $x_n$ down to the $x$-axis: $x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$, here for $f(x)=x^2-2$ from $x_1=2$.`],
     ['taylor', 'Taylor polynomials', String.raw`Raise the degree: the Taylor polynomial of $\sin x$ about $0$ follows the curve over a wider and wider range.`]],
+  u6: [['family', 'One condition picks one curve', String.raw`The equation $y'=\lambda y$ alone gives the whole family $y=Ce^{\lambda x}$, one curve for each $C$. The condition $y(0)=y_0$ picks one of them, with $C=y_0$.`],
+    ['second', 'Second order: three cases', String.raw`Solutions of $y''+ay'+by=0$ starting at $y(0)=1$ with $y'(0)=0$. The sign of $\Delta=a^2-4b$ decides the shape, and only $\Delta<0$ oscillates.`]],
 };
 const GRAPHS_ADDED = '2026-10-29';
 const TESTBAR_ADDED = '2026-10-29';
@@ -131,23 +133,24 @@ function render({ quizzes, locked, lockedNos }) {
   const PRIV = [];
 
   // Summary
-  const tilesHTML = units.map((u) => `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${UNIT_ICONS[u.id]}<span class="tile-k">${u.quiz}</span><span class="tile-t">${SHORT[u.id] || esc(u.title)}</span></button>`).join('')
+  const tilesHTML = units.map((u) => `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${UNIT_ICONS[u.id]}<span class="tile-k">${u.quiz || u.days}</span><span class="tile-t">${SHORT[u.id] || esc(u.title)}</span></button>`).join('')
     + `<button type="button" class="tile" data-goto="summary" data-target="su-habits">${UNIT_ICONS.habits}<span class="tile-k">Before the exam</span><span class="tile-t">Exam-day habits</span></button>`;
   const summaryHTML = units.map((u) => {
     const ideas = items(u.ideas).map((it, i) => {
       const id = `su-${u.id}-k${i + 1}`;
       const label = (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => texPlain(m.slice(1, -1)));
-      INDEX.push(entry('Summary', 'summary', id, `${label || 'Key idea'} — ${u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), u.quiz));
+      INDEX.push(entry('Summary', 'summary', id, `${label || 'Key idea'} — ${u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), u.quiz || u.days));
       return `<li id="${id}">${inline(it)}</li>`;
     }).join('');
     const watch = items(u.watch).map((it, i) => {
       const id = `su-${u.id}-w${i + 1}`;
-      INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + u.quiz));
+      INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + (u.quiz || u.days)));
       return `<li id="${id}">${inline(it)}</li>`;
     }).join('');
     return `
 <section class="unit" id="su-${u.id}"${addedAttr(u)}>
-  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${u.quiz} · ${u.days}</p><h2>${esc(u.title)}</h2></div></header>
+  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${u.quiz ? `${u.quiz} · ${u.days}` : `${u.days} · ${esc(u.note || 'Extra lesson')}`}</p><h2>${esc(u.title)}</h2></div></header>
+  ${u.intro ? `<p class="unit-note">${inline(u.intro)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
   ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
@@ -185,7 +188,7 @@ function render({ quizzes, locked, lockedNos }) {
     }).join('');
     return `
 <section class="punit" id="pu${ui + 1}">
-  <header class="punit-head"><div><p class="kicker">Practice ${u.no} · like ${u.quiz}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
+  <header class="punit-head"><div><p class="kicker">Practice ${u.no} · ${u.quiz ? `like ${u.quiz}` : `${u.days} · ${esc((u.note || 'Extra lesson').toLowerCase())}`}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
   <div class="probs">${cards}</div>
 </section>`;
   }).join('');
@@ -257,7 +260,7 @@ function render({ quizzes, locked, lockedNos }) {
   </article>`;
   const nos = [...new Set([...Object.keys(followups), ...(quizzes ? quizzes.map((q) => q.no) : lockedNos)])].sort();
   const quizzesHTML = nos.map((no) => {
-    const u = units.find((x) => x.no === no) || { title: `Quiz ${no}`, days: '' };
+    const u = units.find((x) => x.quiz === `Quiz ${no}`) || { title: `Quiz ${no}`, days: '' };
     const q = quizzes && quizzes.find((x) => x.no === no);
     const hasInClass = Boolean(q) || (!quizzes && lockedNos.includes(no));
     const [fa, fb] = followups[no] || [];
@@ -283,7 +286,10 @@ function render({ quizzes, locked, lockedNos }) {
 </section>`;
   }).join('');
   const quizJump = nos.map((no) => `<button type="button" class="chip" data-goto="quizzes" data-target="qg${no}">Quiz ${no}</button>`).join('');
-  const span = units.length > 1 ? `Quizzes ${units[0].no}–${units[units.length - 1].no}` : units[0].quiz;
+  const quizUnits = units.filter((u) => u.quiz);
+  const qnum = (u) => u.quiz.replace(/^Quiz /, '');
+  const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits[0].quiz;
+  const extraDays = units.filter((u) => !u.quiz).map((u) => u.days.replace(/Day(\d+)/g, 'Day $1'));
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
   // Exams: upcoming exams (dates from site.json; page.js shows the countdown) and the mock midterms
@@ -396,7 +402,7 @@ function render({ quizzes, locked, lockedNos }) {
 
 <main%MAIN_ATTRS%>
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
-    ${band('Summary', 'まとめ', 'One unit per quiz: the key ideas, and the common mistakes to avoid.')}
+    ${band('Summary', 'まとめ', 'One unit per quiz, plus extra lessons: the key ideas, and the common mistakes to avoid.')}
     <div class="wrap content">
       <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
       ${summaryHTML}
@@ -404,12 +410,12 @@ function render({ quizzes, locked, lockedNos }) {
   </section>
 
   <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
-    ${band('Practice', '練習問題', `${total} practice problems in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`)}
+    ${band('Practice', '練習問題', `${total} practice problems, most in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`)}
     ${lazyBox('practice')}
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', `Every formula from ${span} on one page, plus the exact trig values you need without a calculator.`)}
+    ${band('Formulas', '公式集', `Every formula from ${span}${extraDays.length ? ' and ' + extraDays.join(', ') : ''} on one page, plus the exact trig values you need without a calculator.`)}
     ${lazyBox('formulas')}
   </section>
 
@@ -421,7 +427,7 @@ function render({ quizzes, locked, lockedNos }) {
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length} mock midterms covering every topic so far. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length} mock exams for Calculus midterm 1, covering ${span}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 </main>

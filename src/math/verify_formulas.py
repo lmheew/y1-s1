@@ -72,5 +72,24 @@ for a, s_, c_ in zip(ang, [0, .5, sqrt(2) / 2, sqrt(3) / 2, 1], [1, sqrt(3) / 2,
     check(f"sin {a:.4f}", sin(a), s_); check(f"cos {a:.4f}", cos(a), c_)
 for a, t_ in zip(ang[:4], [0, sqrt(3) / 3, 1, sqrt(3)]):
     check(f"tan {a:.4f}", tan(a), t_)
+# g7 differential equations (Day 12)
+import cmath
+def d2(f, x, h=1e-4): return (f(x + h) - 2 * f(x) + f(x - h)) / h ** 2
+check("y'=f(x): y = sin x + C", d1(lambda t: sin(t) + 4, 0.8), cos(0.8))
+for lam, C in ((-0.7, 2.3), (1.4, -0.5)):
+    y = lambda t: C * exp(lam * t)
+    check(f"y'=λy λ={lam}", d1(y, 0.6), lam * y(0.6)); check(f"C=y(0) λ={lam}", y(0), C)
+a, b, lam = 1.5, -2.0, 0.9                       # substituting e^(λx) gives (λ²+aλ+b)e^(λx)
+y = lambda t: exp(lam * t)
+check("characteristic factor", d2(y, 0.3) + a * d1(y, 0.3) + b * y(0.3), (lam ** 2 + a * lam + b) * exp(lam * 0.3), 1e-5)
+for name, a, b, y in (("Δ>0 a=-3 b=2", -3, 2, lambda t: 0.8 * exp(t) - 1.7 * exp(2 * t)),
+                      ("Δ=0 a=-4 b=4", -4, 4, lambda t: (0.8 - 1.7 * t) * exp(2 * t)),
+                      ("Δ<0 a=-2 b=5", -2, 5, lambda t: exp(t) * (0.8 * cos(2 * t) - 1.7 * sin(2 * t)))):
+    for t in (-0.5, 0.4, 1.2):
+        check(f"{name} at {t}", d2(y, t) + a * d1(y, t) + b * y(t), 0, 1e-4)
+for th in (0.3, 2.0, -1.1):
+    z = cmath.exp(1j * th)
+    check(f"Euler re {th}", z.real, cos(th)); check(f"Euler im {th}", z.imag, sin(th))
+
 print("\nFAILED:" if fails else "\nALL FORMULA CHECKS PASSED", fails if fails else "")
 sys.exit(1 if fails else 0)

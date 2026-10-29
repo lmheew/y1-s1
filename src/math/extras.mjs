@@ -28,6 +28,11 @@ export const tags = {
   '5.3': "newton's method newton approximation root x2",
   '5.4': 'linear approximation tangent line estimate concave',
   '5.5': 'taylor series coefficients maclaurin double angle',
+  '6.1': 'differential equation integrate antiderivative initial condition constant ln exponential',
+  '6.2': "differential equation y' = λy exponential growth decay initial value problem constant",
+  '6.3': 'second order differential equation characteristic equation general solution discriminant repeated root complex roots cos sin',
+  '6.4': 'second order differential equation initial conditions characteristic equation particular solution',
+  '6.5': 'characteristic equation roots work backwards build the equation from its solutions',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify_formulas.py.
@@ -102,6 +107,16 @@ export const formulas = [
     ['Double angle (cos)', R`\cos 2x=\cos^2x-\sin^2x=1-2\sin^2x`],
     ['Odd and even', R`\sin(-x)=-\sin x,\quad \cos(-x)=\cos x`],
   ]},
+  { id: 'g7', title: 'Differential equations (intro)', quiz: 'Day12 · not on the midterm', added: '2026-10-29', rows: [
+    ['Order and constants', R`\text{order } n\ \Rightarrow\ n\ \text{constants},\ n\ \text{conditions}`],
+    ['y′ = f(x)', R`y=\int f(x)\,dx+C`],
+    ['y′ = λy', R`y=Ce^{\lambda x},\quad C=y(0)`],
+    ['Characteristic equation', R`y''+ay'+by=0\ \Rightarrow\ \lambda^2+a\lambda+b=0`],
+    ['Δ > 0, real roots λ₁ ≠ λ₂', R`y=C_1e^{\lambda_1x}+C_2e^{\lambda_2x}`],
+    ['Δ = 0, repeated root λ', R`y=(C_1+C_2x)e^{\lambda x}`],
+    ['Δ < 0, roots α ± βi', R`y=e^{\alpha x}(C_1\cos\beta x+C_2\sin\beta x)`],
+    ["Euler's formula", R`e^{i\theta}=\cos\theta+i\sin\theta`],
+  ]},
 ];
 
 // exact values table, laid out like the course slide (Review of Functions): 0 to π, rows cos, sin, tan.
@@ -150,5 +165,6 @@ export const UNIT_ICONS = {
   u3: big('<circle cx="21" cy="26" r="12"/><path d="M21.5 8.5l17 17" class="lime-stroke"/><circle cx="29.5" cy="17.5" r="2.6" class="lime-fill"/>'),
   u4: big('<path d="M5 31c6 0 7-16 13-16s7 19 13 19 7-16 13-16"/><circle cx="18" cy="15" r="2.6" class="lime-fill"/><circle cx="31" cy="34" r="2.6" class="lime-fill"/>'),
   u5: big('<rect x="7" y="12" width="6" height="28" rx="1" class="lime-fill-soft"/><rect x="16" y="20" width="6" height="20" rx="1"/><rect x="25" y="26" width="6" height="14" rx="1"/><rect x="34" y="31" width="6" height="9" rx="1"/>'),
+  u6: big('<path d="M10 7v34"/><path d="M10 40c12 0 20-4 28-19"/><path d="M10 31c12 0 20-4 28-19" class="lime-stroke"/><path d="M10 22c9 0 15-3 21-12"/><circle cx="10" cy="31" r="2.8" class="lime-fill"/>'),
   habits: big('<rect x="9" y="7" width="30" height="35" rx="3"/><path d="M15 17l3 3 5-5" class="lime-stroke"/><path d="M27 18h6M15 28h18M15 35h12"/>'),
 };

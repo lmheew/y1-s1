@@ -4,7 +4,7 @@
     python3 src/check_features.py --shots DIR    Formulas Test me, graphs, New labels, deferred tabs, home page, offline
 
 Countdowns are tested on a temporary copy of the site with exam dates filled in. Some checks expect the current
-content (three mocks, five graphs, four exams and four news entries in site.json); update them when that changes."""
+content (three mocks, seven graphs, five exams and six news entries in site.json); update them when that changes."""
 import datetime, functools, http.server, json, os, re, shutil, subprocess, sys, tempfile, threading
 from playwright.sync_api import sync_playwright
 
@@ -65,8 +65,8 @@ with sync_playwright() as p:
         # ---- home page ----
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
-        check(f'{label}: home lists 4 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 4 and 'Date to be announced' in pg.locator('#up-list').inner_text())
-        check(f'{label}: home shows What\'s new with New labels', pg.locator('#news li').count() == 4 and pg.locator('#news .new-pill').count() == 4)
+        check(f'{label}: home lists 5 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 5 and 'Date to be announced' in pg.locator('#up-list').inner_text())
+        check(f'{label}: home shows What\'s new with New labels', pg.locator('#news li').count() == 6 and pg.locator('#news .new-pill').count() == 6)
         check(f'{label}: Math card has a New label', pg.locator('#card-math .new-pill').count() == 1)
         check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
@@ -77,10 +77,10 @@ with sync_playwright() as p:
         pg.wait_for_selector('.calc-fab')
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
         check(f'{label}: Exams tab shows a New dot', pg.evaluate("document.getElementById('tab-exams').classList.contains('has-new')"))
-        check(f'{label}: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 5)
+        check(f'{label}: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7)
 
         # ---- graphs ----
-        for kind in ['secant', 'implicit', 'concavity', 'newton', 'taylor']:
+        for kind in ['secant', 'implicit', 'concavity', 'newton', 'taylor', 'family', 'second']:
             fig = pg.locator(f'#gx-{kind}')
             fig.scroll_into_view_if_needed()
             pg.wait_for_timeout(250)
@@ -118,6 +118,27 @@ with sync_playwright() as p:
         check(f'{label}: Taylor P₇ readout', rd.startswith('P₇(x) = x − x³/3! + x⁵/5! − x⁷/7!'), rd)
         if label == 'phone':
             shot('graph-taylor')
+        # Day 12 (not on the midterm): its unit is marked, and its two graphs respond
+        check(f'{label}: Day 12 unit says it is not on the midterm', 'not on the midterm' in pg.locator('#su-u6 .unit-head .kicker').inner_text().lower() and pg.locator('#su-u6 .unit-note').count() == 1)
+        fig = pg.locator('#gx-family')
+        fig.scroll_into_view_if_needed()
+        fig.locator('input[type=range]').nth(0).fill('2')
+        fig.locator('input[type=range]').nth(1).fill('-1')
+        rd = fig.locator('.gx-read').inner_text()
+        check(f'{label}: family readout picks C = y(0)', 'y(0) = 2.00' in rd and 'y = 2.00e' in rd and '−1.0x' in rd, rd)
+        if label == 'phone':
+            shot('graph-family')
+        fig = pg.locator('#gx-second')
+        fig.scroll_into_view_if_needed()
+        a_in, b_in = fig.locator('input[type=range]').nth(0), fig.locator('input[type=range]').nth(1)
+        b_in.fill('1')
+        for a_val, want in (('2', 'one repeated root'), ('3', 'two real roots'), ('0.5', 'complex roots'), ('0', 'cos 1.00x')):
+            a_in.fill(a_val)
+            rd = fig.locator('.gx-read').inner_text()
+            check(f'{label}: second-order graph with a = {a_val}, b = 1 shows "{want}"', want in rd, rd)
+        a_in.fill('0.5')
+        if label == 'phone':
+            shot('graph-second')
 
         # ---- steps ----
         pg.click('#tab-practice')
@@ -157,7 +178,7 @@ with sync_playwright() as p:
         # ---- Exams tab ----
         pg.click('#tab-exams')
         check(f'{label}: Exams builds on first open', pg.locator('#lazy-exams').count() == 0 and pg.locator('#view-exams .sheet.mock').count() == 3)
-        check(f'{label}: upcoming list has the four exams', pg.locator('#view-exams .up-item').count() == 4)
+        check(f'{label}: upcoming list has the five exams', pg.locator('#view-exams .up-item').count() == 5)
         check(f'{label}: mock 1 has six questions and 60 points', pg.locator('#m1 .rq').count() == 6 and '60 pt' in pg.locator('#m1 .sheet-sub').inner_text())
         check(f'{label}: mock sheets show New labels', pg.locator('#m1 .sheet-title .new-pill').count() == 1)
         check(f'{label}: mock timer starts at 60:00', pg.locator('#m1 .time').inner_text() == '60:00')
@@ -225,7 +246,7 @@ with sync_playwright() as p:
     pg.wait_for_selector('#view-exams .up-item')
     pg.wait_for_timeout(200)
     lefts = pg.locator('#view-exams .up-left').all_inner_texts()
-    check('countdown: Exams tab sorts them the same way: soonest first, undated, then done', lefts == ['Tomorrow', 'in 3 days', '', 'Done'], lefts)
+    check('countdown: Exams tab sorts them the same way: soonest first, undated, then done', lefts == ['Tomorrow', 'in 3 days', '', '', 'Done'], lefts)
     pg.screenshot(path=f'{SHOTS}/exams-countdowns.png')
     ctx.close()
 
@@ -263,7 +284,7 @@ with sync_playwright() as p:
     check('offline: the Math page opens with no network', ok_math and pg.locator('#m1 .rq').count() == 6)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
-    check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 4)
+    check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 5)
     ctx.set_offline(False)
     ctx.close()
     b.close()

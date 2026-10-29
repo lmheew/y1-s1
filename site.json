@@ -4,8 +4,15 @@
     {
       "subject": "math",
       "course": "Calculus & Linear Algebra 1",
-      "name": "Calculus midterm",
+      "name": "Calculus midterm 1",
       "date": "2026-10-30",
+      "time": null
+    },
+    {
+      "subject": "math",
+      "course": "Calculus & Linear Algebra 1",
+      "name": "Calculus midterm 2 (integrals)",
+      "date": "2026-11-23",
       "time": null
     },
     {
@@ -31,6 +38,18 @@
     }
   ],
   "news": [
+    {
+      "date": "2026-10-29",
+      "subject": "math",
+      "text": "Day 12: an introduction to differential equations, with two interactive graphs, practice problems and formulas. It isn't on the midterm.",
+      "link": "math/#summary"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "math",
+      "text": "Exams: Calculus midterm 2 (integrals) on 23 Nov now has a countdown.",
+      "link": "math/#exams"
+    },
     {
       "date": "2026-10-29",
       "subject": "math",

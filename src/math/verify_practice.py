@@ -179,5 +179,55 @@ for name, fn, a0, cs in (("P5.5a", lambda x: sin(2*x), pi/12, [0.5, sqrt(3), -1,
     e2 = abs(fn(a0 + 0.01) - sum(c*0.01**k for k, c in enumerate(cs)))
     check_true(f"{name} p3 error ~ h^4", 12 < e1/e2 < 20, f"ratio={e1/e2:.2f}")
 
+# 6.x differential equations (Day 12): every claimed y must satisfy its equation and its conditions
+XS = (-0.8, -0.3, 0.4, 1.1, 1.6)
+def ode(name, y, a, b, xs=XS, tol=1e-4):
+    """y'' + a y' + b y = 0 at several x"""
+    for x in xs:
+        check(f"{name} residual at x={x}", d2(y, x) + a*d1(y, x) + b*y(x), 0, tol)
+def first(name, y, lam, xs=XS, tol=1e-5):
+    """y' = lam y at several x"""
+    for x in xs:
+        check(f"{name} y'=λy at x={x}", d1(y, x) - lam*y(x), 0, tol)
+# 6.1
+f = lambda x: log(x)
+for x in (0.5, 1.7, 3.2): check(f"P6.1a f'({x})", d1(f, x), 1/x)
+check("P6.1a f(1)", f(1), 0)
+f = lambda x: exp(x) + math.e - 1
+for x in (-0.6, 0.9): check(f"P6.1b f'({x})", d1(f, x), exp(x))
+check("P6.1b f(0)", f(0), math.e)
+# 6.2
+y = lambda x: 4*exp(-3*x); first("P6.2a", y, -3); check("P6.2a y(0)", y(0), 4)
+y = lambda x: exp(2*x - 1); first("P6.2b", y, 2); check("P6.2b y(1)", y(1), math.e)
+# 6.3: the general solutions work for any constants; the roots are right
+for C1, C2 in ((1, 0), (0, 1), (0.7, -1.3)):
+    ode(f"P6.3a C=({C1},{C2})", lambda x: C1*exp(2*x) + C2*exp(3*x), -5, 6)
+    ode(f"P6.3b C=({C1},{C2})", lambda x: (C1 + C2*x)*exp(-3*x), 6, 9)
+    ode(f"P6.3c C=({C1},{C2})", lambda x: C1*cos(2*x) + C2*sin(2*x), 0, 4)
+    ode(f"P6.3d C=({C1},{C2})", lambda x: exp(x)*(C1*cos(2*x) + C2*sin(2*x)), -2, 5)
+import cmath
+for lam in (1 + 2j, 1 - 2j):
+    check(f"P6.3d root {lam}", abs(lam**2 - 2*lam + 5), 0)
+check("P6.3d discriminant", (-2)**2 - 4*5, -16)
+# 6.4: equation, y(0) and y'(0)
+y = lambda x: exp(2*x) + 2*exp(-x); ode("P6.4a", y, -1, -2); check("P6.4a y(0)", y(0), 3); check("P6.4a y'(0)", d1(y, 0), 0)
+y = lambda x: (1 + 3*x)*exp(2*x); ode("P6.4b", y, -4, 4); check("P6.4b y(0)", y(0), 1); check("P6.4b y'(0)", d1(y, 0), 5)
+y = lambda x: 2*cos(3*x) + sin(3*x); ode("P6.4c", y, 0, 9); check("P6.4c y(0)", y(0), 2); check("P6.4c y'(0)", d1(y, 0), 3)
+# 6.5: each pair (a, b) is solved by the given functions
+for name, a, b, fs in (("P6.5a", 1, -6, (lambda x: exp(2*x), lambda x: exp(-3*x))),
+                       ("P6.5b", 2, 1, (lambda x: exp(-x), lambda x: x*exp(-x))),
+                       ("P6.5c", 0, 9, (lambda x: cos(3*x), lambda x: sin(3*x)))):
+    for i, yy in enumerate(fs):
+        ode(f"{name} solution {i+1}", yy, a, b)
+# Day 12 summary and watch-out examples
+first("u6 y=Ce^(2x)", lambda x: 2.5*exp(2*x), 2)
+check("u6 y=x^2+C solves y'=2x", d1(lambda x: x**2 + 7, 1.3), 2*1.3)
+check("u6 C=5e^2 for y(1)=5", 5*math.e**2 * exp(-2*1), 5)
+check("u6 C=e-1 for f(0)=e", exp(0) + (math.e - 1), math.e)
+for a, b in ((-4, 4), (2, 1), (6, 9)):    # repeated root: x e^(λx) works because 2λ + a = 0
+    lam = -a/2
+    check(f"u6 repeated root a={a}: 2λ+a", 2*lam + a, 0)
+    ode(f"u6 x e^(λx) a={a}", lambda x: x*exp(lam*x), a, b)
+
 print("\nFAILED:" if fails else "\nALL CHECKS PASSED", fails if fails else "")
 sys.exit(1 if fails else 0)

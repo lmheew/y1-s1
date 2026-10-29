@@ -107,11 +107,14 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .tile-ic .lime-fill-soft { fill: var(--lime); stroke: var(--lime); }
 .tile-k { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green-text); }
 .tile-t { font-size: 14px; font-weight: 700; line-height: 1.35; }
+/* a lone tile in the last row fills it, so the grid's outer edge stays closed */
+.tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 
 /* summary units */
 .unit { padding-top: 28px; scroll-margin-top: var(--anchor-top); }
 .unit-head { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 2px solid var(--green); }
 .unit-head .tile-ic { width: 40px; height: 40px; }
+.unit-note { margin: 0 0 6px; padding: 10px 14px; border-left: 3px solid var(--lime); background: var(--tint); font-size: 14px; line-height: 1.55; color: var(--ink); }
 .unit h2, .punit-head h2 { margin: 2px 0 0; font-size: 21px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
 .from { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 13px; color: var(--ink-soft); }
 .from span { margin-right: 2px; }
@@ -157,7 +160,7 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .k-un { border: 1.5px solid var(--ink-soft); }
 .pill { appearance: none; justify-self: start; border: 0; border-radius: 999px; background: var(--charcoal); color: #FFFFFF; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--font); cursor: pointer; }
 .pill .ic { width: 18px; height: 18px; }
-.urings { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.urings { display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
 .uring { appearance: none; position: relative; border: 0; background: none; padding: 0; color: var(--ink); font: inherit; display: grid; justify-items: center; gap: 2px; cursor: pointer; }
 .uring-no { position: absolute; top: 0; left: 50%; width: 42px; height: 42px; transform: translateX(-50%); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--green-text); }
 .uring-count { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
@@ -331,6 +334,9 @@ details[open] .when-open { display: inline; }
   .tab { flex-direction: row; gap: 8px; min-height: 52px; font-size: 14px; }
   .tab .ic { width: 20px; height: 20px; }
   .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tile:last-child:nth-child(odd) { grid-column: auto; }
+  .tile:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+  .tile:last-child:nth-child(3n+2) { grid-column: span 2; }
 }
 @media (min-width: 640px) {
   .frow { grid-template-columns: 12.5rem minmax(0, 1fr); align-items: center; gap: 16px; }
@@ -414,7 +420,7 @@ details[open] .when-open { display: inline; }
 /* ---------- interactive graphs ---------- */
 .explore { margin: 16px 0 4px; padding: 12px 14px 12px; border: 1.5px solid var(--green); border-radius: 4px; background: var(--surface); scroll-margin-top: var(--anchor-top); }
 .gx-title { display: grid; margin-bottom: 8px; font-size: 16px; font-weight: 700; line-height: 1.35; }
-.gx-title .new-pill { justify-self: start; margin: 4px 0 0; }
+.gx-title .new-pill, .fgroup h2 .new-pill { justify-self: start; margin: 4px 0 0; }
 .gx-stage { min-height: 120px; margin: 0 -4px; }
 .gx-wait { padding: 40px 0; text-align: center; font-size: 13px; color: var(--ink-soft); }
 .gx-svg { display: block; width: 100%; height: auto; max-height: 300px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
@@ -430,6 +436,8 @@ details[open] .when-open { display: inline; }
 .gx-sec.old { stroke-width: 1.2; opacity: .55; }
 .gx-guide { stroke: var(--ink-soft); stroke-width: 1.1; stroke-dasharray: 2 3; }
 .gx-guide.old { opacity: .45; }
+.gx-family { fill: none; stroke: var(--ink-soft); stroke-width: 1; opacity: .4; }
+.gx-env { fill: none; stroke: var(--ink-soft); stroke-width: 1.2; stroke-dasharray: 4 4; }
 .gx-radius { stroke: var(--ink-soft); stroke-width: 1.2; stroke-dasharray: 3 3; }
 .gx-dot { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
 .gx-dot.solid { fill: var(--ink); }
