@@ -66,7 +66,8 @@ with sync_playwright() as p:
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
         check(f'{label}: home lists 5 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 5 and 'Date to be announced' in pg.locator('#up-list').inner_text())
-        check(f'{label}: home shows What\'s new with New labels', pg.locator('#news li').count() == 6 and pg.locator('#news .new-pill').count() == 6)
+        check(f'{label}: home shows What\'s new grouped by day, one New label for the day', pg.locator('#news .n-items li').count() == 6
+              and pg.locator('#news .n-day').count() == 1 and pg.locator('#news .new-pill').count() == 1)
         check(f'{label}: Math card has a New label', pg.locator('#card-math .new-pill').count() == 1)
         check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
@@ -236,6 +237,34 @@ with sync_playwright() as p:
             check(f'{label}: {v}: no sideways scroll', overflow(pg) <= 0, overflow(pg))
         check(f'{label}: no console errors', not errors, errors[:3])
         ctx.close()
+
+    # ---- New labels only for what this device hasn't seen: a tab's dot goes when it opens, its labels at the next
+    # visit (a new browser tab here: same localStorage, fresh sessionStorage) ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    dots = lambda page: page.evaluate("Array.from(document.querySelectorAll('.tab.has-new')).map((t) => t.dataset.view)")
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news .n-day')
+    check('new: first visit: the Math card and the day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == 1)
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.calc-fab')
+    check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
+    pg.click('#tab-exams')
+    check('new: opening a tab clears its dot, and its New labels stay for this visit', 'exams' not in dots(pg) and pg.locator('#m1 .sheet-title .new-pill').count() == 1, dots(pg))
+    pg.reload()
+    pg.wait_for_selector('#m1')
+    check('new: after a reload the dot stays gone and the labels stay', 'exams' not in dots(pg) and pg.locator('#m1 .sheet-title .new-pill').count() == 1, dots(pg))
+    pg2 = ctx.new_page()
+    pg2.goto(BASE + '/math/#exams')
+    pg2.wait_for_selector('#m1')
+    check('new: next visit: tabs not opened yet keep their dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
+    check('new: next visit: no New labels in the tabs already opened', pg2.locator('#m1 .new-pill').count() == 0
+          and pg2.locator('#view-summary .new-pill').count() == 0, (pg2.locator('#m1 .new-pill').count(), pg2.locator('#view-summary .new-pill').count()))
+    pg2.goto(BASE + '/')
+    pg2.wait_for_selector('#news .n-day')
+    check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
+    ctx.close()
 
     # ---- countdowns with real dates (copy of the site) ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, device_scale_factor=2)

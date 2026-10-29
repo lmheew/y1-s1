@@ -44,7 +44,7 @@ Markup inside the strings:
 Strings use `String.raw`, so avoid `${` inside them.
 
 - **Steps.** Solutions open one step at a time. Each paragraph, or each list item, of `sol` is one step, so write a step per block (`**(1)** …`, blank line, `**(2)** …`).
-- **New labels.** Give anything new an `added: 'YYYY-MM-DD'` (units, practice problems, formula groups, mocks). It gets a "New" label, and its tab a dot, for 14 days. Also add a line to `news` in `site.json`.
+- **New labels.** Give anything new an `added: 'YYYY-MM-DD'` (units, practice problems, formula groups, mocks). It gets a "New" label, and its tab a dot, for up to 14 days, and only until the device has seen it: a tab's dot goes when the tab is opened, and the labels inside it stay for the rest of that visit, then go. Also add a line to `news` in `site.json`. The home page's What's new groups entries by date, with one New label per day, which works the same way. The dates seen are kept in localStorage (`study-seen`, shared by both pages), and the copy taken at the start of a visit is kept in sessionStorage (`study-seen-start`).
 
 ## Build and check
 

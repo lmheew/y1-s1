@@ -3128,6 +3128,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
   function show(view) {
     if (!VIEWS.includes(view)) view = 'summary';
     materialize(view);
+    markSeen(view);
     st.tab = view; save();
     tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
@@ -3169,15 +3170,41 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
     if (g) goTo(g.dataset.goto, g.dataset.target);
   });
 
-  // ----- "New" labels: anything added in the last 14 days; tabs carry the newest date of what they hold -----
+  // ----- "New" labels and tab dots: anything added in the last 14 days that this device hasn't looked at yet.
+  // Tabs carry the newest date of what they hold. A tab's dot goes as soon as the tab is opened; the New labels
+  // inside it stay for the rest of that visit and are gone from the next one. The newest date seen in each tab is
+  // kept per device in localStorage (study-seen; the home page reads "math" from it for its Math card, and keeps
+  // "news" there itself), and the copy taken when the visit started is kept in sessionStorage (study-seen-start).
   const fresh = (date) => {
     if (!date) return false;
     const t = new Date(date + 'T00:00:00+09:00').getTime();
     return Date.now() - t < 14 * DAY && Date.now() >= t - DAY;
   };
+  const SEEN_KEY = 'study-seen', START_KEY = 'study-seen-start';
+  const storage = (kind) => { try { return window[kind] || null; } catch (e) { return null; } };
+  const readSeen = (store, key) => {
+    try { const v = JSON.parse((store && store.getItem(key)) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; }
+  };
+  const seen = readSeen(storage('localStorage'), SEEN_KEY) || {};
+  let start = readSeen(storage('sessionStorage'), START_KEY);
+  if (!start) {
+    start = { ...seen };
+    try { storage('sessionStorage').setItem(START_KEY, JSON.stringify(start)); } catch (e) { /* ignore */ }
+  }
+  const saveSeen = () => { try { storage('localStorage').setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* ignore */ } };
+  const unseen = (date, key, base) => fresh(date) && !(base[key] >= date);
+  function markSeen(view) {
+    const t = tabs.find((x) => x.dataset.view === view);
+    if (!t) return;
+    t.classList.remove('has-new');
+    const d = t.dataset.newest;
+    if (d && !(seen['math:' + view] >= d)) { seen['math:' + view] = d; saveSeen(); }
+  }
   function markNew(scope) {
+    const panel = scope.closest ? scope.closest('.view') : null;
+    const key = 'math:' + (panel ? panel.id.replace(/^view-/, '') : 'summary');
     $$('[data-added]', scope).forEach((el) => {
-      if (!fresh(el.dataset.added)) return;
+      if (!unseen(el.dataset.added, key, start)) return;
       el.classList.add('is-new');
       const lead = $('.test-hint', el); // the Test me bar: the label leads its hint
       if (lead) { if (!$('.new-pill', lead)) lead.insertAdjacentHTML('afterbegin', '<span class="new-pill lead">New</span> '); return; }
@@ -3185,7 +3212,10 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">â€
       if (head && !$('.new-pill', head)) head.insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
     });
   }
-  tabs.forEach((t) => t.classList.toggle('has-new', fresh(t.dataset.newest)));
+  tabs.forEach((t) => t.classList.toggle('has-new', unseen(t.dataset.newest, 'math:' + t.dataset.view, seen)));
+  // for the home page's Math card: the newest date on this page when it was last opened
+  const newestHere = tabs.map((t) => t.dataset.newest || '').sort().pop();
+  if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;
 

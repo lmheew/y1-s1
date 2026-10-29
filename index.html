@@ -112,11 +112,12 @@
   .up-more { margin-top: 10px; font-size: 13.5px; color: var(--ink-soft); }
   .up-more a { color: var(--green-text); font-weight: 700; }
 
-  .news { list-style: none; margin: 0; padding: 0; display: grid; }
-  .news li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .news, .n-items { list-style: none; margin: 0; padding: 0; display: grid; }
+  .news { gap: 14px; }
+  .n-date { margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
+  .n-items li { padding: 9px 0; border-bottom: 1px solid var(--line); }
   .news a { color: var(--ink); text-decoration: none; }
   .news a:hover .n-text { text-decoration: underline; }
-  .n-date { display: block; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
   .n-text { font-size: 14.5px; }
 
   .offline { padding: 16px; border: 1.5px dashed var(--green); border-radius: 4px; }
@@ -219,15 +220,43 @@
       rows.sort((a, b) => a.sort - b.sort);
       ul.innerHTML = rows.map((r) => r.html).join('') || '<li class="up-item"><span class="up-main"><span class="up-when">No exams listed yet.</span></span></li>';
     }
+    // "New" only for what this device hasn't seen yet, like the Math page (same keys, see page.js): What's new
+    // marks a day's entries until the home page has shown them once (they stay for the rest of that visit), and
+    // the Math card until the Math page has been opened since its newest update.
+    const SEEN_KEY = 'study-seen', START_KEY = 'study-seen-start';
+    const storage = (kind) => { try { return window[kind] || null; } catch (e) { return null; } };
+    const readSeen = (store, key) => {
+      try { const v = JSON.parse((store && store.getItem(key)) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; }
+    };
+    const seen = readSeen(storage('localStorage'), SEEN_KEY) || {};
+    let start = readSeen(storage('sessionStorage'), START_KEY);
+    if (!start) {
+      start = { ...seen };
+      try { storage('sessionStorage').setItem(START_KEY, JSON.stringify(start)); } catch (e) { /* ignore */ }
+    }
+    const unseen = (date, key, base) => Boolean(date) && fresh(date) && !(base[key] >= date);
+    const PILL = ' <span class="new-pill">New</span>';
+
+    // the latest six entries, grouped under their date
     function news(list) {
-      $('#news').innerHTML = list.slice(0, 6).map((n) => {
-        const d = new Date(n.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
-        const body = `<span class="n-date">${esc(d)}${fresh(n.date) ? ' <span class="new-pill">New</span>' : ''}</span><span class="n-text">${esc(n.text)}</span>`;
-        return `<li>${n.link ? `<a href="${esc(n.link)}">${body}</a>` : body}</li>`;
+      const latest = list.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)).slice(0, 6);
+      const days = [];
+      latest.forEach((n) => { const g = days[days.length - 1]; if (g && g.date === n.date) g.items.push(n); else days.push({ date: n.date, items: [n] }); });
+      $('#news').innerHTML = days.map((g) => {
+        const d = new Date(g.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
+        const items = g.items.map((n) => {
+          const text = `<span class="n-text">${esc(n.text)}</span>`;
+          return `<li>${n.link ? `<a href="${esc(n.link)}">${text}</a>` : text}</li>`;
+        }).join('');
+        return `<li class="n-day"><p class="n-date"><time datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
       }).join('');
-      if (list.some((n) => fresh(n.date) && (n.subject === 'math' || n.subject === 'all'))) {
-        $('#card-math .s-kicker').insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
+      const newest = latest.length ? latest[0].date : '';
+      if (newest && !(seen.news >= newest)) {
+        seen.news = newest;
+        try { storage('localStorage').setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* ignore */ }
       }
+      const math = list.filter((n) => n.subject === 'math' || n.subject === 'all').map((n) => n.date).sort().pop();
+      if (unseen(math, 'math', seen)) $('#card-math .s-kicker').insertAdjacentHTML('beforeend', PILL);
     }
     fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })
       .catch(() => { $('#up-list').innerHTML = '<li class="up-item"><span class="up-main"><span class="up-when">Couldn\'t load the exam list. Check your connection.</span></span></li>'; });
