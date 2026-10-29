@@ -41,6 +41,12 @@
     {
       "date": "2026-10-29",
       "subject": "math",
+      "text": "Summary: each section now follows the course schedule, with its day numbers, dates and lesson name. Infinite series (Day 9) has a section of its own.",
+      "link": "math/#summary"
+    },
+    {
+      "date": "2026-10-29",
+      "subject": "math",
       "text": "Day 12: an introduction to differential equations, with two interactive graphs, practice problems and formulas. It isn't on the midterm.",
       "link": "math/#summary"
     },

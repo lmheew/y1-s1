@@ -107,6 +107,7 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .tile-ic .lime-fill-soft { fill: var(--lime); stroke: var(--lime); }
 .tile-k { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--green-text); }
 .tile-t { font-size: 14px; font-weight: 700; line-height: 1.35; }
+.tile-q { font-size: 12px; font-weight: 500; color: var(--ink-soft); }
 /* a lone tile in the last row fills it, so the grid's outer edge stays closed */
 .tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
 
@@ -160,10 +161,11 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .k-un { border: 1.5px solid var(--ink-soft); }
 .pill { appearance: none; justify-self: start; border: 0; border-radius: 999px; background: var(--charcoal); color: #FFFFFF; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px; font: 700 14px/1 var(--font); cursor: pointer; }
 .pill .ic { width: 18px; height: 18px; }
-.urings { display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.urings { display: grid; grid-template-columns: repeat(auto-fit, minmax(42px, 1fr)); gap: 6px 4px; padding-top: 12px; border-top: 1px solid var(--line); }
 .uring { appearance: none; position: relative; border: 0; background: none; padding: 0; color: var(--ink); font: inherit; display: grid; justify-items: center; gap: 2px; cursor: pointer; }
 .uring-no { position: absolute; top: 0; left: 50%; width: 42px; height: 42px; transform: translateX(-50%); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--green-text); }
 .uring-count { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.uring-no.long { font-size: 10px; letter-spacing: -.02em; }
 
 /* filters */
 .filters { display: flex; flex-wrap: wrap; gap: 6px; }

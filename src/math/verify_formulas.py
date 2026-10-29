@@ -59,6 +59,9 @@ check("sin series", sum((-1) ** k * xv ** (2 * k + 1) / math.factorial(2 * k + 1
 check("cos series", sum((-1) ** k * xv ** (2 * k) / math.factorial(2 * k) for k in range(12)), cos(xv))
 check("ln(1+x) series", sum((-1) ** (k + 1) * xv ** k / k for k in range(1, 60)), log(1 + xv))
 check("1/(1-x) series", sum(xv ** k for k in range(80)), 1 / (1 - xv))
+check("telescoping 1/(n(n+1))", sum(1 / (n * (n + 1)) for n in range(1, 200001)), 1, 1e-5)
+check("telescoping terms", 1 / (7 * 8), 1 / 7 - 1 / 8)
+check("harmonic partial sums keep growing", sum(1 / n for n in range(1, 100001)) - sum(1 / n for n in range(1, 10001)), log(10), 1e-4)
 # g6 trig
 for t in (0.3, 1.1, 2.0):
     check(f"pythag {t}", sin(t) ** 2 + cos(t) ** 2, 1)

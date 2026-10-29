@@ -102,7 +102,10 @@ const ring = (r, id, cls) => {
   const size = 2 * r + 8;
   return `<svg ${id ? `id="${id}" ` : ''}class="ring ${cls}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle class="ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}"/><circle class="ring-val" data-c="${c}" cx="${size / 2}" cy="${size / 2}" r="${r}" style="stroke-dasharray:${c};stroke-dashoffset:${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
 };
-const SHORT = { u1: 'Limits & continuity', u2: 'Derivative rules', u3: 'Implicit & parametric', u4: 'Extrema & concavity', u5: 'Series & Taylor', u6: 'Differential equations' };
+// A practice problem's id (the key for its saved mark): its own `id` when it was moved from another unit, else unit number.n
+const probId = (u, p, pi) => p.id || `${u.id.slice(1)}.${pi + 1}`;
+// "Day 10 & 11" -> "10–11" for the small practice rings
+const dayShort = (u) => u.days.replace(/^Day /, '').replace(' & ', '–');
 // anything with `added: 'YYYY-MM-DD'` gets a "New" label on the page for two weeks (page.js decides, at view time)
 const addedAttr = (o) => (o && o.added ? ` data-added="${esc(o.added)}"` : '');
 // interactive graphs (graphs.js draws them when they scroll into view), placed after a unit's key ideas
@@ -133,7 +136,7 @@ function render({ quizzes, locked, lockedNos }) {
   const PRIV = [];
 
   // Summary
-  const tilesHTML = units.map((u) => `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${UNIT_ICONS[u.id]}<span class="tile-k">${u.quiz || u.days}</span><span class="tile-t">${SHORT[u.id] || esc(u.title)}</span></button>`).join('')
+  const tilesHTML = units.map((u) => `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${UNIT_ICONS[u.id]}<span class="tile-k">${esc(u.days)}</span><span class="tile-t">${esc(u.title)}</span>${u.quiz ? `<span class="tile-q">${u.quiz}</span>` : ''}</button>`).join('')
     + `<button type="button" class="tile" data-goto="summary" data-target="su-habits">${UNIT_ICONS.habits}<span class="tile-k">Before the exam</span><span class="tile-t">Exam-day habits</span></button>`;
   const summaryHTML = units.map((u) => {
     const ideas = items(u.ideas).map((it, i) => {
@@ -149,7 +152,7 @@ function render({ quizzes, locked, lockedNos }) {
     }).join('');
     return `
 <section class="unit" id="su-${u.id}"${addedAttr(u)}>
-  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${u.quiz ? `${u.quiz} · ${u.days}` : `${u.days} · ${esc(u.note || 'Extra lesson')}`}</p><h2>${esc(u.title)}</h2></div></header>
+  <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${[u.days, u.dates, u.quiz, u.note].filter(Boolean).map(esc).join(' · ')}</p><h2>${esc(u.title)}</h2></div></header>
   ${u.intro ? `<p class="unit-note">${inline(u.intro)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
   ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
@@ -164,13 +167,16 @@ function render({ quizzes, locked, lockedNos }) {
 
   // Practice
   let total = 0;
-  const practiceHTML = units.map((u, ui) => {
+  const ids = new Set();
+  const practiceHTML = units.map((u) => {
     const probs = practice[u.id];
     const cards = probs.map((p, pi) => {
       total++;
-      const id = `${ui + 1}.${pi + 1}`;
-      const elId = `prob-${ui + 1}-${pi + 1}`;
-      INDEX.push(entry('Practice', 'practice', elId, `Practice ${u.no} · Q.${pi + 1} — ${p.src}`, plain([p.stem, ...p.parts].join(' ')),
+      const id = probId(u, p, pi);
+      if (ids.has(id)) throw new Error(`two practice problems share the id ${id}`);
+      ids.add(id);
+      const elId = `prob-${id.replace('.', '-')}`;
+      INDEX.push(entry('Practice', 'practice', elId, `Practice · ${u.days} · Q.${pi + 1} — ${p.src}`, plain([p.stem, ...p.parts].join(' ')),
         [tags[id] || '', plain(p.hint || ''), plain(p.answer.join(' ')), u.title].join(' ')));
       const hint = p.hint ? toggle('hint', 'Hint', 'Hide hint', blocks(p.hint)) : '';
       const sol = toggle('sol', 'Show answer', 'Hide answer', answerBox(p.answer) + `<div class="steps">${blocks(p.sol)}</div>
@@ -187,12 +193,12 @@ function render({ quizzes, locked, lockedNos }) {
   </article>`;
     }).join('');
     return `
-<section class="punit" id="pu${ui + 1}">
-  <header class="punit-head"><div><p class="kicker">Practice ${u.no} · ${u.quiz ? `like ${u.quiz}` : `${u.days} · ${esc((u.note || 'Extra lesson').toLowerCase())}`}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
+<section class="punit" id="p${u.id}">
+  <header class="punit-head"><div><p class="kicker">${[u.days, u.quiz ? `like ${u.quiz}` : '', (u.note || '').toLowerCase()].filter(Boolean).map(esc).join(' · ')}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
   <div class="probs">${cards}</div>
 </section>`;
   }).join('');
-  const unitRings = units.map((u, ui) => `<button type="button" class="uring" data-goto="practice" data-target="pu${ui + 1}" data-unit="pu${ui + 1}" aria-label="Practice ${u.no}: ${esc(u.title)}">${ring(17, '', 'ring-sm')}<span class="uring-no">${u.no}</span><span class="uring-count">0/${practice[u.id].length}</span></button>`).join('');
+  const unitRings = units.map((u) => `<button type="button" class="uring" data-goto="practice" data-target="p${u.id}" data-unit="p${u.id}" aria-label="Practice for ${esc(u.days)}: ${esc(u.title)}">${ring(17, '', 'ring-sm')}<span class="uring-no${dayShort(u).length > 3 ? ' long' : ''}">${dayShort(u)}</span><span class="uring-count">0/${practice[u.id].length}</span></button>`).join('');
 
   // Formulas
   const formulasHTML = formulas.map((g) => `
@@ -289,7 +295,8 @@ function render({ quizzes, locked, lockedNos }) {
   const quizUnits = units.filter((u) => u.quiz);
   const qnum = (u) => u.quiz.replace(/^Quiz /, '');
   const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits[0].quiz;
-  const extraDays = units.filter((u) => !u.quiz).map((u) => u.days.replace(/Day(\d+)/g, 'Day $1'));
+  const dayNums = units.flatMap((u) => (u.days.match(/\d+/g) || []).map(Number));
+  const daySpan = `Days ${Math.min(...dayNums)}–${Math.max(...dayNums)}`;
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
   // Exams: upcoming exams (dates from site.json; page.js shows the countdown) and the mock midterms
@@ -402,7 +409,7 @@ function render({ quizzes, locked, lockedNos }) {
 
 <main%MAIN_ATTRS%>
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
-    ${band('Summary', 'まとめ', 'One unit per quiz, plus extra lessons: the key ideas, and the common mistakes to avoid.')}
+    ${band('Summary', 'まとめ', 'One section per lesson in the course schedule: the key ideas, and the common mistakes to avoid.')}
     <div class="wrap content">
       <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
       ${summaryHTML}
@@ -415,7 +422,7 @@ function render({ quizzes, locked, lockedNos }) {
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', `Every formula from ${span}${extraDays.length ? ' and ' + extraDays.join(', ') : ''} on one page, plus the exact trig values you need without a calculator.`)}
+    ${band('Formulas', '公式集', `Every formula from ${daySpan} on one page, plus the exact trig values you need without a calculator.`)}
     ${lazyBox('formulas')}
   </section>
 

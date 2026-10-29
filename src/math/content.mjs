@@ -1,12 +1,13 @@
-// Content for the CLA1 midterm review page.
+// Content for the CLA1 midterm review page. Units follow the course schedule (derivative part): one unit per
+// lesson, with the schedule's day numbers, dates and names. Unit ids are stable keys, not positions.
 // Markup: $inline$, $$display$$, **bold**, "- " list items (continuation lines join the item),
 // blank line = new block. Every answer here is checked in verify.py.
 const R = String.raw;
 
 export const units = [
   {
-    id: 'u1', no: '01', quiz: 'Quiz 01', days: 'Day01 & Day02', short: 'Limits',
-    title: 'Functions, limits & continuity',
+    id: 'u1', quiz: 'Quiz 01', days: 'Day 1 & 2', dates: '8 & 9 Oct',
+    title: 'Continuous functions',
     ideas: R`
 - **Plug in carefully.** "·" means multiply, so look for a zero factor first: $\ln 1=0$, $\sin 0=0$, $\cos\frac{\pi}{2}=0$, while $e^0=1$.
 - **Inverse trig ranges:** $\arcsin$ lands in $[-\frac{\pi}{2},\frac{\pi}{2}]$, $\arccos$ in $[0,\pi]$, $\arctan$ in $(-\frac{\pi}{2},\frac{\pi}{2})$.
@@ -19,8 +20,8 @@ export const units = [
 - $\frac{0}{0}$ is never the answer. It tells you to simplify first.`,
   },
   {
-    id: 'u2', no: '02', quiz: 'Quiz 02', days: 'Day03 & Day04', short: 'Rules',
-    title: 'Derivative rules',
+    id: 'u2', quiz: 'Quiz 02', days: 'Day 3 & 4', dates: '12 & 13 Oct',
+    title: 'Derivatives of functions and chain rule',
     ideas: R`
 - **Definition:** $f'(x)=\lim\limits_{h\to0}\frac{f(x+h)-f(x)}{h}$. Tangent line at $x_0$: $y=f(x_0)+f'(x_0)(x-x_0)$.
 - **Rules:** $(x^n)'=nx^{n-1}$, $(fg)'=f'g+fg'$, $\left(\frac{f}{g}\right)'=\frac{f'g-fg'}{g^2}$.
@@ -34,8 +35,8 @@ export const units = [
 - $(2^x)'=2^x\ln 2$, not $x\cdot 2^{x-1}$.`,
   },
   {
-    id: 'u3', no: '03', quiz: 'Quiz 03', days: 'Day05 & Day06', short: 'Implicit',
-    title: 'Implicit, inverse & parametric derivatives',
+    id: 'u3', quiz: 'Quiz 03', days: 'Day 5 & 6', dates: '15 & 16 Oct',
+    title: 'Implicit differentiation and parametric curve',
     ideas: R`
 - **Implicit differentiation:** differentiate both sides with respect to $x$ and attach $y'$ to every $y$-term: $(y^3)'=3y^2y'$, $(\sin y)'=\cos y\cdot y'$, $(xy)'=y+xy'$. Then collect the $y'$ terms and factor.
 - **Tangent lines:** put both $x_0$ and $y_0$ into $y'$, then use $y-y_0=m(x-x_0)$. On a circle $x^2+y^2=r^2$, $y'=-\frac{x}{y}$ and the tangent is perpendicular to the radius.
@@ -52,8 +53,8 @@ $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\fra
 - $\frac{d^2y}{dx^2}$ is not $\frac{d^2y/dt^2}{d^2x/dt^2}$.`,
   },
   {
-    id: 'u4', no: '04', quiz: 'Quiz 04', days: 'Day07 & Day08', short: 'Extrema',
-    title: 'Extrema & concavity',
+    id: 'u4', quiz: 'Quiz 04', days: 'Day 7 & 8', dates: '19 & 20 Oct',
+    title: 'Maximum and minimum problem',
     ideas: R`
 - **Critical points:** numbers $c$ in the domain where $f'(c)=0$ or $f'(c)$ doesn't exist.
 - **First derivative test:** $f'$ goes $+\to-$: relative max. $-\to+$: relative min. No sign change: neither.
@@ -68,27 +69,39 @@ $$\begin{gathered}\frac{dy}{dx}=\frac{dy/dt}{dx/dt}\\[6pt]\frac{d^2y}{dx^2}=\fra
 - The $y$-coordinate is always $f(c)$, never $f'(c)$ or $f''(c)$.
 - $f''(c)=0$ alone doesn't make an inflection point: $x^4$ has none at $0$.`,
   },
+  // Day 9 has no quiz of its own; Quiz 05 (Days 10 & 11) also asks about it.
   {
-    id: 'u5', no: '05', quiz: 'Quiz 05', days: 'Day10 & Day11', short: 'Series',
-    title: "Series, Newton's method & Taylor",
+    id: 'u7', quiz: null, days: 'Day 9', dates: '22 Oct', added: '2026-10-29',
+    title: 'Infinite series',
     ideas: R`
 - **Sequence limits:** divide every term by the highest power of $n$, or by the biggest base. $r^n\to0$ when $|r|<1$.
 - **Partial sums:** $s_N=\sum_{n=0}^{N}a_n$, and the infinite series is $\lim_{N\to\infty}s_N$.
 - **Geometric:** $\sum_{n=0}^{N}r^n=\frac{1-r^{N+1}}{1-r}$. The infinite sum is $\frac{1}{1-r}$ when $|r|<1$ and diverges when $|r|\ge1$.
 - **Tests:** if $a_n\not\to0$, the series diverges. Ratio test with $r=\lim\left|\frac{a_{n+1}}{a_n}\right|$: $r<1$ converges, $r>1$ diverges, $r=1$ says nothing.
-- **Newton's method:** $x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$. Each $x_n$ is an approximation of the root, not the root.
-- **Linear approximation:** $f(x)\approx f(a)+f'(a)(x-a)$. Concave down means the estimate is too big; concave up, too small.
-- **Taylor coefficients:** $c_k=\frac{f^{(k)}(a)}{k!}$. Simplify first: $\cos^2x-\sin^2x=\cos 2x$ and $\sin x\cos x=\frac{1}{2}\sin 2x$.`,
+- **Typical series:** $\sum\frac{1}{n^p}$ converges only when $p>1$, so the harmonic series $\sum\frac{1}{n}$ diverges. Telescoping: $\sum_{n=1}^{\infty}\frac{1}{n(n+1)}=1$.
+- **Power series:** $\sum c_nx^n$ converges for $|x|<R$. Find the radius $R$ with the ratio test, then check $x=\pm R$ separately.`,
     watch: R`
 - Divide every term, constants included. $\left(\frac{2}{3}\right)^n$ shrinks to $0$.
 - Check where the sum starts. From $n=0$ the first term is $1$, and the exponent in $s_N$ is $N+1$.
+- $a_n\to0$ alone doesn't make a series converge: $\frac{1}{n}\to0$, but $\sum\frac{1}{n}$ diverges.`,
+  },
+  {
+    id: 'u5', quiz: 'Quiz 05', days: 'Day 10 & 11', dates: '26 & 27 Oct',
+    title: "Newton's method and Taylor series",
+    ideas: R`
+- **Newton's method:** $x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}$. Each $x_n$ is an approximation of the root, not the root.
+- **When it's guaranteed on $[a,b]$:** $f(a)$ and $f(b)$ have opposite signs, and $f'$ and $f''$ don't change sign. Start at the endpoint where $f(x_1)\,f''(x_1)>0$.
+- **Linear approximation:** $f(x)\approx f(a)+f'(a)(x-a)$. Concave down means the estimate is too big; concave up, too small.
+- **Taylor coefficients:** $c_k=\frac{f^{(k)}(a)}{k!}$. Simplify first: $\cos^2x-\sin^2x=\cos 2x$ and $\sin x\cos x=\frac{1}{2}\sin 2x$.
+- **Taylor polynomial:** $p_n(x)=\sum_{k=0}^{n}c_k(x-a)^k$. With $a=0$ it's called a Maclaurin polynomial.`,
+    watch: R`
 - Watch the signs in $x-\frac{f}{f'}$ when $f$ is negative, and the decimals: $\frac{1}{10}=0.1$.
 - Divide by $k!$: $c_2=\frac{f''(a)}{2}$ and $c_3=\frac{f'''(a)}{6}$.`,
   },
   // A lesson that no quiz or exam covers: quiz is null, so it has no Quizzes entry and stays out of the mocks.
   {
-    id: 'u6', no: '06', quiz: null, days: 'Day12', note: 'Not on the midterm', short: 'Diff. equations', added: '2026-10-29',
-    title: 'Introduction to differential equations',
+    id: 'u6', quiz: null, days: 'Day 12', dates: '29 Oct', note: 'Not on the midterm', added: '2026-10-29',
+    title: 'Introduction to differential equation',
     intro: R`An introduction only. It isn't on the midterm, and differential equations are covered in full in a later semester.`,
     ideas: R`
 - **What it is:** an equation linking an unknown function $y(x)$ with its derivatives, like $y'=2y$. Solving it means finding every function that makes it true. The **order** is the highest derivative: $y'=2y$ is first order, and $y''+y=0$ is second order.
@@ -317,7 +330,34 @@ $$f'(x)=\tfrac{4}{3}x^{1/3}-\tfrac{4}{3}x^{-2/3}=\frac{4(x-1)}{3x^{2/3}}$$
 - The second derivative test can't be used at $0$, because $f'(0)$ doesn't exist.` },
   ],
   u5: [
-    { src: 'Like Quiz 05 Q.1',
+    { id: '5.3', src: 'Like Quiz 05 Q.2',
+      stem: R`Apply Newton's method and compute the second approximation $x_2$, with initial position $x_1=1$.`,
+      parts: [R`$f(x)=3x^5-x^2+x-2$;  $D:\ 0\le x\le 1$`, R`$f(x)=x^4+x-3$;  $D:\ 1\le x\le 2$`],
+      hint: R`$x_2=x_1-\frac{f(x_1)}{f'(x_1)}$. In (2), $f(1)$ is negative.`,
+      answer: [R`(1) $x_2=\frac{13}{14}$`, R`(2) $x_2=\frac{6}{5}=1.2$`],
+      sol: R`
+- (1) $f(1)=3-1+1-2=1$ and $f'(x)=15x^4-2x+1$, so $f'(1)=14$. $x_2=1-\frac{1}{14}=\frac{13}{14}$.
+- (2) $f(1)=1+1-3=-1$ and $f'(x)=4x^3+1$, so $f'(1)=5$. $x_2=1-\frac{-1}{5}=1+\frac{1}{5}=\frac{6}{5}$.` },
+    { id: '5.4', src: 'Linear approximation',
+      stem: R`Use a local linear approximation to estimate $\sqrt{9.06}$. Is the estimate too big or too small?`,
+      parts: [],
+      hint: R`Use $a=9$, where $\sqrt{9}=3$ is exact.`,
+      answer: [R`$\sqrt{9.06}\approx 3.01$, which is too big`],
+      sol: R`
+- $f(x)=\sqrt{x}$: $f(9)=3$, $f'(x)=\frac{1}{2\sqrt{x}}$, so $f'(9)=\frac{1}{6}$.
+- $L(9.06)=3+\frac{1}{6}(0.06)=3+0.01=3.01$.
+- $f''(x)=-\frac{1}{4}x^{-3/2}<0$, so the graph is concave down and the tangent sits above it: the estimate is too big. The true value is $3.00998\ldots$` },
+    { id: '5.5', src: 'Like Quiz 05 Q.3',
+      stem: R`Compute the coefficients of the Taylor series up to $(x-a)^3$.`,
+      parts: [R`$f(x)=2\sin(x)\cos(x)$ about $x=\frac{\pi}{12}$`, R`$f(x)=\frac{1}{x}$ about $x=1$`],
+      hint: R`(1) Rewrite $2\sin x\cos x=\sin 2x$ first, and note $2\cdot\frac{\pi}{12}=\frac{\pi}{6}$.`,
+      answer: [R`(1) $\frac{1}{2},\ \sqrt3,\ -1,\ -\frac{2\sqrt3}{3}$`, R`(2) $1,\ -1,\ 1,\ -1$`],
+      sol: R`
+- (1) With $f=\sin 2x$: $f\left(\frac{\pi}{12}\right)=\sin\frac{\pi}{6}=\frac{1}{2}$. $f'=2\cos 2x\to\sqrt3$. $f''=-4\sin 2x\to-2$, so $c_2=\frac{-2}{2!}=-1$. $f'''=-8\cos 2x\to-4\sqrt3$, so $c_3=\frac{-4\sqrt3}{3!}=-\frac{2\sqrt3}{3}$.
+- (2) $f=x^{-1}\to1$. $f'=-x^{-2}\to-1$. $f''=2x^{-3}\to2$, so $c_2=1$. $f'''=-6x^{-4}\to-6$, so $c_3=-1$.` },
+  ],
+  u7: [
+    { id: '5.1', src: 'Like Quiz 05 Q.1',
       stem: R`Give the general term of the partial sum and the infinite series, with the sum starting at $n=0$.`,
       parts: [R`$a_n=\left(\frac{2}{3}\right)^n$`, R`$a_n=2\left(\frac{3}{2}\right)^n$`],
       hint: R`$\sum_{n=0}^{N}r^n=\frac{1-r^{N+1}}{1-r}$. There are $N+1$ terms.`,
@@ -325,7 +365,7 @@ $$f'(x)=\tfrac{4}{3}x^{1/3}-\tfrac{4}{3}x^{-2/3}=\frac{4(x-1)}{3x^{2/3}}$$
       sol: R`
 - (1) $s_N=\frac{1-(2/3)^{N+1}}{1-2/3}=3\left[1-\left(\frac{2}{3}\right)^{N+1}\right]$. Since $\left(\frac{2}{3}\right)^{N+1}\to0$, the series equals $3$.
 - (2) $s_N=2\cdot\frac{(3/2)^{N+1}-1}{3/2-1}=4\left[\left(\frac{3}{2}\right)^{N+1}-1\right]\to\infty$, because $\frac{3}{2}>1$.` },
-    { src: 'Sequence limits and convergence tests',
+    { id: '5.2', src: 'Sequence limits and convergence tests',
       stem: R`Limits and convergence tests.`,
       parts: [R`$\displaystyle\lim_{n\to\infty}\frac{4n^2-n}{3-2n^2}$`, R`$\displaystyle\lim_{n\to\infty}\frac{3^{n+1}+2^n}{3^n-1}$`,
               R`Does $\displaystyle\sum_{n=1}^{\infty}\frac{n}{3^n}$ converge?`, R`Does $\displaystyle\sum_{n=1}^{\infty}\frac{2n+1}{n+5}$ converge?`],
@@ -336,31 +376,6 @@ $$f'(x)=\tfrac{4}{3}x^{1/3}-\tfrac{4}{3}x^{-2/3}=\frac{4(x-1)}{3x^{2/3}}$$
 - (2) $\frac{3+(2/3)^n}{1-(1/3)^n}\to\frac{3+0}{1-0}=3$
 - (3) $\frac{a_{n+1}}{a_n}=\frac{n+1}{3^{n+1}}\cdot\frac{3^n}{n}=\frac{n+1}{3n}\to\frac{1}{3}<1$, so it converges.
 - (4) $\frac{2n+1}{n+5}\to2\ne0$, so it diverges by the divergence test.` },
-    { src: 'Like Quiz 05 Q.2',
-      stem: R`Apply Newton's method and compute the second approximation $x_2$, with initial position $x_1=1$.`,
-      parts: [R`$f(x)=3x^5-x^2+x-2$;  $D:\ 0\le x\le 1$`, R`$f(x)=x^4+x-3$;  $D:\ 1\le x\le 2$`],
-      hint: R`$x_2=x_1-\frac{f(x_1)}{f'(x_1)}$. In (2), $f(1)$ is negative.`,
-      answer: [R`(1) $x_2=\frac{13}{14}$`, R`(2) $x_2=\frac{6}{5}=1.2$`],
-      sol: R`
-- (1) $f(1)=3-1+1-2=1$ and $f'(x)=15x^4-2x+1$, so $f'(1)=14$. $x_2=1-\frac{1}{14}=\frac{13}{14}$.
-- (2) $f(1)=1+1-3=-1$ and $f'(x)=4x^3+1$, so $f'(1)=5$. $x_2=1-\frac{-1}{5}=1+\frac{1}{5}=\frac{6}{5}$.` },
-    { src: 'Linear approximation',
-      stem: R`Use a local linear approximation to estimate $\sqrt{9.06}$. Is the estimate too big or too small?`,
-      parts: [],
-      hint: R`Use $a=9$, where $\sqrt{9}=3$ is exact.`,
-      answer: [R`$\sqrt{9.06}\approx 3.01$, which is too big`],
-      sol: R`
-- $f(x)=\sqrt{x}$: $f(9)=3$, $f'(x)=\frac{1}{2\sqrt{x}}$, so $f'(9)=\frac{1}{6}$.
-- $L(9.06)=3+\frac{1}{6}(0.06)=3+0.01=3.01$.
-- $f''(x)=-\frac{1}{4}x^{-3/2}<0$, so the graph is concave down and the tangent sits above it: the estimate is too big. The true value is $3.00998\ldots$` },
-    { src: 'Like Quiz 05 Q.3',
-      stem: R`Compute the coefficients of the Taylor series up to $(x-a)^3$.`,
-      parts: [R`$f(x)=2\sin(x)\cos(x)$ about $x=\frac{\pi}{12}$`, R`$f(x)=\frac{1}{x}$ about $x=1$`],
-      hint: R`(1) Rewrite $2\sin x\cos x=\sin 2x$ first, and note $2\cdot\frac{\pi}{12}=\frac{\pi}{6}$.`,
-      answer: [R`(1) $\frac{1}{2},\ \sqrt3,\ -1,\ -\frac{2\sqrt3}{3}$`, R`(2) $1,\ -1,\ 1,\ -1$`],
-      sol: R`
-- (1) With $f=\sin 2x$: $f\left(\frac{\pi}{12}\right)=\sin\frac{\pi}{6}=\frac{1}{2}$. $f'=2\cos 2x\to\sqrt3$. $f''=-4\sin 2x\to-2$, so $c_2=\frac{-2}{2!}=-1$. $f'''=-8\cos 2x\to-4\sqrt3$, so $c_3=\frac{-4\sqrt3}{3!}=-\frac{2\sqrt3}{3}$.
-- (2) $f=x^{-1}\to1$. $f'=-x^{-2}\to-1$. $f''=2x^{-3}\to2$, so $c_2=1$. $f'''=-6x^{-4}\to-6$, so $c_3=-1$.` },
   ],
   u6: [
     { src: 'Integrate, then use the condition', added: '2026-10-29',

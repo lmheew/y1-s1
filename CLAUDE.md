@@ -16,13 +16,14 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - Wording stays non-personal: no "your quizzes", no "from your chats", no student-ID versions.
 - The course is calculator-free, so answers stay exact (√2/2, ln(7/8), 2 + e).
 - Every new answer gets a numeric check in a verify script, and every check must pass before pushing.
-- Practice problem ids (`unit.n`) are the keys for saved marks. Append new problems and never renumber.
+- Practice problem ids (`unit.n`) are the keys for saved marks. Append new problems and never renumber. A problem moved to another unit keeps its old id in an `id` field (the Day 9 series problems are `5.1` and `5.2`).
 - These are unofficial notes. Never add the KUAS logo.
 
 ## Content (src/math)
 
 - `content.mjs`: units (Summary key ideas and "Watch out" lists), exam-day habits, practice problems.
-- A lesson that no quiz or exam covers (Day 12, the introduction to differential equations) is a unit with `quiz: null`, its `days` and a `note` such as "Not on the midterm", plus an optional `intro`. It shows its day instead of a quiz, has no Quizzes entry, and stays out of the mocks and the "Quizzes 01–05" span. Quizzes find their unit by `quiz`, not by `no`.
+- Units follow the course schedule (derivative part): one unit per lesson, in schedule order, with `days` ("Day 1 & 2"), `dates` ("8 & 9 Oct"), the schedule's lesson name as `title` (sentence case) and its `quiz` ("Quiz 01") or `null`. Summary tiles show the day, the name and a small quiz line; lessons without a quiz have no quiz line. Unit ids are stable keys, not positions (Day 9, Infinite series, is `u7` and sits before `u5`).
+- A lesson without a quiz has no Quizzes entry and stays out of the mocks and the "Quizzes 01–05" span. One that isn't on the midterm also gets a `note` ("Not on the midterm") and an optional `intro`, like Day 12. Quizzes find their unit by `quiz`.
 - `followups.mjs`: Follow-up A (same skills, new numbers) and Follow-up B (targets common mistakes) for each quiz. Each is worth 10 pt, like the in-class sheet.
 - `extras.mjs`: search tags for the practice problems, the Formulas tab, the exact-values table and the icons.
 - `exams.mjs`: the mock midterms (60 min, 60 pt, six questions of 10 pt, one per topic). `pts` lists each part's points.

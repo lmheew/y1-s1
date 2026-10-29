@@ -78,6 +78,10 @@ with sync_playwright() as p:
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
         check(f'{label}: Exams tab shows a New dot', pg.evaluate("document.getElementById('tab-exams').classList.contains('has-new')"))
         check(f'{label}: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7)
+        tiles = pg.locator('.tiles .tile')
+        check(f'{label}: Summary tiles follow the schedule: day, lesson name, then a small quiz line', tiles.count() == 8
+              and 'continuous functions' in tiles.nth(0).inner_text().lower() and tiles.nth(0).locator('.tile-q').inner_text() == 'Quiz 01'
+              and 'infinite series' in tiles.nth(4).inner_text().lower() and tiles.nth(4).locator('.tile-q').count() == 0, tiles.all_inner_texts()[:5])
 
         # ---- graphs ----
         for kind in ['secant', 'implicit', 'concavity', 'newton', 'taylor', 'family', 'second']:

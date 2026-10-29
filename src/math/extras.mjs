@@ -37,7 +37,7 @@ export const tags = {
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify_formulas.py.
 export const formulas = [
-  { id: 'g1', title: 'Limits & continuity', quiz: 'Quiz 01', rows: [
+  { id: 'g1', title: 'Continuous functions', quiz: 'Day 1 & 2 · Quiz 01', rows: [
     ['Special limit', R`\lim_{x\to0}\frac{\sin x}{x}=1`],
     ['Special limit', R`\lim_{x\to0}\frac{1-\cos x}{x}=0`],
     ['Special limit', R`\lim_{x\to0}\frac{1-\cos x}{x^2}=\frac{1}{2}`],
@@ -50,7 +50,7 @@ export const formulas = [
     ['Range of arccos', R`\arccos:[-1,1]\to[0,\pi]`],
     ['Range of arctan', R`\arctan:\mathbb{R}\to\left(-\tfrac{\pi}{2},\tfrac{\pi}{2}\right)`],
   ]},
-  { id: 'g2', title: 'Derivative rules', quiz: 'Quiz 02', rows: [
+  { id: 'g2', title: 'Derivatives of functions and chain rule', quiz: 'Day 3 & 4 · Quiz 02', rows: [
     ['Definition', R`f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}`],
     ['Tangent line at a', R`y=f(a)+f'(a)(x-a)`],
     ['Power rule', R`(x^n)'=nx^{n-1}`],
@@ -64,7 +64,7 @@ export const formulas = [
     ['Cotangent', R`(\cot x)'=-\csc^2x=-\frac{1}{\sin^2x}`],
     ['Secant and cosecant', R`(\sec x)'=\sec x\tan x,\quad (\csc x)'=-\csc x\cot x`],
   ]},
-  { id: 'g3', title: 'Implicit, inverse & parametric', quiz: 'Quiz 03', rows: [
+  { id: 'g3', title: 'Implicit differentiation and parametric curve', quiz: 'Day 5 & 6 · Quiz 03', rows: [
     ['A y-term', R`\frac{d}{dx}\,g(y)=g'(y)\,y'`],
     ['Product with y', R`(xy)'=y+xy'`],
     ['Circle tangent slope', R`x^2+y^2=r^2\ \Rightarrow\ y'=-\frac{x}{y}`],
@@ -75,14 +75,14 @@ export const formulas = [
     ['Parametric slope', R`\frac{dy}{dx}=\frac{dy/dt}{dx/dt}`],
     ['Parametric second derivative', R`\frac{d^2y}{dx^2}=\frac{\frac{d}{dt}\!\left(\frac{dy}{dx}\right)}{dx/dt}`],
   ]},
-  { id: 'g4', title: 'Extrema & concavity', quiz: 'Quiz 04', rows: [
+  { id: 'g4', title: 'Maximum and minimum problem', quiz: 'Day 7 & 8 · Quiz 04', rows: [
     ['Critical point', R`f'(c)=0\ \text{ or }\ f'(c)\ \text{undefined}`],
     ['Second derivative test', R`f'(c)=0:\ \ f''(c)<0\Rightarrow\text{max},\ \ f''(c)>0\Rightarrow\text{min}`],
     ['Concavity', R`f''>0:\ \text{up}\ (\cup),\qquad f''<0:\ \text{down}\ (\cap)`],
     ['Inflection point', R`f''\ \text{changes sign at}\ c\ \Rightarrow\ \big(c,\,f(c)\big)`],
     ['Closed interval', R`\max/\min\ \text{of}\ f\big(\text{critical points in }[a,b]\big),\ f(a),\ f(b)`],
   ]},
-  { id: 'g5', title: "Series, Newton's method & Taylor", quiz: 'Quiz 05', rows: [
+  { id: 'g5s', title: 'Infinite series', quiz: 'Day 9', rows: [
     ['Sum of n', R`\sum_{n=1}^{N}n=\frac{N(N+1)}{2}`],
     ['Sum of squares', R`\sum_{n=1}^{N}n^2=\frac{N(N+1)(2N+1)}{6}`],
     ['Sum of cubes', R`\sum_{n=1}^{N}n^3=\left[\frac{N(N+1)}{2}\right]^2`],
@@ -91,6 +91,9 @@ export const formulas = [
     ['Divergence test', R`a_n\not\to0\ \Rightarrow\ \sum a_n\ \text{diverges}`],
     ['Ratio test', R`r=\lim_{n\to\infty}\left|\frac{a_{n+1}}{a_n}\right|:\ \ r<1\ \text{conv.},\ r>1\ \text{div.}`],
     ['p-series', R`\sum\frac{1}{n^p}\ \text{converges}\iff p>1`],
+    ['Telescoping', R`\sum_{n=1}^{\infty}\frac{1}{n(n+1)}=\sum_{n=1}^{\infty}\left(\frac{1}{n}-\frac{1}{n+1}\right)=1`],
+  ]},
+  { id: 'g5', title: "Newton's method and Taylor series", quiz: 'Day 10 & 11 · Quiz 05', rows: [
     ["Newton's method", R`x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)}`],
     ['Linear approximation', R`f(x)\approx f(a)+f'(a)(x-a)`],
     ['Taylor coefficient', R`c_k=\frac{f^{(k)}(a)}{k!}`],
@@ -107,7 +110,7 @@ export const formulas = [
     ['Double angle (cos)', R`\cos 2x=\cos^2x-\sin^2x=1-2\sin^2x`],
     ['Odd and even', R`\sin(-x)=-\sin x,\quad \cos(-x)=\cos x`],
   ]},
-  { id: 'g7', title: 'Differential equations (intro)', quiz: 'Day12 · not on the midterm', added: '2026-10-29', rows: [
+  { id: 'g7', title: 'Introduction to differential equation', quiz: 'Day 12 · not on the midterm', added: '2026-10-29', rows: [
     ['Order and constants', R`\text{order } n\ \Rightarrow\ n\ \text{constants},\ n\ \text{conditions}`],
     ['y′ = f(x)', R`y=\int f(x)\,dx+C`],
     ['y′ = λy', R`y=Ce^{\lambda x},\quad C=y(0)`],
@@ -164,7 +167,8 @@ export const UNIT_ICONS = {
   u2: big('<path d="M7 38c9-1 15-20 34-26"/><path d="M9 33.5L38 17" class="lime-stroke"/><circle cx="20.5" cy="27" r="2.6" class="lime-fill"/>'),
   u3: big('<circle cx="21" cy="26" r="12"/><path d="M21.5 8.5l17 17" class="lime-stroke"/><circle cx="29.5" cy="17.5" r="2.6" class="lime-fill"/>'),
   u4: big('<path d="M5 31c6 0 7-16 13-16s7 19 13 19 7-16 13-16"/><circle cx="18" cy="15" r="2.6" class="lime-fill"/><circle cx="31" cy="34" r="2.6" class="lime-fill"/>'),
-  u5: big('<rect x="7" y="12" width="6" height="28" rx="1" class="lime-fill-soft"/><rect x="16" y="20" width="6" height="20" rx="1"/><rect x="25" y="26" width="6" height="14" rx="1"/><rect x="34" y="31" width="6" height="9" rx="1"/>'),
+  u7: big('<rect x="7" y="12" width="6" height="28" rx="1" class="lime-fill-soft"/><rect x="16" y="20" width="6" height="20" rx="1"/><rect x="25" y="26" width="6" height="14" rx="1"/><rect x="34" y="31" width="6" height="9" rx="1"/>'),
+  u5: big('<path d="M5 36h38"/><path d="M8 44C20 41 31 32 41 9"/><path d="M38 15.5L28 36" class="lime-stroke"/><circle cx="38" cy="15.5" r="2.6" class="lime-fill"/><circle cx="28" cy="36" r="2.6" class="lime-fill"/>'),
   u6: big('<path d="M10 7v34"/><path d="M10 40c12 0 20-4 28-19"/><path d="M10 31c12 0 20-4 28-19" class="lime-stroke"/><path d="M10 22c9 0 15-3 21-12"/><circle cx="10" cy="31" r="2.8" class="lime-fill"/>'),
   habits: big('<rect x="9" y="7" width="30" height="35" rx="3"/><path d="M15 17l3 3 5-5" class="lime-stroke"/><path d="M27 18h6M15 28h18M15 35h12"/>'),
 };
