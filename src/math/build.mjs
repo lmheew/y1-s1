@@ -333,7 +333,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
         <span class="up-left" aria-live="off"></span>
       </li>`).join('');
   const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.';
-  const PAST_FOCUS = "A real midterm from an earlier year, retyped. The paper gives no time limit or points, so the timer and the points here are estimates. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.";
+  const PAST_FOCUS = "A real midterm paper, retyped. The paper gives no time limit or points, so the timer and the points here are estimates. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.";
   const totalPts = (m) => m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
   function examSheet(m, seg, visible, about, focus, searchExtra, index) {
     const points = totalPts(m);
@@ -385,7 +385,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   });
   const pastHTML = pastList.length ? `
     <section class="qgroup mockgroup" id="past">
-      <header class="qg-head"><p class="kicker">Real papers from earlier years</p><h2>Past midterms</h2></header>
+      <header class="qg-head"><p class="kicker">Real midterm papers</p><h2>Past midterms</h2></header>
       <div class="seg" role="tablist" aria-label="Past midterms">${pastList.map((p, pi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${pi}" aria-controls="${p.id}" aria-selected="${pi === 0}">${esc(p.seg)}${pastLock ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : ''}<span class="seg-score"></span></button>`).join('')}</div>
       ${pastSheets}
@@ -516,7 +516,7 @@ function katexCSS() {
 function foot(site) {
   return `
 <footer class="site-foot"><div class="wrap">
-  <p class="deco cheer">Good luck on the midterm!</p>
+  <p class="deco cheer">Good luck in your studies!</p>
   ${site ? '<p class="foot-links"><a href="../">← All subjects</a></p>' : ''}
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
   <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>

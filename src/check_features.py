@@ -208,8 +208,8 @@ with sync_playwright() as p:
         check(f'{label}: Exams builds on first open', pg.locator('#lazy-exams').count() == 0 and pg.locator('#view-exams .sheet.mock').count() == 3)
         check(f'{label}: upcoming list has the five exams', pg.locator('#view-exams .up-item').count() == 5)
         check(f'{label}: mock 1 has six questions and 60 points', pg.locator('#m1 .rq').count() == 6 and '60 pt' in pg.locator('#m1 .sheet-sub').inner_text())
-        check(f'{label}: past midterms are locked: two password panels, no questions', pg.locator('#past .sheet.lock').count() == 2
-              and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 2)
+        check(f'{label}: past midterms are locked: three password panels (AY2022, AY2023, AY2026), no questions', pg.locator('#past .sheet.lock').count() == 3
+              and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 3)
         check(f'{label}: mock sheets show New labels', pg.locator('#m1 .sheet-title .new-pill').count() == 1)
         check(f'{label}: mock timer starts at 60:00', pg.locator('#m1 .time').inner_text() == '60:00')
         pg.locator('#m1 .t-go').click()
@@ -330,7 +330,7 @@ with sync_playwright() as p:
         pg.click('#tab-exams')
         pg.wait_for_timeout(400)
         etoc = pg.locator('#view-exams .toc')
-        check('side menu: Exams lists each mock and past paper', etoc.locator('.toc-paper').count() == 5)
+        check('side menu: Exams lists each mock and past paper', etoc.locator('.toc-paper').count() == 6)
         etoc.locator('.toc-paper', has_text='Mock 2').click()
         pg.wait_for_timeout(500)
         check('side menu: tapping a paper opens it', pg.locator('#m2').is_visible() and not pg.locator('#m1').is_visible()

@@ -229,7 +229,9 @@ with sync_playwright() as p:
             page.click('#tab-exams')
             page.wait_for_selector('#past')
             past = page.locator('#past')
-            check(f'{label}: the past midterms open with the same password', past.locator('.sheet.lock').count() == 0 and past.locator('.sheet.mock').count() == 2)
+            check(f'{label}: the past midterms open with the same password', past.locator('.sheet.lock').count() == 0 and past.locator('.sheet.mock').count() == 3)
+            p26 = past.locator('#p2026')
+            check(f'{label}: past midterm AY2026 has six questions and 100 points', p26.locator('.rq').count() == 6 and '100 pt' in p26.locator('.sheet-sub').inner_text())
             p1 = past.locator('#p2022')
             check(f'{label}: past midterm AY2022 has four questions, a 60-minute countdown and 100 points',
                   p1.locator('.rq').count() == 4 and p1.locator('.time').inner_text() == '60:00' and '100 pt' in p1.locator('.sheet-sub').inner_text())

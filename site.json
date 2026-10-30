@@ -40,6 +40,12 @@
   "news": [
     {
       "date": "2026-10-30",
+      "subject": "math",
+      "text": "Exams: the AY2026 Calculus midterm 1 (derivative part), retyped with worked answers, joins the past midterms. It opens with the in-class password.",
+      "link": "math/#exams"
+    },
+    {
+      "date": "2026-10-30",
       "subject": "all",
       "text": "A cleaner look: one button style, full-size formulas, exam questions laid out like a paper, and a side menu on computers and iPads. Mocks and past midterms can be printed, with or without answers.",
       "link": "math/#exams"
