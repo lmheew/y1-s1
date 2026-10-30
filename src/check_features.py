@@ -1,7 +1,8 @@
 """Browser check of the study features (needs Python Playwright with Chromium; no internet needed).
 
     python3 src/check_features.py            # Exams tab, countdowns, mock timer and scoring, step-by-step solutions,
-    python3 src/check_features.py --shots DIR    Formulas Test me, graphs, New labels, deferred tabs, home page, offline
+    python3 src/check_features.py --shots DIR    Formulas Test me, graphs, New labels, deferred tabs, home page, the exam
+                                                 picker and old addresses, shared files, offline
 
 Countdowns are tested on a temporary copy of the site with exam dates filled in. Some checks expect the current
 content (three mocks, seven graphs, five exams and six news entries in site.json); update them when that changes."""
@@ -39,8 +40,15 @@ class Q(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class Server(http.server.ThreadingHTTPServer):
+    # a browser that leaves a page mid-download (the picker forwarding an old address, say) is not an error
+    def handle_error(self, request, client_address):
+        if not isinstance(sys.exc_info()[1], (BrokenPipeError, ConnectionResetError)):
+            super().handle_error(request, client_address)
+
+
 def serve(directory):
-    srv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(Q, directory=directory))
+    srv = Server(('127.0.0.1', 0), functools.partial(Q, directory=directory))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f'http://localhost:{srv.server_address[1]}'
 
@@ -78,7 +86,7 @@ with sync_playwright() as p:
               and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, .up-more a')].every((e) => e.getClientRects().length === 1)"))
         if label == 'phone':
             # link previews: both pages name a 1200 x 630 image that is in the repository, by its address on the live site
-            for url in ['/', '/math/']:
+            for url in ['/', '/math/', '/math/derivatives/']:
                 pg.goto(BASE + url)
                 og = pg.evaluate("Object.fromEntries([...document.querySelectorAll('meta[property^=\"og:\"], meta[name=\"twitter:card\"]')].map((m) => [m.getAttribute('property') || m.getAttribute('name'), m.content]))")
                 img = og.get('og:image', '')
@@ -96,9 +104,31 @@ with sync_playwright() as p:
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
         shot('home', True)
 
-        # ---- math page: deferred tabs ----
+        # ---- the exam picker (math/): a card per exam; old addresses of the one Math page go on to Calculus midterm 1 ----
         pg.goto(BASE + '/math/')
+        pg.wait_for_selector('.exams')
+        cards = pg.locator('.exam')
+        check(f'{label}: picker: three exams in course order, only Calculus midterm 1 opens', cards.count() == 3
+              and [cards.nth(i).get_attribute('id') for i in range(3)] == ['exam-derivatives', 'exam-integrals', 'exam-linear-algebra']
+              and pg.locator('a.exam').count() == 1 and pg.locator('a.exam .pill').count() == 1 and pg.locator('.exam.soon .e-soon').count() == 2)
+        # (its New label is checked below, on a device that hasn't opened anything yet)
+        check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
+              and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
+        check(f'{label}: picker: an undated exam says so', 'Date to be announced' in cards.nth(2).inner_text())
+        check(f'{label}: picker: no sideways scroll', overflow(pg) <= 0, overflow(pg))
+        shot('picker', True)
+
+        # ---- math page: deferred tabs, shared files ----
+        pg.goto(BASE + '/math/derivatives/')
         pg.wait_for_selector('.calc-fab')
+        files = pg.evaluate("""() => ({ css: [...document.querySelectorAll('link[rel=stylesheet]')].map((l) => l.getAttribute('href')),
+          js: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')), styles: document.querySelectorAll('style').length,
+          fonts: [...document.fonts].filter((f) => f.status === 'loaded' && /^KaTeX/.test(f.family)).length })""")
+        import hashlib
+        ver = lambda f: hashlib.sha256(open(os.path.join(REPO, 'math', 'assets', f), 'rb').read()).hexdigest()[:10]
+        check(f'{label}: the page uses the shared files, named by their version, and nothing inline', f'../assets/math.css?v={ver("math.css")}' in files['css']
+              and files['js'] == [f'../assets/math.js?v={ver("math.js")}'] and files['styles'] == 0 and 'data:font' not in open(os.path.join(REPO, 'math', 'derivatives', 'index.html')).read(), files)
+        check(f'{label}: math fonts load from the shared files', files['fonts'] >= 2, files)
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
         check(f'{label}: Exams tab shows a New dot', pg.evaluate("document.getElementById('tab-exams').classList.contains('has-new')"))
         check(f'{label}: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7)
@@ -261,6 +291,20 @@ with sync_playwright() as p:
         check(f'{label}: no console errors', not errors, errors[:3])
         ctx.close()
 
+    # ---- old addresses: links to the one Math page (math/#exams…) open that tab of Calculus midterm 1 ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    for old in ['#exams', '#formulas', '#quizzes']:
+        pg.goto(BASE + '/math/' + old)
+        pg.wait_for_selector('.calc-fab')
+        check(f'old address: math/{old} opens that tab of Calculus midterm 1', pg.url.endswith('/math/derivatives/' + old)
+              and pg.locator('#view-' + old[1:]).is_visible(), pg.url)
+    pg.go_back()
+    pg.wait_for_timeout(300)
+    check('old address: Back skips the forwarding step (no loop through the picker)', pg.url.endswith('/math/derivatives/#formulas'), pg.url)
+    ctx.close()
+
     # ---- New labels only for what this device hasn't seen: a tab's dot goes when it opens, its labels at the next
     # visit (a new browser tab here: same localStorage, fresh sessionStorage) ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
@@ -271,6 +315,9 @@ with sync_playwright() as p:
     pg.wait_for_selector('#news .n-day')
     check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == pg.locator('#news .n-day').count())
     pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.exams')
+    check('new: first visit: the picker marks Calculus midterm 1 New', pg.locator('#exam-derivatives .new-pill').count() == 1)
+    pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
     check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
     pg.click('#tab-exams')
@@ -279,7 +326,7 @@ with sync_playwright() as p:
     pg.wait_for_selector('#m1')
     check('new: after a reload the dot stays gone and the labels stay', 'exams' not in dots(pg) and pg.locator('#m1 .sheet-title .new-pill').count() == 1, dots(pg))
     pg2 = ctx.new_page()
-    pg2.goto(BASE + '/math/#exams')
+    pg2.goto(BASE + '/math/derivatives/#exams')
     pg2.wait_for_selector('#m1')
     check('new: next visit: tabs not opened yet keep their dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
     check('new: next visit: no New labels in the tabs already opened', pg2.locator('#m1 .new-pill').count() == 0
@@ -287,6 +334,20 @@ with sync_playwright() as p:
     pg2.goto(BASE + '/')
     pg2.wait_for_selector('#news .n-day')
     check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
+    pg2.goto(BASE + '/math/')
+    pg2.wait_for_selector('.exams')
+    check('new: once Calculus midterm 1 has been opened, the picker drops its New label', pg2.locator('.new-pill').count() == 0)
+    # the picker follows the theme picked on an exam page, before its first paint
+    pg2.evaluate("localStorage.setItem('cla1-midterm-review', JSON.stringify({ theme: 'dark' }))")
+    pg2.reload()
+    pg2.wait_for_selector('.exams')
+    check('theme: the picker follows the theme picked on an exam page', pg2.evaluate("document.documentElement.dataset.theme") == 'dark'
+          and pg2.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(14, 19, 16)')
+    pg2.goto(BASE + '/math/derivatives/')
+    pg2.wait_for_selector('.calc-fab')
+    pg2.click('#theme-btn')
+    check('theme: on an exam page the saved choice is set early, and "system" still follows the device', pg2.evaluate("document.documentElement.hasAttribute('data-theme')") is False
+          and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
     ctx.close()
 
     # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
@@ -311,7 +372,7 @@ with sync_playwright() as p:
         ctx = b.new_context(viewport={'width': w, 'height': h})
         ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
         pg = ctx.new_page()
-        pg.goto(BASE + '/math/#summary')
+        pg.goto(BASE + '/math/derivatives/#summary')
         pg.wait_for_selector('.calc-fab')
         toc = pg.locator('#view-summary .toc')
         if w < 1100:
@@ -344,7 +405,7 @@ with sync_playwright() as p:
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     pg.add_init_script("window.print = () => { window.__printed = (window.__printed || []).concat(document.documentElement.dataset.print); };")
-    pg.goto(BASE + '/math/#exams')
+    pg.goto(BASE + '/math/derivatives/#exams')
     pg.wait_for_selector('#m1 .print-btn')
     shown = lambda sel: pg.evaluate(f"[...document.querySelectorAll('{sel}')].filter((e) => getComputedStyle(e).display !== 'none' && e.getClientRects().length).length")
     pg.locator('#m1 .print-btn[data-print="paper"]').click()
@@ -370,7 +431,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={'width': 360, 'height': 800})
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
-    pg.goto(BASE + '/math/')
+    pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
     wide = {}
     for v in ['summary', 'practice', 'formulas', 'quizzes', 'exams']:
@@ -398,7 +459,13 @@ with sync_playwright() as p:
     check('countdown: past exam says Done', any('Done' in t for t in texts))
     check('countdown: an exam within a week is highlighted', pg.locator('#up-list .up-item.soon').count() == 2)
     pg.screenshot(path=f'{SHOTS}/home-countdowns.png', full_page=True)
-    pg.goto(BASE2 + '/math/#exams')
+    pg.goto(BASE2 + '/math/')
+    pg.wait_for_selector('.exams')
+    lefts = pg.locator('.exam .e-left').all_inner_texts()
+    check('countdown: the picker counts down to each exam: in 3 days, Tomorrow, Done', lefts == ['in 3 days', 'Tomorrow', 'Done']
+          and pg.locator('.e-when.soon').count() == 2 and pg.locator('.e-when.past').count() == 1, lefts)
+    pg.screenshot(path=f'{SHOTS}/picker-countdowns.png', full_page=True)
+    pg.goto(BASE2 + '/math/derivatives/#exams')
     pg.wait_for_selector('#view-exams .up-item')
     pg.wait_for_timeout(200)
     lefts = pg.locator('#view-exams .up-left').all_inner_texts()
@@ -410,7 +477,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='dark', device_scale_factor=2)
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
-    pg.goto(BASE + '/math/#exams')
+    pg.goto(BASE + '/math/derivatives/#exams')
     pg.wait_for_selector('#m1')
     pg.screenshot(path=f'{SHOTS}/dark-exams.png')
     pg.click('#tab-summary')
@@ -428,25 +495,30 @@ with sync_playwright() as p:
     pg.evaluate("navigator.serviceWorker.ready")
     pg.wait_for_timeout(1500)
     saved = pg.evaluate("""async () => {
-      const want = ['./', './math/', 'site.json', 'src/shared/totop.css', 'src/shared/totop.js'].map((u) => new URL(u, location.href).href);
+      const want = ['./', './math/', './math/derivatives/', 'site.json', 'src/shared/totop.css', 'src/shared/totop.js', 'math/assets/math.css',
+        'math/assets/math.js', 'math/assets/fonts/KaTeX_Main-Regular.woff2'].map((u) => new URL(u, location.href).href);
       for (const name of await caches.keys()) {
         const c = await caches.open(name);
         if ((await Promise.all(want.map((u) => c.match(u)))).every(Boolean)) return true;
       }
       return false;
     }""")
-    check('offline: pages and the shared back-to-top files are saved on the first visit', saved)
+    check('offline: pages and the shared files are saved on the first visit', saved)
     pg.reload()  # now controlled by the service worker
     pg.wait_for_timeout(800)
     controlled = pg.evaluate("Boolean(navigator.serviceWorker.controller)")
     check('offline: the service worker takes over', controlled)
-    pg.goto(BASE + '/math/')
-    pg.wait_for_selector('.calc-fab')
     ctx.set_offline(True)
-    pg.goto(BASE + '/math/#exams')
-    ok_math = pg.locator('#view-exams').count() == 1
+    # Calculus midterm 1 was never opened online here: its page, style, script and fonts come from what the first visit saved
+    pg.goto(BASE + '/math/derivatives/#exams')
+    pg.wait_for_selector('#m1 .rq')
     pg.wait_for_timeout(300)
-    check('offline: the Math page opens with no network', ok_math and pg.locator('#m1 .rq').count() == 6)
+    check('offline: Calculus midterm 1 opens with no network, styled, with its script and math fonts', pg.locator('#m1 .rq').count() == 6
+          and pg.evaluate("getComputedStyle(document.querySelector('.appbar')).position") == 'sticky'
+          and pg.evaluate("document.fonts.check('16px KaTeX_Main')") and pg.locator('.calc-fab').count() == 1)
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.exams')
+    check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 3)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
     check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 5)

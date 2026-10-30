@@ -5,7 +5,7 @@ Unofficial study notes for KUAS engineering courses (Calculus &amp; Linear Algeb
 
 | Subject | Page | Status |
 | --- | --- | --- |
-| Calculus & Linear Algebra 1 (CLA1) | [/math/](https://lmheew.github.io/y1-s1/math/) | Midterm review: Summary, Practice, Formulas, Quizzes, Exams |
+| Calculus & Linear Algebra 1 (CLA1) | [/math/](https://lmheew.github.io/y1-s1/math/) | One page per exam. Calculus midterm 1 (derivatives): Summary, Practice, Formulas, Quizzes, Exams. Integrals and Linear Algebra: coming soon |
 | Engineering Physics 1 | – | Coming soon |
 
 ## What's in the repository
@@ -15,11 +15,12 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `index.html`: the home page: subjects, upcoming exams with countdowns, what's new, and how to install it.
 - `site.json`: exam dates and the "What's new" list.
 - `sw.js`, `manifest.webmanifest` and the `icon-*.png` files: offline use and "Add to Home Screen".
-- `math/index.html`: the CLA1 review. It is built from `src/math/`, so don't edit it by hand.
-- `math/locked.json`: the in-class quiz sheets, encrypted. The Quizzes tab opens them with the password.
+- `math/`: the CLA1 review, built from `src/math/`, so don't edit it by hand: `index.html` is the exam picker, `derivatives/` the Calculus midterm 1 page, and `assets/` the styles, scripts and math fonts the exam pages share.
+- `math/derivatives/locked.json`: the in-class quiz sheets and past midterms, encrypted. The Quizzes and Exams tabs open them with the password.
 - `src/math/`: the content (`content.mjs`, `followups.mjs`, `exams.mjs`, `extras.mjs`), the interactive graphs (`graphs.js`), the page style and script, the build, and numeric checks for every answer.
-- `src/math/private.sealed.json`: the source of the in-class sheets, encrypted.
+- `src/math/private.sealed.json`: the source of the in-class sheets and past midterms, encrypted.
 - `src/shared/`: the floating calculator used on every subject page (with a test of its arithmetic), and the back-to-top button used on every page.
+- `og-*.png`: the link previews apps show when a page is shared, drawn by `src/og.py`.
 - `src/check_site.py` and `src/check_features.py`: browser checks of the built site.
 - `src/vendor/katex/`: KaTeX 0.16.11, used at build time to typeset the math.
 

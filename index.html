@@ -164,7 +164,7 @@
       <a class="subject math" href="math/" id="card-math">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
         <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
-        <p class="s-text">Midterm review: limits and continuity, derivative rules, extrema, series and Taylor polynomials, plus an introduction to differential equations.</p>
+        <p class="s-text">Review notes for each exam. Ready: Calculus midterm 1 (derivatives). Coming: midterm 2 (integrals) and the Linear Algebra midterm.</p>
         <span class="s-foot">
           <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li><li>Exams</li></ul>
           <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
@@ -182,7 +182,7 @@
   <section aria-labelledby="up-title">
     <h2 class="sec-title" id="up-title">Upcoming exams</h2>
     <ul class="up-list" id="up-list"><li class="up-item"><span class="up-main"><span class="up-when">Loading…</span></span></li></ul>
-    <p class="up-more">Mock midterms with a timer and self-scoring: <a href="math/#exams">Math · Exams</a></p>
+    <p class="up-more">Mock midterms with a timer and self-scoring: <a href="math/derivatives/#exams">Calculus midterm 1</a></p>
   </section>
 
   <section aria-labelledby="news-title">
@@ -213,7 +213,8 @@
     const CAL = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>';
     const fresh = (date) => { const t = new Date(date + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
     const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
-    const COURSE_PAGE = { math: 'math/#exams' };
+    // an exam links to its own page's Exams tab (page in site.json), or else to its subject's page
+    const COURSE_PAGE = { math: 'math/' };
 
     function exams(list) {
       const ul = $('#up-list');
@@ -229,7 +230,7 @@
           cls = days < 0 ? ' past' : days <= 7 ? ' soon' : '';
           sort = days < 0 ? 1e9 + days : days;
         }
-        const href = COURSE_PAGE[x.subject];
+        const href = x.page ? x.page + '#exams' : COURSE_PAGE[x.subject];
         const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${several ? esc(x.course) + ' · ' : ''}<span class="nw">${esc(when)}</span></span></span><span class="up-left">${left}</span>`;
         return { sort, html: href ? `<li><a class="up-item${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item${cls}">${inner}</li>` };
       });

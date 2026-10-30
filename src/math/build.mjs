@@ -1,15 +1,20 @@
 // Builds the Math section (CLA1 review) of the study site. All math is pre-rendered with KaTeX,
 // which is vendored in src/vendor/katex, so the build needs no network and no npm install.
 //
-//   node src/math/build.mjs site               writes math/index.html, and math/locked.json when SITE_PASSWORD is set
+// The section has one page per exam: math/ is the picker, and math/derivatives/ holds the notes for Calculus
+// midterm 1 (the content modules in this folder). The styles, scripts and math fonts every exam page uses are
+// shared files in math/assets/, so a device downloads them once and each exam page carries only its own notes.
+//
+//   node src/math/build.mjs site               writes math/index.html (the picker), math/derivatives/index.html and
+//                                              math/assets/, and math/derivatives/locked.json when SITE_PASSWORD is set
 //   node src/math/build.mjs artifact <out>     writes one self-contained page with the in-class sheets in plain view
 //   node src/math/build.mjs open               decrypts src/math/private.sealed.json into src/math/private/
 //   node src/math/build.mjs seal               encrypts src/math/private/ into src/math/private.sealed.json
 //   node src/math/build.mjs rekey              changes the password (SITE_PASSWORD = current, NEW_SITE_PASSWORD = new)
 //
 // The in-class quiz sheets are private. Their source (src/math/private/, git-ignored) is kept in the repository only
-// encrypted, and the site gets them only as math/locked.json, opened in the browser with the password.
-// Without SITE_PASSWORD the build keeps the current math/locked.json as it is.
+// encrypted, and the site gets them only as math/derivatives/locked.json, opened in the browser with the password.
+// Without SITE_PASSWORD the build keeps the current locked.json as it is.
 import { createRequire } from 'module';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -17,13 +22,17 @@ import path from 'path';
 import zlib from 'zlib';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { units, habits, practice } from './content.mjs';
-import { tags, formulas, exactValues, BADGE, TAB_ICONS, UI_ICONS, UNIT_ICONS } from './extras.mjs';
+import { tags, formulas, exactValues, BADGE, TAB_ICONS, UI_ICONS, UNIT_ICONS, EXAM_ICONS } from './extras.mjs';
 import { followups } from './followups.mjs';
 import { mocks } from './exams.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
-const LOCKED = path.join(ROOT, 'math', 'locked.json');
+const MATH = path.join(ROOT, 'math');
+// the exam page these content modules build (Calculus midterm 1), and the shared files of every exam page
+const PAGE_DIR = path.join(MATH, 'derivatives');
+const ASSETS = path.join(MATH, 'assets');
+const LOCKED = path.join(PAGE_DIR, 'locked.json');
 const SEALED = path.join(SRC, 'private.sealed.json');
 const PRIVATE = path.join(SRC, 'private');
 const KATEX_DIR = process.env.KATEX_DIR || path.join(ROOT, 'src', 'vendor', 'katex');
@@ -43,6 +52,19 @@ const SITE_URL = 'https://lmheew.github.io/y1-s1/';
 // "Last updated": the newest date in What's new for this page (site.json) or on anything in it (`added`)
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtDate = (d) => { const [y, m, day] = d.split('-').map(Number); return `${day} ${MONTHS[m - 1]} ${y}`; };
+
+// ---------- the exams, for the picker (math/) ----------
+// One card per exam, in course order. `exam` is its name in site.json (for the date), and `page` is its folder under
+// math/ once its notes exist; until then the card says when they will appear. The derivative part is the content in
+// this folder. Another exam's page needs its own content modules, storage keys and a build entry like buildPage().
+const EXAMS = [
+  { id: 'derivatives', page: 'derivatives', exam: 'Calculus midterm 1', kicker: 'Calculus midterm 1', title: 'Derivatives',
+    text: 'Limits and continuity, derivative rules, extrema, series and Taylor polynomials, plus an introduction to differential equations.' },
+  { id: 'integrals', exam: 'Calculus midterm 2 (integrals)', kicker: 'Calculus midterm 2', title: 'Integrals',
+    text: 'Notes will appear here after the first class on integrals.' },
+  { id: 'linear-algebra', exam: 'Linear Algebra midterm', kicker: 'Linear Algebra midterm', title: 'Linear algebra',
+    text: 'Notes will appear here after the first Linear Algebra class.' },
+];
 
 // ---------- markup ----------
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -453,7 +475,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   }).join('\n');
   const body = `
 <header class="appbar"><div class="wrap appbar-row">
-  <a class="brand" href="#summary" aria-label="CLA1 Review, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
+  <a class="brand" href="#summary" aria-label="CLA1 Review, Calculus midterm 1, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Midterm 1 · Derivatives</small></span></a>
   <div class="appbar-actions">
     <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
     <button type="button" class="icon-btn" id="search-btn" aria-label="Search everything">${UI_ICONS.search}</button>
@@ -497,30 +519,32 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
 </main>
 ${lazyScripts}
 `;
-  return { body, INDEX, PRIV, sheets, total, hasLocks: hasLocks || pastLock, nos, pastList };
+  return { body, INDEX, PRIV, sheets, total, hasLocks: hasLocks || pastLock, nos, pastList, daySpan };
 }
-// ---------- KaTeX CSS with embedded fonts, plus its license ----------
-function katexCSS() {
-  const KEEP = /KaTeX_(AMS|Main|Math|Size[1-4])-/;
+// ---------- KaTeX CSS with the fonts it needs, plus its license ----------
+// fontUrl(name) gives each font's address (the site's shared files); without it the fonts are embedded (the artifact)
+const KATEX_FONTS = /KaTeX_(AMS|Main|Math|Size[1-4])-/;
+function katexCSS(fontUrl) {
   let kcss = fs.readFileSync(path.join(KATEX_DIR, 'katex.min.css'), 'utf8');
   kcss = kcss.replace(/@font-face\{[^}]*\}/g, (blk) => {
     const m = blk.match(/url\(fonts\/(KaTeX_[A-Za-z0-9-]+)\.woff2\)/);
-    if (!m || !KEEP.test(m[1] + '-')) return '';
-    const data = fs.readFileSync(path.join(KATEX_DIR, 'fonts', m[1] + '.woff2')).toString('base64');
-    return blk.replace(/src:[^;}]+/, `src:url(data:font/woff2;base64,${data}) format("woff2")`);
+    if (!m || !KATEX_FONTS.test(m[1] + '-')) return '';
+    const src = fontUrl ? fontUrl(m[1]) : `data:font/woff2;base64,${fs.readFileSync(path.join(KATEX_DIR, 'fonts', m[1] + '.woff2')).toString('base64')}`;
+    return blk.replace(/src:[^;}]+/, `src:url(${src}) format("woff2")`);
   });
   const license = fs.readFileSync(path.join(KATEX_DIR, 'LICENSE.txt'), 'utf8').trim().replace(/\*\//g, '* /');
   return `/* KaTeX 0.16.11 stylesheet and fonts (https://katex.org)\n\n${license}\n*/\n${kcss}`;
 }
 
+// site: the footer of a page at math/derivatives/ (links up to the picker and the home page); the artifact has none
 function foot(site) {
   return `
 <footer class="site-foot"><div class="wrap">
   <p class="deco cheer">Good luck in your studies!</p>
-  ${site ? '<p class="foot-links"><a href="../">← All subjects</a></p>' : ''}
+  ${site ? '<p class="foot-links"><a href="../">← All exams</a> <a href="../../">All subjects</a></p>' : ''}
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
   <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
-  <p class="fine">Math typeset with KaTeX (${site ? '<a href="../src/vendor/katex/LICENSE.txt">MIT License</a>' : 'MIT License'}).</p>
+  <p class="fine">Math typeset with KaTeX (${site ? '<a href="../../src/vendor/katex/LICENSE.txt">MIT License</a>' : 'MIT License'}).</p>
 </div></footer>
 
 <div class="search-sheet" id="search" role="dialog" aria-modal="true" aria-label="Search" hidden>
@@ -536,14 +560,55 @@ const FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">`;
 const indexScript = (index) => `<script type="application/json" id="search-index">${JSON.stringify(index).replace(/</g, '\\u003c')}</script>`;
-// page.css/page.js are this subject's; the floating calculator and the back-to-top button in src/shared are common to every subject page
+// page.css/page.js are the Math pages'; the floating calculator and the back-to-top button in src/shared are common to every subject page
 const SHARED = path.join(ROOT, 'src', 'shared');
-const assets = () => ({
-  css: [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css')].map((f) => fs.readFileSync(f, 'utf8')).join('\n'),
-  js: [path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')].map((f) => fs.readFileSync(f, 'utf8')).join('\n'),
-  kcss: katexCSS(),
-});
-const KATEX_TWEAK = '<style>.katex{font-size:1.07em}.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}</style>';
+const CSS_FILES = [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css')];
+const JS_FILES = [path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')];
+const readAll = (files) => files.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+const KATEX_TWEAK = '.katex{font-size:1.07em}.katex-display{margin:.5em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}';
+// the artifact: everything inside the page
+const inlineAssets = () => ({ css: readAll(CSS_FILES), js: readAll(JS_FILES), kcss: katexCSS() });
+const hash = (data) => crypto.createHash('sha256').update(data).digest('hex').slice(0, 10);
+const writeIfChanged = (file, data) => {
+  const buf = Buffer.from(data);
+  if (fs.existsSync(file) && fs.readFileSync(file).equals(buf)) return;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, buf);
+};
+// the site: one stylesheet, one script and the KaTeX fonts in math/assets/, shared by every exam page. Pages name the
+// stylesheet and script with ?v=<hash of the file>, so browsers and the service worker keep a copy until it changes.
+function writeAssets() {
+  const fonts = [];
+  const kcss = katexCSS((name) => { fonts.push(name); return `fonts/${name}.woff2`; });
+  const note = (from) => `/* Built by src/math/build.mjs from ${from}. Don't edit it here: change the sources and build again. */\n`;
+  const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
+  const js = note('src/math/page.js, src/math/graphs.js, src/shared/totop.js and src/shared/calculator.js') + readAll(JS_FILES) + '\n';
+  writeIfChanged(path.join(ASSETS, 'math.css'), css);
+  writeIfChanged(path.join(ASSETS, 'math.js'), js);
+  const dir = path.join(ASSETS, 'fonts');
+  for (const f of fonts) writeIfChanged(path.join(dir, f + '.woff2'), fs.readFileSync(path.join(KATEX_DIR, 'fonts', f + '.woff2')));
+  for (const f of fs.readdirSync(dir)) if (!fonts.includes(f.replace(/\.woff2$/, ''))) fs.rmSync(path.join(dir, f));
+  return { css: `math.css?v=${hash(css)}`, js: `math.js?v=${hash(js)}`, fonts };
+}
+// the theme picked on any page (light or dark), set before the first paint; page.js takes over from there
+const THEME_EARLY = `<script>try{var t=(JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{}).theme;if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);document.documentElement.setAttribute('data-theme-early','')}}catch(e){}</script>`;
+const HEAD_COMMON = (up) => `<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="${up}apple-touch-icon.png">
+<link rel="manifest" href="${up}manifest.webmanifest">`;
+// a link preview (Open Graph): what LINE, Discord and others show when the page is shared; src/og.py draws the image
+const ogTags = ({ title, description, url, image, alt }) => `<meta property="og:type" content="website">
+<meta property="og:site_name" content="Study Notes">
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="${description}">
+<meta property="og:url" content="${SITE_URL}${url}">
+<meta property="og:image" content="${SITE_URL}${image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${alt}">
+<meta name="twitter:card" content="summary_large_image">`;
 
 // ---------- encryption (the browser side is in page.js; both must stay in step) ----------
 const subtle = globalThis.crypto.subtle;
@@ -639,51 +704,165 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
       console.log('wrote', rel(LOCKED), (fs.statSync(LOCKED).size / 1024).toFixed(0) + ' KB · in-class entries:', r.PRIV.length);
     }
   }
-  const lockedSrc = r.hasLocks && box
-    ? 'locked.json?v=' + crypto.createHash('sha256').update(fs.readFileSync(LOCKED)).digest('hex').slice(0, 10) : '';
-  if (r.hasLocks && !lockedSrc) fail('in-class sheets are listed but math/locked.json is missing; build with SITE_PASSWORD.');
-  const { css, js, kcss } = assets();
+  const lockedSrc = r.hasLocks && box ? 'locked.json?v=' + hash(fs.readFileSync(LOCKED)) : '';
+  if (r.hasLocks && !lockedSrc) fail(`in-class sheets are listed but ${rel(LOCKED)} is missing; build with SITE_PASSWORD.`);
+  const a = writeAssets();
+  // the two fonts nearly every formula uses start loading with the page
+  const PRELOAD = ['KaTeX_Main-Regular', 'KaTeX_Math-Italic'];
+  if (!PRELOAD.every((f) => a.fonts.includes(f))) fail('a preloaded KaTeX font is not among the shared fonts');
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CLA1 Midterm Review</title>
-<meta name="description" content="Midterm review for Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Study Notes">
-<meta property="og:title" content="CLA1 Review · Calculus &amp; Linear Algebra 1">
-<meta property="og:description" content="Unofficial review notes: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
-<meta property="og:url" content="${SITE_URL}math/">
-<meta property="og:image" content="${SITE_URL}og-math.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="CLA1 Review, Calculus and Linear Algebra 1: summary, practice, formulas, quizzes and exams">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<link rel="manifest" href="../manifest.webmanifest">
+<title>CLA1 Midterm 1 Review</title>
+<meta name="description" content="Review for Calculus midterm 1 (derivatives) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
+${ogTags({
+    title: 'CLA1 Review · Calculus midterm 1 (derivatives)',
+    description: 'Unofficial review notes for Calculus midterm 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
+    url: 'math/derivatives/', image: 'og-math-derivatives.png',
+    alt: 'CLA1 Review, Calculus midterm 1, derivatives: summary, practice, formulas, quizzes and exams',
+  })}
+${HEAD_COMMON('../../')}
+${THEME_EARLY}
 ${FONT_LINKS}
-<style>${css}</style>
-<style>${kcss}</style>
-${KATEX_TWEAK}
+${PRELOAD.map((f) => `<link rel="preload" href="../assets/fonts/${f}.woff2" as="font" type="font/woff2" crossorigin>`).join('\n')}
+<link rel="preload" href="../assets/${a.js}" as="script">
+<link rel="stylesheet" href="../assets/${a.css}">
 </head>
 <body>
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
 ${foot(true)}
 ${indexScript(r.INDEX)}
-<script>${js}</script>
+<script src="../assets/${a.js}"></script>
 </body>
 </html>
 `;
-  const out = path.join(ROOT, 'math', 'index.html');
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, html);
+  const out = path.join(PAGE_DIR, 'index.html');
+  writeIfChanged(out, html);
   console.log('wrote', rel(out), (html.length / 1024).toFixed(0) + ' KB · problems:', r.total, '· public index entries:', r.INDEX.length,
     '· quizzes:', r.nos.join(' '), r.hasLocks ? '(in-class sheets locked)' : '');
+  const picker = pickerHTML(a, r);
+  writeIfChanged(path.join(MATH, 'index.html'), picker);
+  console.log('wrote', rel(path.join(MATH, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
+    '· shared files:', a.css, a.js, `and ${a.fonts.length} fonts in`, rel(ASSETS));
+}
+
+// ---------- the exam picker (math/index.html) ----------
+// Old addresses were the one Math page (math/#exams, math/#prob-1-1…): the picker has no anchors of its own, so any
+// address with a # goes on to the derivative part, where those sections now live.
+const PICKER_CSS = `
+/* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
+body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+.picker .wrap { max-width: 760px; } /* no side menu here, so wide screens keep the home page's width */
+.picker .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+.exams { display: grid; gap: 14px; }
+.exam { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px;
+  border: 1.5px solid var(--green); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
+.exam.soon { border-style: dashed; }
+.exam .tile-ic { grid-row: span 2; width: 52px; height: 52px; }
+.exam.soon .tile-ic { opacity: .55; }
+.e-head { display: grid; align-content: center; min-width: 0; }
+.e-head .kicker { display: block; }
+.e-title { margin-top: 2px; font-size: 21px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.e-text, .e-stats, .e-foot { grid-column: 2; }
+.e-text { font-size: 14.5px; color: var(--ink-soft); }
+.e-stats { font-size: 13px; font-weight: 700; color: var(--green-text); }
+.e-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 8px; }
+.e-when { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 13.5px; color: var(--ink-soft); }
+.e-when .ic { width: 18px; height: 18px; color: var(--green-text); }
+.e-left { font-weight: 700; color: var(--green-text); font-variant-numeric: tabular-nums; }
+.e-left:empty { display: none; }
+.e-when.soon .e-left { color: var(--amber); }
+.e-when.past .e-left { color: var(--ink-soft); }
+.e-soon { display: inline-block; padding: 5px 12px; border: 1.5px solid var(--green); border-radius: 999px; color: var(--green-text);
+  font-size: 13px; font-weight: 700; line-height: 1.2; }
+@media (hover: hover) { a.exam:hover { background: var(--tint); } a.exam:hover .pill { background: var(--bar-active); } }
+@media (min-width: 640px) { .exam { padding: 18px 20px; } }`;
+const PICKER_JS = `(() => {
+  const DAY = 86400000;
+  // countdowns in Japan time, like the Exams tab
+  const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
+  document.querySelectorAll('.e-when[data-date]').forEach((el) => {
+    const days = Math.round((new Date(el.dataset.date + 'T00:00:00+09:00').getTime() - today) / DAY);
+    el.querySelector('.e-left').textContent = days < 0 ? 'Done' : days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : 'in ' + days + ' days';
+    el.classList.toggle('soon', days >= 0 && days <= 7);
+    el.classList.toggle('past', days < 0);
+  });
+  // New: an exam page updated in the last 14 days that this device hasn't opened since (study-seen, kept by the exam pages)
+  let seen = {};
+  try { seen = JSON.parse(localStorage.getItem('study-seen') || 'null') || {}; } catch (e) { /* storage unavailable */ }
+  const fresh = (d) => { const t = new Date(d + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
+  document.querySelectorAll('.exam[data-updated]').forEach((card) => {
+    const d = card.dataset.updated;
+    if (fresh(d) && !(seen[card.dataset.seen] >= d)) card.querySelector('.e-title').insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
+  });
+  // offline: the site's service worker, as on every page
+  if ('serviceWorker' in navigator && /\\.github\\.io$|^localhost$/.test(location.hostname)) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('../sw.js', { scope: '../' }).catch(() => { /* ignore */ }); });
+  }
+})();`;
+function pickerHTML(a, r) {
+  const cards = EXAMS.map((x) => {
+    const ex = SITE.exams.find((e) => e.name === x.exam);
+    if (!ex) fail(`site.json has no exam named "${x.exam}" (the picker's ${x.id} card)`);
+    // the home page links an exam to its page through site.json, so the two must agree
+    const page = x.page ? `math/${x.page}/` : null;
+    if ((ex.page || null) !== page) fail(`site.json: "${x.exam}" needs "page": ${JSON.stringify(page)}, like the picker's card`);
+    const day = ex.date ? new Date(`${ex.date}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (ex.time ? ' · ' + ex.time : '') : 'Date to be announced';
+    const when = `<span class="e-when"${ex.date ? ` data-date="${esc(ex.date)}"` : ''}>${UI_ICONS.calendar}<span class="nw">${esc(day)}</span><span class="e-left" aria-live="off"></span></span>`;
+    const stats = x.page ? `<p class="e-stats">${meta([`${units.length} lessons`, `${r.total} practice problems`, `${r.nos.length} quizzes`, `${mocks.length} mocks`, `${r.pastList.length} past midterms`])}</p>` : '';
+    const inner = `${EXAM_ICONS[x.id]}<span class="e-head"><span class="kicker">${meta([x.kicker, x.page ? r.daySpan : ''])}</span><span class="e-title">${esc(x.title)}</span></span>
+      <p class="e-text">${esc(x.text)}</p>${stats}
+      <span class="e-foot">${when}${x.page ? `<span class="pill">Open${UI_ICONS.arrow}</span>` : '<span class="e-soon">Coming soon</span>'}</span>`;
+    // data-seen: the exam page's key in study-seen, for the New label
+    return x.page
+      ? `<a class="exam" id="exam-${x.id}" href="${x.page}/" data-updated="${LAST_UPDATED}" data-seen="math">${inner}</a>`
+      : `<div class="exam soon" id="exam-${x.id}">${inner}</div>`;
+  }).join('\n    ');
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>if (location.hash.length > 1) location.replace('derivatives/' + location.hash);</script>
+<title>CLA1 Review</title>
+<meta name="description" content="Review notes for each exam of Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
+${ogTags({
+    title: 'CLA1 Review · Calculus &amp; Linear Algebra 1',
+    description: 'Unofficial review notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
+    url: 'math/', image: 'og-math.png',
+    alt: 'CLA1 Review, Calculus and Linear Algebra 1: Calculus midterm 1 (derivatives), with midterm 2 (integrals) and the Linear Algebra midterm coming soon',
+  })}
+${HEAD_COMMON('../')}
+${THEME_EARLY}
+${FONT_LINKS}
+<link rel="stylesheet" href="assets/${a.css}">
+<style>${PICKER_CSS}
+</style>
+<script src="../src/shared/totop.js" defer></script>
+</head>
+<body class="picker">
+<header class="appbar"><div class="wrap appbar-row">
+  <a class="brand" href="./" aria-label="CLA1 Review, all exams">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
+</div></header>
+<main>
+  ${band('Exams', '試験', 'One page of notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.')}
+  <div class="wrap content">
+    <nav class="exams" aria-label="Exams">
+    ${cards}
+    </nav>
+  </div>
+</main>
+<footer class="site-foot"><div class="wrap">
+  <p class="foot-links"><a href="../">← All subjects</a></p>
+  <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page.</p>
+  <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
+</div></footer>
+<script>${PICKER_JS}</script>
+</body>
+</html>
+`;
 }
 
 async function buildArtifact(out) {
@@ -693,14 +872,14 @@ async function buildArtifact(out) {
   if (!quizzes) fail('the in-class sheets are needed: run `open` first, or set SITE_PASSWORD.');
   const past = await loadPast(ring);
   const r = render({ quizzes, past, locked: false, lockedNos: [] });
-  const { css, js, kcss } = assets();
+  const { css, js, kcss } = inlineAssets();
   // claude.ai artifact: the host supplies the document skeleton, so the page starts at <title>
   const html = `<title>CLA1 Midterm Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 ${FONT_LINKS}
 <style>${css}</style>
 <style>${kcss}</style>
-${KATEX_TWEAK}
+<style>${KATEX_TWEAK}</style>
 ${r.body.replace('%MAIN_ATTRS%', '')}
 ${foot(false)}
 ${indexScript(r.INDEX)}

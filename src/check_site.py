@@ -26,7 +26,14 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(Quiet, directory=ROOT))
+class Server(http.server.ThreadingHTTPServer):
+    # a browser that leaves a page mid-download is not an error
+    def handle_error(self, request, client_address):
+        if not isinstance(sys.exc_info()[1], (BrokenPipeError, ConnectionResetError)):
+            super().handle_error(request, client_address)
+
+
+server = Server(('127.0.0.1', 0), functools.partial(Quiet, directory=ROOT))
 threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f'http://localhost:{server.server_address[1]}'
 
@@ -78,6 +85,14 @@ with sync_playwright() as p:
         check(f'{label}: home: back-to-top ' + ('shows once scrolled down' if far else 'stays hidden on a short page'), totop_on() == far)
         page.evaluate('scrollTo(0, 0)')
         page.click('a.subject[href="math/"]')
+        # the Math card opens the exam picker: one card per exam, the ones without notes yet marked coming soon
+        page.wait_for_selector('.exams')
+        check(f'{label}: exam picker has the Calculus midterm 1 card and two coming soon',
+              page.locator('a.exam[href="derivatives/"]').count() == 1 and page.locator('.exam.soon .e-soon').count() == 2)
+        check(f'{label}: exam picker has no sideways scroll', overflow(page) <= 0, overflow(page))
+        check(f'{label}: exam picker links home', page.locator('.foot-links a[href="../"]').count() == 1)
+        shot(page, f'{label}-picker')
+        page.click('a.exam[href="derivatives/"]')
         page.wait_for_selector('#view-summary')
         for view in ['summary', 'practice', 'formulas', 'quizzes']:
             page.click(f'#tab-{view}')
@@ -103,7 +118,7 @@ with sync_playwright() as p:
         first.locator('.seg-btn[data-seg="1"]').click()
         check(f'{label}: switcher opens Follow-up A', first.locator('.sheet[data-seg="1"]').is_visible())
         first.locator('.seg-btn[data-seg="0"]').click()
-        check(f'{label}: footer links home', page.locator('.foot-links a[href="../"]').count() == 1)
+        check(f'{label}: footer links to all exams and home', page.locator('.foot-links a[href="../"]').count() == 1 and page.locator('.foot-links a[href="../../"]').count() == 1)
         ft = page.locator('.site-foot time').get_attribute('datetime') or ''
         math_news = [n['date'] for n in json.load(open(os.path.join(ROOT, 'site.json')))['news'] if n.get('subject') in ('math', 'all')]
         check(f'{label}: footer says when the page was last updated', ft == page.locator('.tabbar').get_attribute('data-updated') and ft >= max(math_news), ft)
@@ -252,7 +267,7 @@ with sync_playwright() as p:
             page.wait_for_selector('body.unlocked', timeout=20000)
             check(f'{label}: stays open after a reload', page.locator('.sheet.lock').count() == 0)
             fresh = ctx.new_page()
-            fresh.goto(BASE + '/math/#quizzes')
+            fresh.goto(BASE + '/math/derivatives/#quizzes')
             if label == 'phone':
                 fresh.wait_for_selector('body.unlocked', timeout=20000)
                 check(f'{label}: "Remember on this device" opens it in a new tab', fresh.locator('.sheet.lock').count() == 0)

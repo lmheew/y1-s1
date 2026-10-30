@@ -22,8 +22,9 @@
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY = 86400000;
 
-  // ----- theme: system follows the device (or the host's choice); light/dark override it -----
-  const hostTheme = root.getAttribute('data-theme');
+  // ----- theme: system follows the device (or the host's choice); light/dark override it. On the site a script in
+  // the page's head has already set the saved light/dark choice (data-theme-early), so that one isn't a host's. -----
+  const hostTheme = root.hasAttribute('data-theme-early') ? null : root.getAttribute('data-theme');
   const themeBtn = $('#theme-btn');
   const THEME_LABEL = { system: 'Theme: matches your device. Tap for light.', light: 'Theme: light. Tap for dark.', dark: 'Theme: dark. Tap to match your device.' };
   function applyTheme() {
@@ -715,9 +716,13 @@
     unlockQuizzes(scope); // the past midterms are locked like the in-class sheets
   };
 
-  // ----- offline: a service worker keeps a copy of the site (on GitHub Pages; not inside claude.ai) -----
-  if ('serviceWorker' in navigator && /\.github\.io$|^localhost$/.test(location.hostname)) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('../sw.js', { scope: '../' }).catch(() => { /* ignore */ }); });
+  // ----- offline: a service worker keeps a copy of the site (on GitHub Pages; not inside claude.ai). It sits at the
+  // site's root, next to the manifest, however deep this page is. -----
+  const manifest = $('link[rel="manifest"]');
+  if (manifest && 'serviceWorker' in navigator && /\.github\.io$|^localhost$/.test(location.hostname)) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register(new URL('sw.js', manifest.href).href, { scope: new URL('./', manifest.href).href }).catch(() => { /* ignore */ });
+    });
   }
 
   // first view: from the address (#exams…) or where this browser left off

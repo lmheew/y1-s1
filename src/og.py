@@ -1,12 +1,14 @@
 """Draws the link-preview images (Open Graph, 1200 x 630) that LINE, Discord and other apps show when a page's link
-is shared: og-home.png for the home page and og-math.png for the Math page, both in the repository root.
+is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/)
+and og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/).
 
-    python3 src/og.py
+    python3 src/og.py                  # all of them
+    python3 src/og.py og-math.png      # only the ones named
 
 Needs Python Playwright with Chromium, Pillow, and the Noto Sans CJK JP (or Noto Sans JP) font. Run it again when a
 card's text should change (a new subject, say); the pages point at the images in their <head>. Unofficial notes:
 the cards use the site's own badge, never the KUAS logo."""
-import io, os
+import io, os, sys
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
@@ -54,6 +56,7 @@ body { position: relative; overflow: hidden; background: #FFFFFF; color: #17201A
   box-shadow: inset 0 0 0 2.5px #3D8A4D; }
 .pill.on { background: #377E46; color: #FFFFFF; box-shadow: none; }
 .pill.soon { color: #1F4B8F; box-shadow: inset 0 0 0 2.5px #1F4B8F; background: #FFFFFF; }
+.pill.later { color: #545C55; box-shadow: none; border: 2.5px dashed #3D8A4D; padding: 5.5px 19.5px; }
 .foot { position: absolute; left: 72px; right: 72px; bottom: 50px; display: flex; justify-content: space-between; align-items: baseline;
   font-size: 26px; color: #545C55; }
 .foot b { color: #2F7340; font-weight: 700; }
@@ -62,6 +65,11 @@ body { position: relative; overflow: hidden; background: #FFFFFF; color: #17201A
 CARDS = {
     'og-math.png': dict(
         title='CLA1 Review', kicker='Calculus &amp; Linear Algebra 1',
+        lede='Review notes for each exam, with worked solutions and mock midterms.',
+        pills='<span class="pill on">Midterm 1 · Derivatives</span><span class="pill later">Integrals · soon</span>'
+              '<span class="pill later">Linear Algebra · soon</span>'),
+    'og-math-derivatives.png': dict(
+        title='CLA1 Review', kicker='Calculus midterm 1 · Derivatives',
         lede='Key ideas, worked solutions, formulas, quizzes and mock midterms.',
         pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
               '<span class="pill">Quizzes</span><span class="pill">Exams</span>'),
@@ -86,6 +94,8 @@ with sync_playwright() as p:
     b = p.chromium.launch()
     pg = b.new_page(viewport={'width': 1200, 'height': 630}, device_scale_factor=1)
     for name, card in CARDS.items():
+        if sys.argv[1:] and name not in sys.argv[1:]:
+            continue
         pg.set_content(page(card))
         pg.wait_for_timeout(200)
         png = pg.screenshot(type='png')

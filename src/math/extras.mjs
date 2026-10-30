@@ -173,3 +173,9 @@ export const UNIT_ICONS = {
   u6: big('<path d="M10 7v34"/><path d="M10 40c12 0 20-4 28-19"/><path d="M10 31c12 0 20-4 28-19" class="lime-stroke"/><path d="M10 22c9 0 15-3 21-12"/><circle cx="10" cy="31" r="2.8" class="lime-fill"/>'),
   habits: big('<rect x="9" y="7" width="30" height="35" rx="3"/><path d="M15 17l3 3 5-5" class="lime-stroke"/><path d="M27 18h6M15 28h18M15 35h12"/>'),
 };
+// the exam picker's cards: a tangent line (derivatives), the area under a curve (integrals), a matrix (linear algebra)
+export const EXAM_ICONS = {
+  derivatives: big('<path d="M8 8v32h32"/><path d="M11 36Q26 34 41 12"/><path d="M14 38.6L40 17.8" class="lime-stroke"/><circle cx="26" cy="29" r="2.6" class="lime-fill"/>'),
+  integrals: big('<path d="M16 40V24.4Q25 13.6 34 24.4V40z" class="lime-fill" fill-opacity=".55"/><path d="M8 8v32h32"/><path d="M10 34Q25 4 40 34"/>'),
+  'linear-algebra': big('<path d="M14 8H9v32h5M34 8h5v32h-5"/><circle cx="18.5" cy="17" r="2.6" class="lime-fill"/><circle cx="29.5" cy="17" r="2.4"/><circle cx="18.5" cy="31" r="2.4"/><circle cx="29.5" cy="31" r="2.6" class="lime-fill"/>'),
+};
