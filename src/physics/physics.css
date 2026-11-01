@@ -21,6 +21,19 @@
   html:root:root:root { --tint: #EDF2FA; --green: #1F4B8F; --green-text: #1F4B8F; --lime: #4F7EC2; }
 }
 .new-pill { color: #0D1A33; }
+
+/* the floating calculator in Physics blue: calculator.css sets its key tints, its dark-mode keys and "=", the ghost
+   button and its wake-up glow for Math's green, so they are set again here (this file comes after it) */
+.calc-panel { --c-num: #FFFFFF; --c-num-h: #F4F7FC; --c-fn: #ECF1F9; --c-fn-h: #E0E8F4; --c-press: #D0DCEF; }
+:root[data-theme="dark"] .calc-panel { --c-num: #232D3D; --c-num-h: #2B3749; --c-fn: #1A2230; --c-fn-h: #212B3B; --c-press: #141B26;
+  --c-eq: #6F9BE0; --c-eq-h: #84ABE8; --c-eq-press: #5C88CF; --c-on-eq: #0C1018; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .calc-panel { --c-num: #232D3D; --c-num-h: #2B3749; --c-fn: #1A2230;
+  --c-fn-h: #212B3B; --c-press: #141B26; --c-eq: #6F9BE0; --c-eq-h: #84ABE8; --c-eq-press: #5C88CF; --c-on-eq: #0C1018; } }
+.calc-fab { background: rgba(38, 46, 60, .8); }
+.calc-fab.armed { animation-name: calc-armed-blue; }
+@keyframes calc-armed-blue { 50% { box-shadow: 0 0 0 6px rgba(143, 180, 236, .5), 0 4px 14px rgba(0, 0, 0, .25); } }
+:root[data-theme="dark"] .calc-fab { background: rgba(86, 98, 120, .82); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .calc-fab { background: rgba(86, 98, 120, .82); } }
 /* the badge: a pendulum (the Math badge's classes give it the page's colours) */
 .badge .b-ceil { stroke-width: 2.2; }
 .badge .b-string { stroke-width: 1.7; }
