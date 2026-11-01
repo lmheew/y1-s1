@@ -2,14 +2,15 @@
 // online, with the saved copy when the network is down or slow. Files named with a version (math.css?v=…,
 // locked.json?v=…): saved copy first, since a new version comes with a new name. Images and fonts: saved copy first.
 // Bump CACHE when the list below changes; old caches are deleted on activate.
-const CACHE = 'study-notes-v3';
+const CACHE = 'study-notes-v4';
 const FONTS = 'study-notes-fonts';
 const KATEX = ['AMS-Regular', 'Main-Bold', 'Main-BoldItalic', 'Main-Italic', 'Main-Regular', 'Math-BoldItalic', 'Math-Italic',
   'Size1-Regular', 'Size2-Regular', 'Size3-Regular', 'Size4-Regular'].map((f) => `./math/assets/fonts/KaTeX_${f}.woff2`);
-const CORE = ['./', './math/', './math/derivatives/', './site.json', './manifest.webmanifest', './favicon.svg', './apple-touch-icon.png',
-  './icon-192.png',
-  './src/shared/totop.css', './src/shared/totop.js', // the home page and the exam picker link these; exam pages have them in math.js
-  './math/assets/math.css', './math/assets/math.js', ...KATEX]; // what every exam page shares (the pages ask for them by version)
+const CORE = ['./', './math/', './math/derivatives/', './physics/', './physics/midterm/', './site.json', './manifest.webmanifest',
+  './favicon.svg', './apple-touch-icon.png', './icon-192.png',
+  './src/shared/totop.css', './src/shared/totop.js', // the home page and the exam pickers link these; exam pages have them in their script
+  './math/assets/math.css', './math/assets/math.js', // what every Math exam page shares (the pages ask for them by version)
+  './physics/assets/physics.css', './physics/assets/physics.js', ...KATEX]; // the same for Physics, which uses Math's KaTeX fonts
 const TIMEOUT = 3500;
 
 self.addEventListener('install', (e) => {

@@ -1,10 +1,19 @@
 /* Built by src/math/build.mjs from src/math/page.js, src/math/graphs.js, src/shared/totop.js and src/shared/calculator.js. Don't edit it here: change the sources and build again. */
 (() => {
-  const KEY = 'cla1-midterm-review';
+  // Settings of this page: a subject page other than Math (Physics) sets them as JSON in <body data-page>, and Math
+  // uses the defaults. store: where the page keeps its state; seen: its key in study-seen (for New labels and the
+  // home page's card); home: the tab it opens on the first time; scores: where mock scores are kept; suggest and
+  // tryWords: the search sheet's suggestions and its hint when nothing matches.
+  const CONF = (() => { try { return JSON.parse(document.body.dataset.page || '{}') || {}; } catch (e) { return {}; } })();
+  const KEY = CONF.store || 'cla1-midterm-review';
+  // the theme is site-wide: it lives in the Math page's store, which the home page and every page's head read
+  const THEME_KEY = 'cla1-midterm-review';
+  const SUBJ = CONF.seen || 'math';
   const VIEWS = ['summary', 'practice', 'formulas', 'quizzes', 'exams'];
+  const HOME = VIEWS.includes(CONF.home) ? CONF.home : 'summary';
   const FILTERS = ['all', 'review', 'unmarked'];
   const THEMES = ['system', 'light', 'dark'];
-  const st = { tab: 'summary', marks: {}, filter: 'all', theme: 'system', seg: {} };
+  const st = { tab: HOME, marks: {}, filter: 'all', theme: 'system', seg: {} };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
@@ -15,7 +24,19 @@
       if (saved.seg && typeof saved.seg === 'object') st.seg = saved.seg;
     }
   } catch (e) { /* storage unavailable: start fresh */ }
+  if (KEY !== THEME_KEY) {
+    try { const t = (JSON.parse(localStorage.getItem(THEME_KEY) || 'null') || {}).theme; st.theme = THEMES.includes(t) ? t : 'system'; } catch (e) { /* ignore */ }
+  }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* ignore */ } };
+  // a page with its own store also writes the theme into the site-wide one
+  const saveTheme = () => {
+    if (KEY === THEME_KEY) return;
+    try {
+      const o = JSON.parse(localStorage.getItem(THEME_KEY) || 'null') || {};
+      o.theme = st.theme;
+      localStorage.setItem(THEME_KEY, JSON.stringify(o));
+    } catch (e) { /* ignore */ }
+  };
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -36,7 +57,7 @@
     themeBtn.setAttribute('aria-label', THEME_LABEL[st.theme]);
     themeBtn.title = THEME_LABEL[st.theme];
   }
-  themeBtn.addEventListener('click', () => { st.theme = THEMES[(THEMES.indexOf(st.theme) + 1) % THEMES.length]; save(); applyTheme(); });
+  themeBtn.addEventListener('click', () => { st.theme = THEMES[(THEMES.indexOf(st.theme) + 1) % THEMES.length]; save(); saveTheme(); applyTheme(); });
   applyTheme();
 
   // ----- views. Every tab but Summary arrives as text (<script id="lazy-<view>">) and is built the first time it opens;
@@ -131,7 +152,7 @@
   window.addEventListener('scroll', () => { if (!tocQueued) { tocQueued = true; requestAnimationFrame(() => { tocQueued = false; paintToc(); }); } }, { passive: true });
   window.addEventListener('resize', paintToc);
   function show(view) {
-    if (!VIEWS.includes(view)) view = 'summary';
+    if (!VIEWS.includes(view)) view = HOME;
     materialize(view);
     markSeen(view);
     st.tab = view; save();
@@ -147,7 +168,7 @@
     const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
     next.focus(); next.click();
   });
-  $('.brand').addEventListener('click', (e) => { e.preventDefault(); show('summary'); window.scrollTo({ top: 0 }); setHash('summary'); });
+  $('.brand').addEventListener('click', (e) => { e.preventDefault(); show(HOME); window.scrollTo({ top: 0 }); setHash(HOME); });
   window.addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
     if (VIEWS.includes(h) && h !== st.tab) { show(h); window.scrollTo({ top: 0 }); }
@@ -200,8 +221,9 @@
   // ----- "New" labels and tab dots: anything added in the last 14 days that this device hasn't looked at yet.
   // Tabs carry the newest date of what they hold. A tab's dot goes as soon as the tab is opened; the New labels
   // inside it stay for the rest of that visit and are gone from the next one. The newest date seen in each tab is
-  // kept per device in localStorage (study-seen; the home page reads "math" from it for its Math card, and keeps
-  // "news" there itself), and the copy taken when the visit started is kept in sessionStorage (study-seen-start).
+  // kept per device in localStorage (study-seen, as "<subject>:<tab>"; the home page reads "math" or "physics" from it
+  // for that subject's card, and keeps "news" there itself), and the copy taken when the visit started is kept in
+  // sessionStorage (study-seen-start).
   const fresh = (date) => {
     if (!date) return false;
     const t = new Date(date + 'T00:00:00+09:00').getTime();
@@ -225,11 +247,11 @@
     if (!t) return;
     t.classList.remove('has-new');
     const d = t.dataset.newest;
-    if (d && !(seen['math:' + view] >= d)) { seen['math:' + view] = d; saveSeen(); }
+    if (d && !(seen[SUBJ + ':' + view] >= d)) { seen[SUBJ + ':' + view] = d; saveSeen(); }
   }
   function markNew(scope) {
     const panel = scope.closest ? scope.closest('.view') : null;
-    const key = 'math:' + (panel ? panel.id.replace(/^view-/, '') : 'summary');
+    const key = SUBJ + ':' + (panel ? panel.id.replace(/^view-/, '') : 'summary');
     $$('[data-added]', scope).forEach((el) => {
       if (!unseen(el.dataset.added, key, start)) return;
       el.classList.add('is-new');
@@ -239,11 +261,11 @@
       if (head && !$('.new-pill', head)) head.insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
     });
   }
-  tabs.forEach((t) => t.classList.toggle('has-new', unseen(t.dataset.newest, 'math:' + t.dataset.view, seen)));
-  // for the home page's Math card: the newest date on this page when it was last opened
+  tabs.forEach((t) => t.classList.toggle('has-new', unseen(t.dataset.newest, SUBJ + ':' + t.dataset.view, seen)));
+  // for the home page's card of this subject: the newest date on this page when it was last opened
   // (the build also puts the page's latest What's new date on the tab bar, for updates that add no new item)
   const newestHere = [...tabs.map((t) => t.dataset.newest || ''), ($('.tabbar') || {}).dataset ? $('.tabbar').dataset.updated || '' : ''].sort().pop();
-  if (newestHere && !(seen.math >= newestHere)) { seen.math = newestHere; saveSeen(); }
+  if (newestHere && !(seen[SUBJ] >= newestHere)) { seen[SUBJ] = newestHere; saveSeen(); }
   markNew(panels.summary);
   built.summary = true;
   buildToc('summary');
@@ -306,6 +328,7 @@
   });
   VIEW_INIT.practice = (scope) => {
     probs = $$('.prob', scope);
+    if (!probs.length) return; // a page whose problems are still to come
     probs.forEach(paint);
     counts();
     applyFilter();
@@ -446,7 +469,7 @@
   let index = [];
   try { index = JSON.parse($('#search-index').textContent); } catch (e) { index = []; }
   const sheet = $('#search'), input = $('#search-input'), results = $('#search-results');
-  const SUGGEST = ['chain rule', 'vertical tangent', 'Taylor', "Newton's method", 'inflection', 'mock'];
+  const SUGGEST = Array.isArray(CONF.suggest) ? CONF.suggest : ['chain rule', 'vertical tangent', 'Taylor', "Newton's method", 'inflection', 'mock'];
   let lastFocus = null;
   function openSearch() {
     lastFocus = document.activeElement;
@@ -477,7 +500,7 @@
     }
     const words = q.split(/\s+/).filter(Boolean);
     const hits = index.filter((e) => words.every((w) => e.k.includes(w)));
-    if (!hits.length) { results.append(el('p', 's-empty', 'No matches for "' + input.value.trim() + '". Try a shorter word, like "limit" or "series".')); return; }
+    if (!hits.length) { results.append(el('p', 's-empty', 'No matches for "' + input.value.trim() + '". Try a shorter word, like ' + (CONF.tryWords || '"limit" or "series"') + '.')); return; }
     const groups = new Map();
     hits.forEach((h) => { if (!groups.has(h.s)) groups.set(h.s, []); groups.get(h.s).push(h); });
     groups.forEach((list, sec) => {
@@ -505,7 +528,7 @@
   const lockSrc = mainEl ? mainEl.dataset.locked : '';
   let unlockQuizzes = () => {};
   if (lockSrc) {
-    const LKEY = 'cla1-unlock-key';
+    const LKEY = 'cla1-unlock-key'; // shared with Physics: its locked files use the same password and salt, so one unlock opens both
     const normalize = (pw) => pw.toLowerCase().replace(/[\s-]+/g, '');
     const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
     const tob64 = (buf) => { let s = ''; new Uint8Array(buf).forEach((b) => { s += String.fromCharCode(b); }); return btoa(s); };
@@ -676,7 +699,7 @@
       items.slice().sort((a, b) => key(a) - key(b)).forEach((li) => ul.append(li));
     });
   }
-  const SKEY = 'cla1-mock-scores';
+  const SKEY = CONF.scores || 'cla1-mock-scores';
   let scores = {};
   try { scores = JSON.parse(localStorage.getItem(SKEY) || '{}') || {}; } catch (e) { scores = {}; }
   const saveScores = () => { try { localStorage.setItem(SKEY, JSON.stringify(scores)); } catch (e) { /* ignore */ } };

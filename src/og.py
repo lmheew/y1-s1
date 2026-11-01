@@ -1,6 +1,8 @@
 """Draws the link-preview images (Open Graph, 1200 x 630) that LINE, Discord and other apps show when a page's link
-is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/)
-and og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/).
+is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/),
+og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/), og-physics.png for the Physics exam picker
+(physics/) and og-physics-midterm.png for the Physics midterm page (physics/midterm/). Physics cards are drawn in the
+Physics blue, with its pendulum badge and a projectile in place of the curve and its tangent.
 
     python3 src/og.py                  # all of them
     python3 src/og.py og-math.png      # only the ones named
@@ -18,6 +20,12 @@ BADGE = ('<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="3
          '<path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/>'
          '<path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/>'
          '<circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg>')
+# the Physics badge: a pendulum (as in src/shared/icons.mjs)
+BADGE_PHYS = ('<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/>'
+              '<path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>'
+              '<path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>'
+              '<path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/>'
+              '<circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg>')
 
 # a faint graph in the corner, the badge's idea drawn large: the bump y = 300 - 250 exp(-((x - 250) / 95)^2) (SVG y grows
 # downwards), its true tangent line at x = 185 and that point, over a light grid
@@ -33,6 +41,27 @@ GRAPH = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
          + f'<polyline points="{CURVE}" class="curve"/>'
          + f'<path d="M{X0 - 70} {T(X0 - 70):.1f} L {X0 + 62} {T(X0 + 62):.1f}" class="tangent"/>'
          + f'<circle cx="{X0}" cy="{f(X0):.1f}" r="11" class="dot"/></svg>')
+
+# Physics: a projectile's parabola from the ground, its launch velocity and the ball part way along, over the grid
+PX = lambda t: 40 + 340 * t
+PY = lambda t: 300 - 4 * 235 * t * (1 - t)
+PATH = ' '.join(f'{PX(i / 80):.1f},{PY(i / 80):.1f}' for i in range(81))
+TB = 0.3  # where the ball is drawn
+# the launch velocity, along the path's tangent at the start: direction (dx/dt, dy/dt) at t = 0, with a two-stroke head
+_dx, _dy = 340, -4 * 235
+_n = math.hypot(_dx, _dy)
+_ux, _uy = _dx / _n, _dy / _n
+_tip = (PX(0) + 120 * _ux, PY(0) + 120 * _uy)
+_wing = lambda a: (_tip[0] - 20 * (_ux * math.cos(a) - _uy * math.sin(a)), _tip[1] - 20 * (_ux * math.sin(a) + _uy * math.cos(a)))
+ARROW = (f'<path d="M{PX(0):.1f} {PY(0):.1f}L{_tip[0]:.1f} {_tip[1]:.1f}" class="tangent"/>'
+         f'<path d="M{_wing(0.5)[0]:.1f} {_wing(0.5)[1]:.1f}L{_tip[0]:.1f} {_tip[1]:.1f}L{_wing(-0.5)[0]:.1f} {_wing(-0.5)[1]:.1f}" class="tangent head"/>')
+GRAPH_PHYS = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
+              + ''.join(f'<path d="M{x} 0V330" class="grid"/>' for x in range(0, 421, 42))
+              + ''.join(f'<path d="M0 {y}H420" class="grid"/>' for y in range(0, 331, 42))
+              + '<path d="M10 300H410" class="ground"/>'
+              + f'<polyline points="{PATH}" class="curve"/>'
+              + ARROW
+              + f'<circle cx="{PX(TB):.1f}" cy="{PY(TB):.1f}" r="13" class="dot"/></svg>')
 
 CSS = """
 * { box-sizing: border-box; margin: 0; }
@@ -57,6 +86,18 @@ body { position: relative; overflow: hidden; background: #FFFFFF; color: #17201A
 .pill.on { background: #377E46; color: #FFFFFF; box-shadow: none; }
 .pill.soon { color: #1F4B8F; box-shadow: inset 0 0 0 2.5px #1F4B8F; background: #FFFFFF; }
 .pill.later { color: #545C55; box-shadow: none; border: 2.5px dashed #3D8A4D; padding: 5.5px 19.5px; }
+.ground { stroke: #9AA9C0; stroke-width: 4; stroke-linecap: round; }
+.head { fill: none; stroke-linejoin: round; }
+/* Physics: the same card in the Physics blue */
+body.phys .band { background: #DCE4F0; border-bottom-color: #1F4B8F; }
+body.phys .grid { stroke: #C5D0E0; }
+body.phys .curve { stroke: #1F4B8F; }
+body.phys .tangent { stroke: #4F7EC2; }
+body.phys .dot { fill: #8FB4EC; }
+body.phys .kicker, body.phys .foot b { color: #1C437F; }
+body.phys .pill { color: #1C437F; box-shadow: inset 0 0 0 2.5px #1F4B8F; }
+body.phys .pill.on { background: #1F4B8F; color: #FFFFFF; box-shadow: none; }
+body.phys .pill.later { color: #525B69; box-shadow: none; border-color: #1F4B8F; }
 .foot { position: absolute; left: 72px; right: 72px; bottom: 50px; display: flex; justify-content: space-between; align-items: baseline;
   font-size: 26px; color: #545C55; }
 .foot b { color: #2F7340; font-weight: 700; }
@@ -76,14 +117,23 @@ CARDS = {
     'og-home.png': dict(
         title='Study Notes', kicker='Year 1 · Semester 1',
         lede='Notes, worked solutions and mock exams for first-year engineering courses.',
-        pills='<span class="pill on">Calculus &amp; Linear Algebra 1</span><span class="pill soon">Engineering Physics 1 · soon</span>'),
+        pills='<span class="pill on">Calculus &amp; Linear Algebra 1</span><span class="pill soon">Engineering Physics 1</span>'),
+    'og-physics.png': dict(
+        phys=True, title='EP1 Review', kicker='Engineering Physics 1',
+        lede='Review notes for each exam: quiz sheets and practice sets with worked answers.',
+        pills='<span class="pill on">Midterm · Chapters 1–8</span><span class="pill later">Final · later</span>'),
+    'og-physics-midterm.png': dict(
+        phys=True, title='EP1 Review', kicker='Physics midterm · Chapters 1–8',
+        lede='Exercise-day sheets and practice sets with worked answers, step by step.',
+        pills='<span class="pill on">Quizzes</span><span class="pill">Exams</span><span class="pill later">Notes · soon</span>'),
 }
 
 
 def page(c):
-    return (f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body>'
-            f'<div class="band"></div>{GRAPH}'
-            f'<div class="main"><div class="brand">{BADGE}<div><div class="title">{c["title"]}</div><div class="kicker">{c["kicker"]}</div></div></div>'
+    phys = c.get('phys')
+    return (f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body{" class=phys" if phys else ""}>'
+            f'<div class="band"></div>{GRAPH_PHYS if phys else GRAPH}'
+            f'<div class="main"><div class="brand">{BADGE_PHYS if phys else BADGE}<div><div class="title">{c["title"]}</div><div class="kicker">{c["kicker"]}</div></div></div>'
             f'<p class="lede">{c["lede"]}</p></div>'
             f'<div class="pills">{c["pills"]}</div>'
             f'<div class="foot"><span><b>Unofficial study notes</b> · works offline</span><span>lmheew.github.io/y1-s1</span></div>'

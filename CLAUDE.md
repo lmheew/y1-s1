@@ -8,19 +8,22 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
   - `/math/derivatives/` is Calculus midterm 1 (the derivative part, Days 1–12): the content modules in `src/math`.
   - `math/assets/` holds what every exam page shares: `math.css` (`page.css`, the calculator, back-to-top and KaTeX), `math.js` (`page.js`, `graphs.js`, back-to-top and the calculator) and the KaTeX fonts. Pages name `math.css` and `math.js` with `?v=` and the first 10 characters of the file's SHA-256, so a device downloads them once per change; each exam page carries only its own notes.
   - A new exam page (integrals, Linear Algebra) needs its own content modules and its own storage keys (practice marks are keyed by problem id), an entry in `EXAMS` with `page`, the same `page` in `site.json`, a build like the derivatives one, and its address in `CORE` in `sw.js`.
-- Physics (Engineering Physics 1) is planned as `/physics/`, in a darker blue theme. Build it only when asked.
+- The EP1 review (Engineering Physics 1) is `/physics/`, in a darker blue theme, built by `src/physics/build.mjs` the same way; never edit anything in `physics/` by hand. See "Physics" below.
+- Each subject's app bar has a button with the other subject's badge (`subjectSwitch` in `src/shared/icons.mjs`) that opens the other subject's exam picker.
+- `src/shared/build-lib.mjs` holds what both builds share (markup, KaTeX, the lock's encryption, the picker's style and script); `src/shared/icons.mjs` the tab bar and button icons.
 - The floating calculator (`src/shared/calculator.js` and `calculator.css`) is shared by every subject page. Exam pages get it from `math/assets/`; the private copy (`artifact`) has it inline.
 - The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Exam pages get it from `math/assets/` like the calculator. The home page and the exam picker link the two files instead, so they are in `CORE` in `sw.js`.
 - `site.json` holds exam dates (and each exam's `page`, once it has one, which the home page links to) and the "What's new" list, for the home page, the picker and the Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 - `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
-- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker) and `og-math-derivatives.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page or Physics arrives. They use the site's own badge, never the KUAS logo.
+- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-physics.png` (the Physics picker) and `og-physics-midterm.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
 
 ## Rules
 
-- **Never commit `src/math/private/` or the password.** The folder is git-ignored. The in-class quiz sheets and the past midterm papers exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/derivatives/locked.json` (what the site opens with the password). `locked.json` also keeps a readable list of the past papers' titles, times and points, so a build without the password can still draw their password panels.
+- **Never commit `src/math/private/`, `src/physics/private/` or the password.** Both folders are git-ignored. The in-class quiz sheets and the past midterm papers exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/derivatives/locked.json` (what the site opens with the password). `locked.json` also keeps a readable list of the past papers' titles, times and points, so a build without the password can still draw their password panels.
 - The password is saved in the user's Claude memory, because they asked for that. Otherwise they give it in chat. Never put it in the repository: not in files, not in commit messages.
 - Wording stays non-personal: no "your quizzes", no "from your chats", no student-ID versions.
+- Each subject keeps its colour: Math green, Physics the darker blue.
 - The course is calculator-free, so answers stay exact (√2/2, ln(7/8), 2 + e).
 - Every new answer gets a numeric check in a verify script, and every check must pass before pushing.
 - Practice problem ids (`unit.n`) are the keys for saved marks. Append new problems and never renumber. A problem moved to another unit keeps its old id in an `id` field (the Day 9 series problems are `5.1` and `5.2`).
@@ -55,19 +58,44 @@ Strings use `String.raw`, so avoid `${` inside them.
 - **Steps.** Solutions open one step at a time. Each paragraph, or each list item, of `sol` is one step, so write a step per block (`**(1)** …`, blank line, `**(2)** …`).
 - **New labels.** Give anything new an `added: 'YYYY-MM-DD'` (units, practice problems, formula groups, mocks). It gets a "New" label, and its tab a dot, for up to 14 days, and only until the device has seen it: a tab's dot goes when the tab is opened, and the labels inside it stay for the rest of that visit, then go. Also add a line to `news` in `site.json`. The home page's What's new groups entries by date, with one New label per day, which works the same way. The dates seen are kept in localStorage (`study-seen`, shared by both pages), and the copy taken at the start of a visit is kept in sessionStorage (`study-seen-start`).
 
+## Physics (src/physics)
+
+The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the midterm, and the final as "Coming soon") and `/physics/midterm/` the midterm page (Chapters 1–8 of Fundamentals of Physics; the exam is on 13 Nov 2026: six questions in 60 minutes).
+
+- The pages run on Math's page script and style (`src/math/page.js` and `page.css`, with the calculator and back-to-top) in Physics colours (`physics.css`). `<body data-page>` gives `page.js` the page's own settings (its storage keys, `physics` in `study-seen`, Quizzes as the first tab, the search suggestions); Math uses the defaults. The theme is shared: it is kept in Math's store. `physics/assets/` holds `physics.css` and `physics.js`, named by version like Math's; the KaTeX fonts are Math's (`math/assets/fonts`), so build Math first.
+- **Only the Quizzes tab has content so far.** Summary, Practice and Formulas show a heading per chapter (`chapters` in `content.mjs`) with a "coming soon" box, and Exams the upcoming exams with a "mock midterms coming soon" box. Fill them only when asked, the way Math's are.
+- Quizzes has two groups, each behind a switcher:
+  - **Exercise days**: the exercise-day sheets from class (Lectures 15 and 19), retyped with worked answers, in `private/exercises.mjs`. They are locked like Math's in-class sheets, with the same password and salt, so one unlock (and "Remember on this device") opens both subjects.
+  - **Practice sets** A, B and C (`quizzes.mjs`, public): new problems in the exercise days' format: Problem 0, a warm-up of twelve short items (definitions, significant figures, unit vectors, a derivative, scalar or vector), then Problems 1–10 with parts `n-1`, `n-2` …, across Chapters 1–8. They are original problems, not taken from the class sheets or from the earlier practice package (Quizzes 1–13, Tests A–C and a practice midterm, kept outside this repository).
+- A problem: `no` ("0", "1.2"), `topic` (the tag, ending with its chapters), `stem`, `fig` (one figure id or a list), `parts`, `labels` (to override `no-1` …, such as `(A)`), `answer` (one per part, or one when there are no parts) and `sol`. The markup is Math's; in a stem or solution, a paragraph followed by `- ` lines in the same block becomes a paragraph and a list (each item one step), and `[[fig:id]]` as a block of its own puts a figure there.
+- `figures.mjs`: every figure is an original line drawing in inline SVG (nothing copied from the textbook or the class sheets), in the page's colours so it follows dark mode. `plot()` draws graphs. The exercise days' figures (`d1-…`, `d2-…`) only ever travel in the locked file.
+- `verify_sets.py` checks every practice-set answer numerically (with `verify_lib.py`: force sums, step-by-step integration of the motion, work integrals); `private/verify_exercises.py` does the same for the exercise days. `leakcheck.mjs` fails if text, a formula, a figure or a problem id of the exercise days is on a public page.
+- Commands: `node src/physics/build.mjs site` (with `SITE_PASSWORD` it re-seals `private/` and rebuilds `physics/midterm/locked.json`; without it, it keeps them), `open` (decrypts into `src/physics/private/`), `seal`, and `rekey` (run it right after Math's `rekey`, with `SITE_PASSWORD` the old password and `NEW_SITE_PASSWORD` the new one).
+
+### A new exercise day (needs the password)
+
+1. `SITE_PASSWORD='…' node src/physics/build.mjs open`.
+2. Retype the sheet into `private/exercises.mjs` (draw its figures in `figures.mjs`), and add its checks to `private/verify_exercises.py`.
+3. `SITE_PASSWORD='…' node src/physics/build.mjs site`, then `node src/physics/leakcheck.mjs` and every check. Add a What's new line (`physics`).
+4. Commit and push. `private/` stays out of git.
+
 ## Build and check
 
 ```sh
 node src/math/build.mjs site
+node src/physics/build.mjs site
 python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && python3 src/math/verify_followups.py && python3 src/math/verify_mocks.py && node src/math/verify_exact.mjs
+python3 src/physics/verify_sets.py
 node src/shared/calculator_test.js
 python3 src/check_site.py
 python3 src/check_features.py
 ```
 
+With the private folders open, also run `node src/math/leakcheck.mjs`, `node src/physics/leakcheck.mjs`, `python3 src/math/private/verify_inclass.py`, `python3 src/math/private/verify_past.py` and `python3 src/physics/private/verify_exercises.py`.
+
 - Without `SITE_PASSWORD`, `site` keeps `math/derivatives/locked.json` as it is. A build with the password and one without write the same pages.
-- `check_site.py` runs the pages in Chromium (Playwright): layout on phone and desktop, home → picker → exam page, tabs, search and the locked panels. With `SITE_PASSWORD` set it also tests unlocking.
-- `check_features.py` covers the exam picker and old addresses, the shared files, the Exams tab, countdowns, mock scoring, step-by-step solutions, Test me, graphs, New labels, the home page and offline use. Some of its checks count today's content; update the counts when content changes.
+- `check_site.py` runs the pages in Chromium (Playwright): layout on phone and desktop, home → picker → exam page, tabs, search and the locked panels, for Math and Physics. With `SITE_PASSWORD` set it also tests unlocking, and that one remembered password opens both subjects.
+- `check_features.py` covers the exam pickers and old addresses, the shared files, the Exams tab, countdowns, mock scoring, step-by-step solutions, Test me, graphs, printing, New labels (per subject on the home page), the home page and offline use. Some of its checks count today's content; update the counts when content changes.
 - KaTeX is vendored, so no network or npm install is needed.
 
 ## A new class (no password needed)
@@ -100,7 +128,7 @@ A few details about the password:
 
 ## Exam dates, What's new, and speed
 
-- **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild the Math pages (the picker writes each date in at build time). Countdowns, sorting and "Done" are worked out in the browser.
+- **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild that subject's pages (the pickers write each date in at build time). Countdowns, sorting and "Done" are worked out in the browser.
 - **Last updated.** Every footer gives a date. The home page shows the newest What's new date. The Math pages show the newest of their What's new dates (`math` or `all`) and their `added` dates, written at build time (`LAST_UPDATED` in `build.mjs`, also on the exam page's tab bar as `data-updated`, which lets the home page's Math card and the picker's card know the page has been seen: `math` in `study-seen`). An update that adds no item still moves it once it has a What's new line.
 - **Fast first load.** Only the Summary tab is built with the page. Practice, Formulas, Quizzes and Exams travel as text (`<script type="text/x-lazy-html">`) and are built the first time they open. `page.js` `VIEW_INIT` switches on each tab's features then. Keep new tabs lazy too. `leakcheck.mjs` reads the lazy text as well, on every exam page and the picker.
 - **Shared files.** Styles, scripts and the KaTeX fonts live in `math/assets/`, so they are downloaded once, not with every page; that halved what a visit to Calculus midterm 1 downloads (about 400 KB compressed before, under 200 KB after). The two fonts most formulas need are preloaded. A script in each page's head sets the saved light or dark theme before the first paint (`data-theme-early`, which `page.js` doesn't mistake for a host's theme).

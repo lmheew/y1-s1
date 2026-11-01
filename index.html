@@ -14,7 +14,7 @@
 <meta property="og:image" content="https://lmheew.github.io/y1-s1/og-home.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Study Notes, Year 1: Calculus and Linear Algebra 1, with Engineering Physics 1 coming soon">
+<meta property="og:image:alt" content="Study Notes, Year 1: Calculus and Linear Algebra 1, and Engineering Physics 1">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
@@ -93,7 +93,7 @@
     display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px; border: 1.5px solid var(--c); border-radius: 4px;
     background: var(--surface); color: var(--ink); text-decoration: none; }
   a.subject:hover { background: var(--c-tint); }
-  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); border-style: dashed; }
+  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
   .s-icon { grid-row: span 2; width: 52px; height: 52px; }
   .s-icon svg { width: 100%; height: 100%; display: block; }
   .s-kicker { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
@@ -170,19 +170,22 @@
           <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
         </span>
       </a>
-      <div class="subject physics">
+      <a class="subject physics" href="physics/" id="card-physics">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
-        <span><span class="s-kicker">Physics</span><span class="s-title">Engineering Physics 1</span></span>
-        <p class="s-text">Notes for this course will appear here.</p>
-        <span class="s-foot"><span class="s-soon">Coming soon</span></span>
-      </div>
+        <span><span class="s-kicker">Physics · EP1</span><span class="s-title">Engineering Physics 1</span></span>
+        <p class="s-text">Review notes for each exam. Ready: the midterm (Chapters 1–8), with the exercise-day sheets and three practice sets, all with worked answers. Summaries, practice problems and formulas are on their way.</p>
+        <span class="s-foot">
+          <ul class="s-parts" aria-label="Sections"><li>Quizzes</li><li>Exams</li></ul>
+          <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
+        </span>
+      </a>
     </div>
   </section>
 
   <section aria-labelledby="up-title">
     <h2 class="sec-title" id="up-title">Upcoming exams</h2>
     <ul class="up-list" id="up-list"><li class="up-item"><span class="up-main"><span class="up-when">Loading…</span></span></li></ul>
-    <p class="up-more">Mock midterms with a timer and self-scoring: <a href="math/derivatives/#exams">Calculus midterm 1</a></p>
+    <p class="up-more">Timed practice: <a href="math/derivatives/#exams">Calculus midterm 1</a> mock midterms and <a href="physics/midterm/#quizzes">Physics midterm</a> quiz sheets.</p>
   </section>
 
   <section aria-labelledby="news-title">
@@ -214,7 +217,7 @@
     const fresh = (date) => { const t = new Date(date + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
     const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
     // an exam links to its own page's Exams tab (page in site.json), or else to its subject's page
-    const COURSE_PAGE = { math: 'math/' };
+    const COURSE_PAGE = { math: 'math/', physics: 'physics/' };
 
     function exams(list) {
       const ul = $('#up-list');
@@ -239,7 +242,7 @@
     }
     // "New" only for what this device hasn't seen yet, like the Math page (same keys, see page.js): What's new
     // marks a day's entries until the home page has shown them once (they stay for the rest of that visit), and
-    // the Math card until the Math page has been opened since its newest update.
+    // a subject's card until that subject's page has been opened since its newest update.
     const SEEN_KEY = 'study-seen', START_KEY = 'study-seen-start';
     const storage = (kind) => { try { return window[kind] || null; } catch (e) { return null; } };
     const readSeen = (store, key) => {
@@ -278,8 +281,10 @@
         seen.news = newest;
         try { storage('localStorage').setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* ignore */ }
       }
-      const math = list.filter((n) => n.subject === 'math' || n.subject === 'all').map((n) => n.date).sort().pop();
-      if (unseen(math, 'math', seen)) $('#card-math .s-kicker').insertAdjacentHTML('beforeend', PILL);
+      for (const subj of ['math', 'physics']) {
+        const newest = list.filter((n) => n.subject === subj || n.subject === 'all').map((n) => n.date).sort().pop();
+        if (unseen(newest, subj, seen)) $('#card-' + subj + ' .s-kicker').insertAdjacentHTML('beforeend', PILL);
+      }
     }
     fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })
       .catch(() => { $('#up-list').innerHTML = '<li class="up-item"><span class="up-main"><span class="up-when">Couldn\'t load the exam list. Check your connection.</span></span></li>'; });

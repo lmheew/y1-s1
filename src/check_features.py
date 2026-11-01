@@ -5,7 +5,8 @@
                                                  picker and old addresses, shared files, offline
 
 Countdowns are tested on a temporary copy of the site with exam dates filled in. Some checks expect the current
-content (three mocks, seven graphs, five exams and six news entries in site.json); update them when that changes."""
+content (three mocks, seven graphs, seven exams (five Math, two Physics) and six news entries in site.json, three
+Physics practice sets of eleven problems); update them when that changes."""
 import datetime, functools, http.server, json, os, re, shutil, subprocess, sys, tempfile, threading
 from playwright.sync_api import sync_playwright
 
@@ -31,8 +32,13 @@ data = json.load(open(os.path.join(SITE, 'site.json')))
 data['exams'][0].update(date=str(today + datetime.timedelta(days=3)), time='10:40')
 data['exams'][1].update(date=str(today + datetime.timedelta(days=1)))
 data['exams'][2].update(date=str(today - datetime.timedelta(days=2)))
+phys = [x for x in data['exams'] if x['subject'] == 'physics']
+phys[0].update(date=str(today + datetime.timedelta(days=10)), time=None)  # the Physics midterm; the final stays undated
+for x in phys[1:]:
+    x.update(date=None, time=None)
 json.dump(data, open(os.path.join(SITE, 'site.json'), 'w'), indent=2)
 subprocess.run(['node', 'src/math/build.mjs', 'site'], cwd=SITE, check=True, capture_output=True)
+subprocess.run(['node', 'src/physics/build.mjs', 'site'], cwd=SITE, check=True, capture_output=True)
 
 
 class Q(http.server.SimpleHTTPRequestHandler):
@@ -73,20 +79,21 @@ with sync_playwright() as p:
         # ---- home page ----
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
-        check(f'{label}: home lists 5 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 5 and 'Date to be announced' in pg.locator('#up-list').inner_text())
+        check(f'{label}: home lists 7 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 7 and 'Date to be announced' in pg.locator('#up-list').inner_text())
         days = sorted({n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'][:6]})
         check(f'{label}: home shows What\'s new grouped by day, one New label per day', pg.locator('#news .n-items li').count() == 6
               and pg.locator('#news .n-day').count() == len(days) and pg.locator('#news .new-pill').count() == len(days), days)
         newest = max(n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'])
         check(f'{label}: home footer says when the site was last updated', pg.locator('#updated').is_visible()
               and pg.locator('#updated time').get_attribute('datetime') == newest)
-        check(f'{label}: Math card has a New label', pg.locator('#card-math .new-pill').count() == 1)
-        check(f'{label}: home exams skip the course name while there is one course, and dates and the link stay whole',
-              'Linear Algebra 1 ·' not in pg.locator('#up-list').inner_text()
+        check(f'{label}: Math and Physics cards have a New label', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#card-physics .new-pill').count() == 1)
+        check(f'{label}: home exams name their course now that there are two, and dates and the links stay whole',
+              'Linear Algebra 1 ·' in pg.locator('#up-list').inner_text() and 'Engineering Physics 1 ·' in pg.locator('#up-list').inner_text()
               and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, .up-more a')].every((e) => e.getClientRects().length === 1)"))
+        check(f'{label}: the Physics midterm links to its page', pg.locator('#up-list a[href="physics/midterm/#exams"]').count() == 1)
         if label == 'phone':
             # link previews: both pages name a 1200 x 630 image that is in the repository, by its address on the live site
-            for url in ['/', '/math/', '/math/derivatives/']:
+            for url in ['/', '/math/', '/math/derivatives/', '/physics/', '/physics/midterm/']:
                 pg.goto(BASE + url)
                 og = pg.evaluate("Object.fromEntries([...document.querySelectorAll('meta[property^=\"og:\"], meta[name=\"twitter:card\"]')].map((m) => [m.getAttribute('property') || m.getAttribute('name'), m.content]))")
                 img = og.get('og:image', '')
@@ -333,7 +340,16 @@ with sync_playwright() as p:
           and pg2.locator('#view-summary .new-pill').count() == 0, (pg2.locator('#m1 .new-pill').count(), pg2.locator('#view-summary .new-pill').count()))
     pg2.goto(BASE + '/')
     pg2.wait_for_selector('#news .n-day')
-    check('new: next visit: the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
+    check('new: next visit: only the subject not opened yet (Physics) keeps its New label on the home page',
+          pg2.locator('.new-pill').count() == 1 and pg2.locator('#card-physics .new-pill').count() == 1, pg2.locator('.new-pill').count())
+    pg2.goto(BASE + '/physics/midterm/')
+    pg2.wait_for_selector('#pa .prq')
+    pg2.goto(BASE + '/')
+    pg2.wait_for_selector('#news .n-day')
+    check('new: once Physics has been opened too, the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
+    pg2.goto(BASE + '/physics/')
+    pg2.wait_for_selector('.exams')
+    check('new: once the Physics midterm has been opened, its picker drops its New label', pg2.locator('.new-pill').count() == 0)
     pg2.goto(BASE + '/math/')
     pg2.wait_for_selector('.exams')
     check('new: once Calculus midterm 1 has been opened, the picker drops its New label', pg2.locator('.new-pill').count() == 0)
@@ -425,6 +441,26 @@ with sync_playwright() as p:
     pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
     pg.mouse.click(5, 300)
     check('print: afterwards the answers close again', pg.locator('#m1 details.sol[open]').count() == 0)
+    # the same two printouts for a Physics practice set
+    pg.goto(BASE + '/physics/midterm/#quizzes')
+    pg.wait_for_selector('#pa .print-btn')
+    pg.evaluate('window.__printed = []')
+    pg.locator('#pa .print-btn[data-print="paper"]').click()
+    pg.emulate_media(media='print')
+    check('print: a Physics practice set prints on its own', pg.evaluate('window.__printed') == ['paper']
+          and shown('.appbar, .tabbar, #pb, #pc, #ex, .band') == 0 and shown('#pa .prq') == 11 and shown('#pa svg.pfig') >= 8)
+    check('print: the Physics paper has no answers, timer or buttons', shown('#pa .reveal, #pa .timer, #pa .sheet-tools') == 0)
+    pg.emulate_media(media='screen')
+    pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    pg.mouse.click(5, 300)
+    pg.locator('#pa .print-btn[data-print="key"]').click()
+    pg.emulate_media(media='print')
+    check('print: a Physics set with answers opens every answer, with all its steps', pg.locator('#pa details.sol[open]').count() == 11
+          and shown('#pa .answer') == 11 and shown('#pa .step-hidden') == pg.locator('#pa .step-hidden').count() and shown('#pa summary') == 0)
+    pg.emulate_media(media='screen')
+    pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    pg.mouse.click(5, 300)
+    check('print: afterwards the Physics answers close again', pg.locator('#pa details.sol[open]').count() == 0)
     ctx.close()
 
     # ---- a narrow phone with every answer and every sheet open: full-size math never pushes the page sideways ----
@@ -465,6 +501,15 @@ with sync_playwright() as p:
     check('countdown: the picker counts down to each exam: in 3 days, Tomorrow, Done', lefts == ['in 3 days', 'Tomorrow', 'Done']
           and pg.locator('.e-when.soon').count() == 2 and pg.locator('.e-when.past').count() == 1, lefts)
     pg.screenshot(path=f'{SHOTS}/picker-countdowns.png', full_page=True)
+    pg.goto(BASE2 + '/physics/')
+    pg.wait_for_selector('.exams')
+    lefts = pg.locator('.exam .e-left').all_inner_texts()
+    check('countdown: the Physics picker counts down to the midterm', lefts[0] == 'in 10 days' and 'Date to be announced' in pg.locator('#exam-final').inner_text(), lefts)
+    pg.goto(BASE2 + '/physics/midterm/#exams')
+    pg.wait_for_selector('#view-exams .up-item')
+    pg.wait_for_timeout(200)
+    lefts = pg.locator('#view-exams .up-left').all_inner_texts()
+    check('countdown: the Physics Exams tab lists its two exams, the midterm first', lefts == ['in 10 days', ''], lefts)
     pg.goto(BASE2 + '/math/derivatives/#exams')
     pg.wait_for_selector('#view-exams .up-item')
     pg.wait_for_timeout(200)
@@ -495,8 +540,9 @@ with sync_playwright() as p:
     pg.evaluate("navigator.serviceWorker.ready")
     pg.wait_for_timeout(1500)
     saved = pg.evaluate("""async () => {
-      const want = ['./', './math/', './math/derivatives/', 'site.json', 'src/shared/totop.css', 'src/shared/totop.js', 'math/assets/math.css',
-        'math/assets/math.js', 'math/assets/fonts/KaTeX_Main-Regular.woff2'].map((u) => new URL(u, location.href).href);
+      const want = ['./', './math/', './math/derivatives/', './physics/', './physics/midterm/', 'site.json', 'src/shared/totop.css',
+        'src/shared/totop.js', 'math/assets/math.css', 'math/assets/math.js', 'physics/assets/physics.css', 'physics/assets/physics.js',
+        'math/assets/fonts/KaTeX_Main-Regular.woff2'].map((u) => new URL(u, location.href).href);
       for (const name of await caches.keys()) {
         const c = await caches.open(name);
         if ((await Promise.all(want.map((u) => c.match(u)))).every(Boolean)) return true;
@@ -519,9 +565,19 @@ with sync_playwright() as p:
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
     check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 3)
+    # the Physics midterm was never opened online either
+    pg.goto(BASE + '/physics/midterm/')
+    pg.wait_for_selector('#pa .prq')
+    pg.wait_for_timeout(300)
+    check('offline: the Physics midterm opens with no network, styled, with its script and math fonts', pg.locator('#sets .prq').count() == 33
+          and pg.evaluate("getComputedStyle(document.querySelector('.appbar')).position") == 'sticky'
+          and pg.evaluate("document.fonts.check('16px KaTeX_Main')") and pg.locator('.calc-fab').count() == 1)
+    pg.goto(BASE + '/physics/')
+    pg.wait_for_selector('.exams')
+    check('offline: the Physics picker opens with no network', pg.locator('.exam').count() == 2)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
-    check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 5)
+    check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 7)
     check('offline: the home page keeps its back-to-top button', pg.evaluate("(() => { const b = document.querySelector('.totop'); return Boolean(b) && getComputedStyle(b).position === 'fixed'; })()"))
     ctx.set_offline(False)
     ctx.close()

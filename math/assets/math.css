@@ -549,6 +549,10 @@ details[open] .when-open { display: inline; }
   .toc-paper.sel::before { content: "› "; }
 }
 
+/* ---------- the subject switch in the app bar (Math ⇄ Physics): the other subject's badge ---------- */
+.subj-btn { text-decoration: none; }
+.subj-btn svg { display: block; width: 26px; height: 26px; }
+
 /* Floating calculator: a ghost button parked on a screen edge, and a small window laid out like the Windows
    standard calculator, drawn in the site's palette (white or dark green-black keys, green "=" key, band-coloured
    title bar). Uses the page's colour tokens, so it follows light and dark mode. */

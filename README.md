@@ -6,7 +6,7 @@ Unofficial study notes for KUAS engineering courses (Calculus &amp; Linear Algeb
 | Subject | Page | Status |
 | --- | --- | --- |
 | Calculus & Linear Algebra 1 (CLA1) | [/math/](https://lmheew.github.io/y1-s1/math/) | One page per exam. Calculus midterm 1 (derivatives): Summary, Practice, Formulas, Quizzes, Exams. Integrals and Linear Algebra: coming soon |
-| Engineering Physics 1 | – | Coming soon |
+| Engineering Physics 1 (EP1) | [/physics/](https://lmheew.github.io/y1-s1/physics/) | One page per exam. Midterm (Chapters 1–8): Quizzes (the exercise-day sheets and three practice sets, with worked answers) and Exams. Summary, Practice and Formulas: coming soon |
 
 ## What's in the repository
 
@@ -19,7 +19,9 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `math/derivatives/locked.json`: the in-class quiz sheets and past midterms, encrypted. The Quizzes and Exams tabs open them with the password.
 - `src/math/`: the content (`content.mjs`, `followups.mjs`, `exams.mjs`, `extras.mjs`), the interactive graphs (`graphs.js`), the page style and script, the build, and numeric checks for every answer.
 - `src/math/private.sealed.json`: the source of the in-class sheets and past midterms, encrypted.
-- `src/shared/`: the floating calculator used on every subject page (with a test of its arithmetic), and the back-to-top button used on every page.
+- `physics/`: the EP1 review, built from `src/physics/` the same way: `index.html` is the exam picker, `midterm/` the midterm page, and `assets/` its shared style and script (it uses Math's math fonts). `physics/midterm/locked.json` holds the exercise-day sheets, encrypted with the same password.
+- `src/physics/`: the chapters and practice sets (`content.mjs`, `quizzes.mjs`), the figures (`figures.mjs`, original drawings), the Physics colours, the build, numeric checks for every answer, and `private.sealed.json`, the encrypted source of the exercise-day sheets.
+- `src/shared/`: the floating calculator used on every subject page (with a test of its arithmetic), the back-to-top button used on every page, and what both builds share (`build-lib.mjs`, `icons.mjs`).
 - `og-*.png`: the link previews apps show when a page is shared, drawn by `src/og.py`.
 - `src/check_site.py` and `src/check_features.py`: browser checks of the built site.
 - `src/vendor/katex/`: KaTeX 0.16.11, used at build time to typeset the math.
@@ -28,6 +30,6 @@ How to update the site (a new class, a new quiz, building and checking) is descr
 
 ## Notes
 
-These are personal study notes, not an official Kyoto University of Advanced Science page. The in-class quiz sheets stay private: this repository holds them only in encrypted form. Search engines are asked not to list the site.
+These are personal study notes, not an official Kyoto University of Advanced Science page. The in-class quiz and exercise sheets stay private: this repository holds them only in encrypted form. Search engines are asked not to list the site.
 
 Math is typeset with [KaTeX](https://katex.org), MIT License, Copyright (c) 2013-2020 Khan Academy and other contributors. The full license text is in [`src/vendor/katex/LICENSE.txt`](src/vendor/katex/LICENSE.txt).

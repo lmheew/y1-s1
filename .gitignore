@@ -1,4 +1,5 @@
 src/math/private/
+src/physics/private/
 node_modules/
 __pycache__/
 *.log

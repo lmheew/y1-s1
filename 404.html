@@ -25,6 +25,7 @@
   :root {
     --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --bar: #377E46; --bar-active: #2B6638;
     --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8;
+    --blue: #1F4B8F; --blue-text: #1C437F; --blue-tint: #EAF0FA;
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
     color-scheme: light;
   }
@@ -32,12 +33,14 @@
     :root:not([data-theme="light"]) {
       --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
       --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+      --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: #172234;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
     --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
+    --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: #172234;
     color-scheme: dark;
   }
   *, *::before, *::after { box-sizing: border-box; }
@@ -68,6 +71,8 @@
   .go.main:hover { background: var(--bar-active); }
   .go.alt { border: 1.5px solid var(--green); color: var(--green-text); }
   .go.alt:hover { background: var(--tint); }
+  .go.alt.phys { border-color: var(--blue); color: var(--blue-text); }
+  .go.alt.phys:hover { background: var(--blue-tint); }
   .fine { font-size: 12.5px; color: var(--ink-soft); }
 </style>
 </head>
@@ -89,6 +94,7 @@
   <p class="ways">
     <a class="go main" href="/y1-s1/">Home page<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
     <a class="go alt" href="/y1-s1/math/">CLA1 Review</a>
+    <a class="go alt phys" href="/y1-s1/physics/">EP1 Review</a>
   </p>
   <p class="fine">Unofficial study notes. Not an official Kyoto University of Advanced Science page.</p>
 </main>

@@ -547,3 +547,7 @@ details[open] .when-open { display: inline; }
   .toc-paper.sel { color: var(--green-text); font-weight: 700; }
   .toc-paper.sel::before { content: "› "; }
 }
+
+/* ---------- the subject switch in the app bar (Math ⇄ Physics): the other subject's badge ---------- */
+.subj-btn { text-decoration: none; }
+.subj-btn svg { display: block; width: 26px; height: 26px; }
