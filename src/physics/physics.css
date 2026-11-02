@@ -102,3 +102,31 @@
 .fgroup .soon-box, .punit .soon-box { margin-top: 10px; }
 .mockgroup .soon-box { margin-top: 0; }
 .ch-mods { font-weight: 500; letter-spacing: .04em; }
+
+/* ---------- Summary: each module's key ideas, then its worked example ---------- */
+.smod { padding-top: 16px; scroll-margin-top: var(--anchor-top); }
+.smod + .smod { margin-top: 12px; border-top: 1px dashed var(--line); }
+.smod-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px; font-size: 17px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.mod-no { flex: none; padding: 1px 8px; border-radius: 4px; background: var(--tint); color: var(--green-text); font-size: 13px; font-weight: 700;
+  font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.smod .ideas li:last-child { border-bottom: 0; }
+.wex { margin: 8px 0 4px; padding: 12px 14px 4px; border: 1.5px solid var(--green); border-radius: 6px; background: var(--surface); min-width: 0;
+  scroll-margin-top: var(--anchor-top); }
+.wex .rq-head .ql { font-size: 15px; color: var(--green-text); }
+.wex .stem + .parts, .wex .pfig-wrap + .parts { margin-top: 8px; }
+.unit .watch { margin-top: 22px; }
+@media (min-width: 640px) { .wex { padding: 14px 20px 6px; } }
+
+/* ---------- Formulas: module headings, importance, extras and notes ---------- */
+.fmod { display: flex; align-items: baseline; gap: 10px; margin: 20px 0 0; font-size: 15px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.fgroup h2 + .fmod { margin-top: 12px; }
+.fmod-x .mod-no { background: var(--amber-tint); color: var(--amber); }
+.stars { margin-left: 5px; color: var(--lime-deep); font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
+.xtag { display: inline-block; margin-left: 6px; padding: 0 7px; border: 1px solid var(--amber); border-radius: 999px; color: var(--amber);
+  font-size: 10px; font-weight: 700; line-height: 1.6; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; vertical-align: 1px; }
+.fnote { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+@media (min-width: 640px) { .frow .fnote { grid-column: 2; margin-top: -10px; } }
+.testing .frow:not(.shown) .fnote { visibility: hidden; }
+.flegend { margin: -2px 0 18px; font-size: 12.5px; line-height: 1.8; color: var(--ink-soft); }
+.flegend .stars, .flegend .xtag { margin: 0 3px 0 0; }
+#fg-values .table-wrap { margin-top: 8px; }

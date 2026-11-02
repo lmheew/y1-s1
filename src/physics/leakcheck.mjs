@@ -1,7 +1,7 @@
 // Safety net for the public site, like src/math/leakcheck.mjs: fails if a formula, sentence, figure or problem id that
 // exists only in the private exercise-day sheets appears on a public Physics page (physics/index.html and the exam
-// pages, physics/<exam>/index.html, with their lazy tabs and search index). Wording the public practice sets share on
-// purpose is not counted. Needs the private sources: run `node src/physics/build.mjs open` first.
+// pages, physics/<exam>/index.html, with their lazy tabs and search index). Wording the public sources (practice sets,
+// summary, formulas) share on purpose is not counted. Needs the private sources: run `node src/physics/build.mjs open` first.
 //   node src/physics/leakcheck.mjs
 import fs from 'fs';
 import path from 'path';
@@ -25,7 +25,8 @@ for (const f of [path.join('physics', 'index.html'), ...exams]) {
   pub += page.replace(/<script type="application\/json" id="search-index">[\s\S]*?<\/script>/, '') + lazy.join('\n') + '\n';
   index += (page.match(/<script type="application\/json" id="search-index">([\s\S]*?)<\/script>/) || [, '[]'])[1];
 }
-const shared = ['quizzes.mjs', 'content.mjs', 'build.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+// the public sources: a textbook formula they print on purpose (v²/r, f_k = μ_k mg) is not a leak
+const shared = ['quizzes.mjs', 'summary.mjs', 'formulas.mjs', 'content.mjs', 'build.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 let leaks = 0, checked = 0;
 const probs = exercises.flatMap((x) => x.problems);

@@ -298,8 +298,39 @@ with sync_playwright() as p:
         check(f'{label}: Physics picker switches to Math, and Math to Physics', page.locator('a.subj-btn[href="../math/"]').count() == 1)
         shot(page, f'{label}-physics-picker')
         page.click('a.exam[href="midterm/"]')
+        page.wait_for_selector('#view-summary .wex')
+        check(f'{label}: Physics opens on Summary', page.locator('#view-summary').is_visible() and page.locator('#tab-summary').get_attribute('aria-selected') == 'true')
+        check(f'{label}: Physics Summary has Chapters 1–8, 36 modules, each with a worked example',
+              page.locator('#view-summary section.unit').count() == 8 and page.locator('#view-summary .smod').count() == 36
+              and page.locator('#view-summary .smod .wex').count() == 36 and page.locator('#view-summary .tile').count() == 9,
+              (page.locator('#view-summary .smod').count(), page.locator('#view-summary .wex').count(), page.locator('#view-summary .tile').count()))
+        check(f'{label}: Physics Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
+        shot(page, f'{label}-physics-summary')
+        wex = page.locator('#su-c2-x26')
+        wex.scroll_into_view_if_needed()
+        wex.locator('details.sol > summary').click()
+        check(f'{label}: a worked example opens step by step', wex.locator('.step-next').count() == 1)
+        wex.locator('.step-all').click()
+        check(f'{label}: all its steps and figures show', wex.locator('.steps .step-hidden').count() == 0 and wex.locator('svg.pfig').count() == 2)
+        check(f'{label}: an open worked example has no sideways scroll', overflow(page) <= 0, overflow(page))
+        shot(page, f'{label}-physics-example')
+        page.click('#tab-formulas')
+        page.wait_for_selector('#view-formulas .frow')
+        check(f'{label}: Physics Formulas has the values to know and Chapters 1–8',
+              page.locator('#view-formulas .fgroup').count() == 9 and page.locator('#fg-values .exact').count() >= 1
+              and page.locator('#view-formulas .frow').count() == 186 and page.locator('#view-formulas .wex').count() == 0,
+              (page.locator('#view-formulas .fgroup').count(), page.locator('#view-formulas .frow').count()))
+        check(f'{label}: Physics Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
+        page.click('#test-btn')
+        hidden = page.evaluate("getComputedStyle(document.querySelector('#fg-c4 .frow .fmath > .katex')).visibility")
+        check(f'{label}: Physics Test me hides formulas and their notes', hidden == 'hidden'
+              and page.evaluate("getComputedStyle(document.querySelector('#view-formulas .frow .fnote')).visibility") == 'hidden')
+        page.locator('#fg-c4 .frow').first.click()
+        check(f'{label}: tapping a Physics formula shows it', page.evaluate("getComputedStyle(document.querySelector('#fg-c4 .frow .fmath > .katex')).visibility") == 'visible')
+        page.click('#test-btn')
+        shot(page, f'{label}-physics-formulas')
+        page.click('#tab-quizzes')
         page.wait_for_selector('#view-quizzes .psheet')
-        check(f'{label}: Physics opens on Quizzes', page.locator('#view-quizzes').is_visible() and page.locator('#tab-quizzes').get_attribute('aria-selected') == 'true')
         check(f'{label}: Physics quizzes have no sideways scroll', overflow(page) <= 0, overflow(page))
         shot(page, f'{label}-physics-quizzes')
         check(f'{label}: Physics is drawn in its blue', page.evaluate("getComputedStyle(document.querySelector('#view-quizzes .t-go')).backgroundColor") == 'rgb(31, 75, 143)')
@@ -319,12 +350,12 @@ with sync_playwright() as p:
         check(f'{label}: figures are drawn', a4.locator('svg.pfig').count() >= 3)
         check(f'{label}: an open answer has no sideways scroll', overflow(page) <= 0, overflow(page))
         shot(page, f'{label}-physics-answer')
-        for view in ['summary', 'practice', 'formulas', 'exams']:
+        for view in ['practice', 'exams']:
             page.click(f'#tab-{view}')
             check(f'{label}: Physics {view} tab shows its headings, content to come', page.locator(f'#view-{view}').is_visible()
                   and page.locator(f'#view-{view} .soon-box').count() >= 1 and page.locator(f'#view-{view} h2').count() >= 1)
             check(f'{label}: Physics {view} has no sideways scroll', overflow(page) <= 0, overflow(page))
-        check(f'{label}: Physics Summary has a section for each of Chapters 1–8', page.locator('#view-summary section.unit').count() == 8)
+        check(f'{label}: Physics Summary and Formulas have no placeholders left', page.locator('#view-summary .soon-box, #view-formulas .soon-box').count() == 0)
         check(f'{label}: Physics Exams lists the midterm on 13 Nov', 'Physics midterm' in page.locator('#view-exams .up-list').inner_text()
               and page.locator('#view-exams .up-item[data-date="2026-11-13"]').count() == 1)
         check(f'{label}: Physics search finds the practice sets', any(t.startswith('Practice Set') for t in search(page, 'friction')))

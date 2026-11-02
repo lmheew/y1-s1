@@ -429,6 +429,18 @@ def('d2-12', 360, 205, 'Block S of mass M on a horizontal frictionless table, ti
   def('a-10', 300, 290, 'Graph of the force F = 3 + 4x − 3x² newtons against x from 0 to 3 metres: 3 N at x = 0, a top of about 4.3 N near x = 0.7, zero near x = 1.9 and −12 N at x = 3', 'Figure A10: the force against position', g.s);
 }
 
+// ===== Summary: the worked example of Module 2-6 =====
+{
+  const g = plot({ w: 300, h: 230, xr: [0, 7], yr: [-3, 2], ylab: '{a} [m/s²]', lines: [
+    { pts: [[0, 2], [3, 2]] }, { pts: [[3, 0], [5, 0]] }, { pts: [[5, -3], [7, -3]] }] });
+  def('s2-6', 300, 230, 'Graph of acceleration against time: 2 m/s² from 0 to 3 s, 0 from 3 to 5 s, −3 m/s² from 5 to 7 s', 'The a–t graph', g.s);
+}
+{
+  const g = plot({ w: 300, h: 230, xr: [0, 7], yr: [0, 6], yt: 2, ylab: '{v} [m/s]', lines: [{ pts: [[0, 0], [3, 6], [5, 6], [7, 0]], c: 'ans' }],
+    dots: [[3, 6], [5, 6], [7, 0]], notes: [{ x: 3, y: 6, s: '(3, 6)', dy: -9 }, { x: 5, y: 6, s: '(5, 6)', dy: -9 }] });
+  def('s2-6a', 300, 230, 'Answer: velocity against time, a straight line from 0 up to 6 m/s at 3 s, level until 5 s, then a straight line down to 0 at 7 s', 'The v–t graph: its area is the displacement', g.s);
+}
+
 // ===== Practice Set B =====
 { // B1: two vectors in the plane
   const O = [110, 170], sc = 30;

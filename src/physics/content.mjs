@@ -2,16 +2,25 @@
 // quizzes.mjs (the practice sets, public) and private/exercises.mjs (the exercise days from class, locked).
 // Chapters follow Fundamentals of Physics (Halliday, Resnick, Walker), the course textbook; the midterm covers 1–8.
 
-// `keys` are extra search words for each chapter
+// `keys` are extra search words for each chapter; `modules` are the book's modules, [number, title], used by the
+// Summary (summary.mjs) and the Formulas tab (formulas.mjs)
 export const chapters = [
-  { id: 'c1', no: 1, title: 'Measurement', mods: 'Modules 1-1 to 1-3', keys: 'units SI base quantities significant figures conversion' },
-  { id: 'c2', no: 2, title: 'Motion along a straight line', mods: 'Modules 2-1 to 2-6', keys: 'velocity acceleration free fall kinematics graphs constant acceleration' },
-  { id: 'c3', no: 3, title: 'Vectors', mods: 'Modules 3-1 to 3-3', keys: 'components unit vector dot product cross product scalar' },
-  { id: 'c4', no: 4, title: 'Motion in two and three dimensions', mods: 'Modules 4-1 to 4-7', keys: 'projectile uniform circular motion relative motion' },
-  { id: 'c5', no: 5, title: 'Force and motion I', mods: 'Modules 5-1 to 5-3', keys: "Newton's laws free-body diagram tension normal force pulley" },
-  { id: 'c6', no: 6, title: 'Force and motion II', mods: 'Modules 6-1 to 6-3', keys: 'friction static kinetic drag terminal speed circular motion banked curve' },
-  { id: 'c7', no: 7, title: 'Kinetic energy and work', mods: 'Modules 7-1 to 7-6', keys: 'work-energy theorem spring force power variable force' },
-  { id: 'c8', no: 8, title: 'Potential energy and conservation of energy', mods: 'Modules 8-1 to 8-5', keys: 'mechanical energy conservation potential energy curve' },
+  { id: 'c1', no: 1, title: 'Measurement', mods: 'Modules 1-1 to 1-3', keys: 'units SI base quantities significant figures conversion',
+    modules: [['1-1', 'Measuring things, including lengths'], ['1-2', 'Time'], ['1-3', 'Mass']] },
+  { id: 'c2', no: 2, title: 'Motion along a straight line', mods: 'Modules 2-1 to 2-6', keys: 'velocity acceleration free fall kinematics graphs constant acceleration',
+    modules: [['2-1', 'Position, displacement and average velocity'], ['2-2', 'Instantaneous velocity and speed'], ['2-3', 'Acceleration'], ['2-4', 'Constant acceleration'], ['2-5', 'Free-fall acceleration'], ['2-6', 'Graphical integration']] },
+  { id: 'c3', no: 3, title: 'Vectors', mods: 'Modules 3-1 to 3-3', keys: 'components unit vector dot product cross product scalar',
+    modules: [['3-1', 'Vectors and their components'], ['3-2', 'Unit vectors, adding vectors by components'], ['3-3', 'Multiplying vectors']] },
+  { id: 'c4', no: 4, title: 'Motion in two and three dimensions', mods: 'Modules 4-1 to 4-7', keys: 'projectile uniform circular motion relative motion',
+    modules: [['4-1', 'Position and displacement'], ['4-2', 'Average and instantaneous velocity'], ['4-3', 'Average and instantaneous acceleration'], ['4-4', 'Projectile motion'], ['4-5', 'Uniform circular motion'], ['4-6', 'Relative motion in one dimension'], ['4-7', 'Relative motion in two dimensions']] },
+  { id: 'c5', no: 5, title: 'Force and motion I', mods: 'Modules 5-1 to 5-3', keys: "Newton's laws free-body diagram tension normal force pulley",
+    modules: [['5-1', 'Newton’s first and second laws'], ['5-2', 'Some particular forces'], ['5-3', 'Applying Newton’s laws']] },
+  { id: 'c6', no: 6, title: 'Force and motion II', mods: 'Modules 6-1 to 6-3', keys: 'friction static kinetic drag terminal speed circular motion banked curve',
+    modules: [['6-1', 'Friction'], ['6-2', 'The drag force and terminal speed'], ['6-3', 'Uniform circular motion']] },
+  { id: 'c7', no: 7, title: 'Kinetic energy and work', mods: 'Modules 7-1 to 7-6', keys: 'work-energy theorem spring force power variable force',
+    modules: [['7-1', 'Kinetic energy'], ['7-2', 'Work and kinetic energy'], ['7-3', 'Work done by the gravitational force'], ['7-4', 'Work done by a spring force'], ['7-5', 'Work done by a general variable force'], ['7-6', 'Power']] },
+  { id: 'c8', no: 8, title: 'Potential energy and conservation of energy', mods: 'Modules 8-1 to 8-5', keys: 'mechanical energy conservation potential energy curve',
+    modules: [['8-1', 'Potential energy'], ['8-2', 'Conservation of mechanical energy'], ['8-3', 'Reading a potential energy curve'], ['8-4', 'Work done on a system by an external force'], ['8-5', 'Conservation of energy']] },
 ];
 
 // the exam picker's cards (physics/), in course order. `exam` is its name in site.json (for the date and the page)
@@ -34,6 +43,7 @@ export const CH_ICONS = {
   c5: big('<path d="M5 38h38"/><rect x="9" y="21" width="17" height="17" rx="1"/><path d="M26 29.5h14M36 25.5l4 4-4 4" class="lime-stroke"/>'),
   c6: big('<circle cx="21" cy="26" r="13"/><circle cx="34" cy="26" r="3.2" class="lime-fill"/><path d="M34 22V8M30 12l4-4 4 4" class="lime-stroke"/><path d="M21 26h9" stroke-dasharray="2 3"/>'),
   c7: big('<path d="M5 38h38"/><rect x="7" y="25" width="13" height="13" rx="1"/><path d="M14 18h22M32 14l4 4-4 4" class="lime-stroke"/><rect x="31" y="25" width="13" height="13" rx="1" stroke-dasharray="2.5 2.5"/>'),
+  habits: big('<rect x="10" y="6" width="28" height="36" rx="3"/><path d="M15.5 16l3 3 6-6M15.5 28l3 3 6-6" class="lime-stroke"/><path d="M28 16h5M28 28h5"/>'),
   c8: big('<path d="M4 40C13 40 15 11 24 11S35 40 44 40"/><circle cx="14.5" cy="22" r="3.2" class="lime-fill"/><path d="M19 30l5 6" class="lime-stroke"/>'),
 };
 export const EXAM_ICONS = {

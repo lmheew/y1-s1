@@ -343,7 +343,7 @@ with sync_playwright() as p:
     check('new: next visit: only the subject not opened yet (Physics) keeps its New label on the home page',
           pg2.locator('.new-pill').count() == 1 and pg2.locator('#card-physics .new-pill').count() == 1, pg2.locator('.new-pill').count())
     pg2.goto(BASE + '/physics/midterm/')
-    pg2.wait_for_selector('#pa .prq')
+    pg2.wait_for_selector('#view-summary .wex')
     pg2.goto(BASE + '/')
     pg2.wait_for_selector('#news .n-day')
     check('new: once Physics has been opened too, the home page has no New labels', pg2.locator('.new-pill').count() == 0, pg2.locator('.new-pill').count())
@@ -567,11 +567,14 @@ with sync_playwright() as p:
     check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 3)
     # the Physics midterm was never opened online either
     pg.goto(BASE + '/physics/midterm/')
-    pg.wait_for_selector('#pa .prq')
+    pg.wait_for_selector('#view-summary .wex')
     pg.wait_for_timeout(300)
-    check('offline: the Physics midterm opens with no network, styled, with its script and math fonts', pg.locator('#sets .prq').count() == 33
+    check('offline: the Physics midterm opens with no network, styled, with its script and math fonts', pg.locator('#view-summary .wex').count() == 36
           and pg.evaluate("getComputedStyle(document.querySelector('.appbar')).position") == 'sticky'
           and pg.evaluate("document.fonts.check('16px KaTeX_Main')") and pg.locator('.calc-fab').count() == 1)
+    pg.click('#tab-quizzes')
+    pg.wait_for_selector('#pa .prq')
+    check('offline: its Quizzes tab builds too', pg.locator('#sets .prq').count() == 33)
     pg.goto(BASE + '/physics/')
     pg.wait_for_selector('.exams')
     check('offline: the Physics picker opens with no network', pg.locator('.exam').count() == 2)

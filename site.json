@@ -60,6 +60,12 @@
   ],
   "news": [
     {
+      "date": "2026-11-02",
+      "subject": "physics",
+      "text": "Physics midterm: Summary and Formulas are ready. The summary goes module by module through Chapters 1–8: the key ideas, one worked example for each module, and what to watch out for. Formulas has every formula of the eight chapters, marked by importance, with helpful results the book doesn’t print, the special angles, and Test me.",
+      "link": "physics/midterm/#summary"
+    },
+    {
       "date": "2026-11-01",
       "subject": "physics",
       "text": "Physics is here: a page for the midterm (Chapters 1–8). Quizzes has the two exercise-day sheets from class, retyped with worked answers and opened with the in-class password, and three new practice sets in the same format. Summaries, practice problems and formulas follow.",

@@ -18,12 +18,14 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { fmtDate, esc, inline, blocks, plain, entry, toggle, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
+import { fmtDate, esc, tex, inline, items, blocks, plain, entry, toggle, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
   indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged, THEME_EARLY, HEAD_COMMON, ogTags, unb64, normalize, readJSON, deriveKey,
   sealBox, openBox, PICKER_CSS, PICKER_JS } from '../shared/build-lib.mjs';
 import { TAB_ICONS, UI_ICONS, subjectSwitch } from '../shared/icons.mjs';
 import { chapters, EXAMS, BADGE, CH_ICONS, EXAM_ICONS } from './content.mjs';
 import { sets } from './quizzes.mjs';
+import { summary, habits, SUMMARY_ADDED } from './summary.mjs';
+import { fgroups, constants, trig, FORMULAS_ADDED } from './formulas.mjs';
 import { figHTML } from './figures.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
@@ -40,11 +42,12 @@ const rel = (p) => path.relative(ROOT, p);
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
 // "Last updated": the newest What's new date for Physics (site.json) or `added` date on this page
-const LAST_UPDATED = [...SITE.news.filter((n) => n.subject === 'physics' || n.subject === 'all').map((n) => n.date), ...sets.map((s) => s.added)]
+const LAST_UPDATED = [...SITE.news.filter((n) => n.subject === 'physics' || n.subject === 'all').map((n) => n.date), ...sets.map((s) => s.added),
+  SUMMARY_ADDED, FORMULAS_ADDED]
   .filter(Boolean).sort().pop() || '2026-11-01';
 // the page's settings for page.js (see the top of src/math/page.js)
-const PAGE_CONF = { store: 'ep1-midterm-review', seen: 'physics', home: 'quizzes', scores: 'ep1-mock-scores',
-  suggest: ['projectile', 'friction', 'pulley', 'cross product', 'banked curve', 'energy'], tryWords: '"friction" or "vector"' };
+const PAGE_CONF = { store: 'ep1-midterm-review', seen: 'physics', home: 'summary', scores: 'ep1-mock-scores',
+  suggest: ['projectile', 'friction', 'cross product', 'work', 'terminal speed', 'potential energy'], tryWords: '"friction" or "vector"' };
 
 // ---------- markup ----------
 // plain text for search: Greek letters and vector marks the shared texPlain doesn't know
@@ -109,6 +112,54 @@ function sheetHTML(sh, seg, visible, index, searchExtra) {
     ${sh.problems.map((p) => problemHTML(sh, p, index, searchExtra)).join('')}
   </article>`;
 }
+// ---------- Summary: each module's key ideas and its worked example ----------
+// A worked example: the problem, its parts (a), (b) …, and the answer with the worked steps (one step per block).
+function exampleHTML(c, no, title, ex, index) {
+  const id = `su-${c.id}-x${no.replace('-', '')}`;
+  const labels = ex.parts.map((_, i) => `(${String.fromCharCode(97 + i)})`);
+  if (ex.answer.length !== Math.max(1, ex.parts.length)) throw new Error(`${id}: ${ex.answer.length} answers for ${ex.parts.length} parts`);
+  index.push(entry('Summary', 'summary', id, `Worked example ${no} — ${title}`, plainP([ex.stem || '', ...ex.parts].join(' ')),
+    'example worked ' + plainP(ex.answer.join(' ')) + ' ' + c.keys));
+  const parts = ex.parts.length
+    ? `<ol class="parts">${ex.parts.map((t, i) => `<li><span class="pn">${labels[i]}</span><span class="pt">${inline(t)}</span></li>`).join('')}</ol>` : '';
+  const ans = `<div class="answer"><span class="lbl">Answer</span><ul>${ex.answer.map((a, i) => (ex.parts.length
+    ? `<li><b class="al">${labels[i]}</b><span>${inline(a)}</span></li>` : `<li class="solo">${inline(a)}</li>`)).join('')}</ul></div>`;
+  return `
+    <article class="wex prq" id="${id}">
+      <div class="rq-head"><b class="ql">Worked example</b><span class="qtopic-wrap"><span class="qtopic">${esc(no)}</span></span></div>
+      ${ex.stem ? `<div class="stem">${blocksF(ex.stem)}</div>` : ''}${figsHTML(ex.fig)}${parts}
+      <div class="reveal">${toggle('sol', 'Show solution', 'Hide solution', ans + `<div class="steps">${blocksF(ex.sol)}</div>`)}</div>
+    </article>`;
+}
+// a bold label at the start of a point, as plain text for search
+const pointLabel = (it) => (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => plainP(m));
+function moduleHTML(c, [no, title], index) {
+  const m = summary[c.id].mods.find((x) => x.no === no);
+  if (!m) throw new Error(`summary.mjs has no module ${no}`);
+  const ideas = items(m.ideas).map((it, i) => {
+    const id = `su-${c.id}-${no.replace('-', '')}-k${i + 1}`;
+    index.push(entry('Summary', 'summary', id, `${pointLabel(it) || 'Key idea'} — ${no} ${title}`, plainP(it.replace(/^\*\*.+?\*\*\s*/, '')), c.keys));
+    return `<li id="${id}">${inline(it, false)}</li>`;
+  }).join('');
+  return `
+  <div class="smod" id="su-${c.id}-m${no.replace('-', '')}">
+    <h3 class="smod-h"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3>
+    <ul class="ideas">${ideas}</ul>
+    ${exampleHTML(c, no, title, m.ex, index)}
+  </div>`;
+}
+
+// ---------- Formulas: one row per formula, with its importance or an Extra tag ----------
+const STARS = { 3: ['★★★', 'Core, used all the time'], 2: ['★★', 'Key result'], 1: ['★', 'Supporting'] };
+function formulaRow(id, [name, t, s, note], where, keys, index) {
+  if (s !== 'x' && !STARS[s]) throw new Error(`${id}: importance must be 1, 2, 3 or 'x', not ${s}`);
+  index.push(entry('Formulas', 'formulas', id, `${name} — ${where}`, plainP('$' + t + '$') + (note ? ' · ' + plainP(note) : ''),
+    'formula ' + (s === 'x' ? 'extra ' : '') + keys));
+  const tag = s === 'x' ? '<span class="xtag">Extra</span>'
+    : `<span class="stars" title="${STARS[s][1]}"><span class="sr">${STARS[s][1]}</span><span aria-hidden="true">${STARS[s][0]}</span></span>`;
+  return `<div class="frow${s === 'x' ? ' fx' : ''}" id="${id}"><span class="fname">${esc(name)} ${tag}</span><div class="fmath">${tex('\\displaystyle ' + t, false)}</div>${note ? `<p class="fnote">${inline(note, false)}</p>` : ''}</div>`;
+}
+
 // what the page shows of a locked sheet: its title and a password panel (also kept readable in locked.json)
 const sheetMeta = (sh) => ({ id: sh.id, seg: sh.seg, title: sh.title, sub: sh.sub, n: sh.problems.length, added: sh.added || '' });
 const lockPanel = (x, seg, visible) => `
@@ -123,28 +174,77 @@ const lockPanel = (x, seg, visible) => `
 function render({ exercises, locked, exList }) {
   const INDEX = [], PRIV = [], sheets = {};
 
-  // Summary: a tile and a section per chapter; the notes come later
-  const tilesHTML = chapters.map((c) => `<button type="button" class="tile" data-goto="summary" data-target="su-${c.id}">${CH_ICONS[c.id]}<span class="tile-k">Chapter ${c.no}</span><span class="tile-t">${esc(c.title)}</span></button>`).join('');
+  // Summary: a tile per chapter; for each chapter, every module's key ideas and worked example, then "Watch out"
+  const tilesHTML = chapters.map((c) => `<button type="button" class="tile" data-goto="summary" data-target="su-${c.id}">${CH_ICONS[c.id]}<span class="tile-k">Chapter ${c.no}</span><span class="tile-t">${esc(c.title)}</span></button>`).join('')
+    + `<button type="button" class="tile" data-goto="summary" data-target="su-habits">${CH_ICONS.habits}<span class="tile-k">Before the exam</span><span class="tile-t">Exam-day habits</span></button>`;
   const summaryHTML = chapters.map((c) => {
-    INDEX.push(entry('Summary', 'summary', `su-${c.id}`, `Chapter ${c.no} — ${c.title}`, `${c.mods}. Notes coming soon.`, c.keys));
+    const s = summary[c.id];
+    if (!s) throw new Error(`summary.mjs has no chapter ${c.id}`);
+    const stray = s.mods.filter((m) => !c.modules.some(([no]) => no === m.no));
+    if (stray.length) throw new Error(`summary.mjs: ${stray.map((m) => m.no).join(', ')} not among the modules of chapter ${c.no} (content.mjs)`);
+    const watch = items(s.watch).map((it, i) => {
+      const id = `su-${c.id}-w${i + 1}`;
+      INDEX.push(entry('Summary', 'summary', id, `Watch out — Chapter ${c.no}, ${c.title}`, plainP(it), 'mistake slip ' + c.keys));
+      return `<li id="${id}">${inline(it, false)}</li>`;
+    }).join('');
     return `
-<section class="unit" id="su-${c.id}">
+<section class="unit" id="su-${c.id}" data-added="${SUMMARY_ADDED}">
   <header class="unit-head">${CH_ICONS[c.id]}<div><p class="kicker">${meta([`Chapter ${c.no}`, c.mods])}</p><h2>${esc(c.title)}</h2></div></header>
-  ${soon('Key ideas and common mistakes for this chapter are coming soon.')}
+  ${c.modules.map((mod) => moduleHTML(c, mod, INDEX)).join('')}
+  <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
 </section>`;
-  }).join('');
+  }).join('') + `
+<section class="habits" id="su-habits"><h2 class="deco">Exam-day habits</h2><ul>${items(habits).map((it, i) => {
+    const id = `su-habits-${i + 1}`;
+    INDEX.push(entry('Summary', 'summary', id, 'Exam-day habit', plainP(it), 'exam habit tip'));
+    return `<li id="${id}">${inline(it, false)}</li>`;
+  }).join('')}</ul></section>`;
 
-  // Practice and Formulas: a heading per chapter for now
+  // Practice: a heading per chapter for now
   const practiceHTML = chapters.map((c) => `
 <section class="punit" id="p${c.id}">
   <header class="punit-head"><div><p class="kicker">Chapter ${c.no}</p><h2>${esc(c.title)}</h2></div></header>
   ${soon('Practice problems with worked solutions are coming soon.')}
 </section>`).join('');
-  const formulasHTML = chapters.map((c) => `
-<section class="fgroup" id="fg-${c.id}">
-  <h2><span class="kicker">Chapter ${c.no}</span>${esc(c.title)}</h2>
-  ${soon('The formulas of this chapter are coming soon.')}
-</section>`).join('');
+
+  // Formulas: the values to know (special angles, constants), then each chapter by module, then its extras
+  const evCell = (v) => (v === null ? '<td class="na"><span class="sr">undefined</span></td>' : `<td>${tex('\\displaystyle ' + v, false)}</td>`);
+  const evAngle = ([t, d]) => `${tex(t, false)}<span class="deg">${esc(d)}</span>`;
+  const trigWide = `<table class="exact exact-wide"><thead><tr><th scope="col"><span class="sr">Function</span></th>${trig.angles.map((a) => `<th scope="col">${evAngle(a)}</th>`).join('')}</tr></thead>
+  <tbody>${trig.rows.map(([f, vals]) => `<tr><th scope="row">${tex(f, false)}</th>${vals.map(evCell).join('')}</tr>`).join('')}</tbody></table>`;
+  const trigTall = `<table class="exact exact-tall"><thead><tr><th scope="col">${tex('\\theta', false)}</th>${trig.rows.map(([f]) => `<th scope="col">${tex(f + '\\theta', false)}</th>`).join('')}</tr></thead>
+  <tbody>${trig.angles.map((a, i) => `<tr><th scope="row">${evAngle(a)}</th>${trig.rows.map(([, vals]) => evCell(vals[i])).join('')}</tr>`).join('')}</tbody></table>`;
+  INDEX.push(entry('Formulas', 'formulas', 'fg-values', 'Special angles — sin, cos, tan', 'sin, cos and tan of 0°, 30°, 37°, 45°, 53°, 60° and 90°; 37° and 53° from the 3-4-5 triangle',
+    'trig table no calculator exact values 3-4-5 triangle sin37 cos37'));
+  let nFormulas = 0;
+  const valuesHTML = `
+<section class="fgroup" id="fg-values" data-added="${FORMULAS_ADDED}">
+  <h2><span class="kicker">No calculator</span>Values to know</h2>
+  <h3 class="fmod"><span class="mod-no">Angles</span>Special angles</h3>
+  <div class="table-wrap">${trigWide}${trigTall}</div>
+  <p class="exact-note">${inline(String.raw`$37^\circ$ and $53^\circ$ are the angles of the 3-4-5 right triangle: $\sin37^\circ\approx\frac{3}{5}$ and $\cos37^\circ\approx\frac{4}{5}$, to within half a percent. A slash means undefined: $\tan90^\circ$ doesn't exist.`, false)}</p>
+  <h3 class="fmod"><span class="mod-no">Constants</span>Constants and units</h3>
+  <div class="frows">${constants.map((r, i) => { nFormulas++; return formulaRow(`f-v-${i + 1}`, r, 'Values to know', 'constant unit', INDEX); }).join('')}</div>
+</section>`;
+  const formulasHTML = valuesHTML + chapters.map((c) => {
+    const g = fgroups.find((x) => x.id === c.id);
+    if (!g) throw new Error(`formulas.mjs has no chapter ${c.id}`);
+    const stray = g.mods.filter((m) => !c.modules.some(([no]) => no === m.no));
+    if (stray.length) throw new Error(`formulas.mjs: ${stray.map((m) => m.no).join(', ')} not among the modules of chapter ${c.no} (content.mjs)`);
+    let n = 0;
+    const row = (r, where) => { nFormulas++; return formulaRow(`f-${c.id}-${++n}`, r, where, c.keys, INDEX); };
+    const mods = c.modules.map(([no, title]) => {
+      const m = g.mods.find((x) => x.no === no);
+      if (!m) throw new Error(`formulas.mjs has no module ${no}`);
+      return `<h3 class="fmod"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3><div class="frows">${m.rows.map((r) => row(r, `${no} ${title}`)).join('')}</div>`;
+    }).join('');
+    const extra = g.extra.length ? `<h3 class="fmod fmod-x"><span class="mod-no">Extra</span>Helpful results not printed in the book</h3><div class="frows">${g.extra.map(([name, t, note]) => row([name, t, 'x', note], `Chapter ${c.no}, extra`)).join('')}</div>` : '';
+    return `
+<section class="fgroup" id="fg-${c.id}" data-added="${FORMULAS_ADDED}">
+  <h2><span class="kicker">${meta([`Chapter ${c.no}`, c.mods])}</span>${esc(c.title)}</h2>
+  ${mods}${extra}
+</section>`;
+  }).join('');
 
   // Quizzes: the exercise days from class (locked on the site) and the practice sets, each group behind a switcher
   const list = exercises ? exercises.map(sheetMeta) : exList;
@@ -192,8 +292,16 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
 
   const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
   const newest = (dates) => dates.filter(Boolean).sort().pop() || '';
-  const NEWEST = { quizzes: newest([...sets.map((s) => s.added), ...list.map((x) => x.added)]) };
-  const LAZY = { practice: practiceHTML, formulas: formulasHTML, quizzes: quizzesHTML, exams: examsHTML };
+  const NEWEST = { summary: SUMMARY_ADDED, formulas: FORMULAS_ADDED, quizzes: newest([...sets.map((s) => s.added), ...list.map((x) => x.added)]) };
+  const formulasTab = `
+<div class="testbar">
+  <button type="button" class="pill" id="test-btn" aria-pressed="false">${UI_ICONS.eye}<span>Test me</span></button>
+  <p class="test-hint">Hides every formula and value. Say it to yourself, then tap to check.</p>
+  <button type="button" class="linkbtn" id="test-reset" hidden>Hide all again</button>
+</div>
+<p class="flegend"><span class="nw"><span class="stars" aria-hidden="true">★★★</span> core, used all the time</span> · <span class="nw"><span class="stars" aria-hidden="true">★★</span> key result</span> · <span class="nw"><span class="stars" aria-hidden="true">★</span> supporting</span> · <span class="nw"><span class="xtag">Extra</span> not printed in the book</span></p>
+${formulasHTML}`;
+  const LAZY = { practice: practiceHTML, formulas: formulasTab, quizzes: quizzesHTML, exams: examsHTML };
   const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
   const lazyScripts = Object.entries(LAZY).map(([v, html]) => {
     if (/<\/script|<!--/i.test(html)) throw new Error(`the ${v} tab contains "</script" or "<!--", which can't travel inside a script element`);
@@ -202,7 +310,7 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
   const nSets = sets.length, nEx = list.length;
   const body = `
 <header class="appbar"><div class="wrap appbar-row">
-  <a class="brand" href="#quizzes" aria-label="EP1 Review, Physics midterm, go to Quizzes">${BADGE}<span class="brand-text"><b>EP1 Review</b><small>Midterm · Chapters 1–8</small></span></a>
+  <a class="brand" href="#summary" aria-label="EP1 Review, Physics midterm, go to Summary">${BADGE}<span class="brand-text"><b>EP1 Review</b><small>Midterm · Chapters 1–8</small></span></a>
   <div class="appbar-actions">
     ${subjectSwitch('math', '../../math/')}
     <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
@@ -211,12 +319,12 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
 </div></header>
 
 <nav class="tabbar" aria-label="Sections" data-updated="${LAST_UPDATED}"><div class="tabbar-row" role="tablist">
-  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'quizzes'}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
+  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === PAGE_CONF.home}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>
 
 <main%MAIN_ATTRS%>
-  <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary" hidden>
-    ${band('Summary', 'まとめ', 'One section per chapter of the midterm, Chapters 1–8: the key ideas and the common mistakes. The notes are on their way; the Quizzes tab is ready now.')}
+  <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
+    ${band('Summary', 'まとめ', 'Every module of <span class="nw">Chapters 1–8</span> in a few short points, each with a worked example that opens one step at a time, and the common mistakes of each chapter.')}
     <div class="wrap content">
       <nav class="tiles" aria-label="Chapters">${tilesHTML}</nav>
       ${summaryHTML}
@@ -229,11 +337,11 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', 'Every formula from <span class="nw">Chapters 1–8</span> on one page. Coming soon.')}
+    ${band('Formulas', '公式集', 'The formulas of <span class="nw">Chapters 1–8</span>, module by module and marked by importance, with helpful extras the book doesn’t print and the values to know without a calculator.')}
     ${lazyBox('formulas')}
   </section>
 
-  <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes">
+  <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
     ${band('Quizzes', '小テスト', `The ${nEx === 2 ? 'two' : nEx} exercise-day sheets from class${locked && nEx ? ' <span class="nw">(password needed)</span>' : ''} and ${nSets === 3 ? 'three' : nSets} practice sets in the same format, each with worked answers that open one step at a time. Start the timer and work on paper, without notes or a calculator.`)}
     ${lazyBox('quizzes')}
   </section>
@@ -245,7 +353,7 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
 </main>
 ${lazyScripts}
 `;
-  return { body, INDEX, PRIV, sheets, exList: list, hasLocks: locked && list.length > 0, nSets, nEx };
+  return { body, INDEX, PRIV, sheets, exList: list, hasLocks: locked && list.length > 0, nSets, nEx, nFormulas };
 }
 
 function foot() {
@@ -368,12 +476,12 @@ async function buildSite(pw = PASSWORD) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EP1 Midterm Review</title>
-<meta name="description" content="Review for the Engineering Physics 1 midterm (Chapters 1–8): the exercise-day sheets with worked answers and practice sets in the same format.">
+<meta name="description" content="Review for the Engineering Physics 1 midterm (Chapters 1–8): a summary of every module with worked examples, the formulas, the exercise-day sheets with worked answers and practice sets in the same format.">
 ${ogTags({
     title: 'EP1 Review · Physics midterm (Chapters 1–8)',
-    description: 'Unofficial review notes for the Engineering Physics 1 midterm: exercise sheets and practice sets with worked answers.',
+    description: 'Unofficial review notes for the Engineering Physics 1 midterm: module summaries with worked examples, formulas, exercise sheets and practice sets.',
     url: 'physics/midterm/', image: 'og-physics-midterm.png',
-    alt: 'EP1 Review, Engineering Physics 1 midterm, Chapters 1 to 8: quizzes with worked answers',
+    alt: 'EP1 Review, Engineering Physics 1 midterm, Chapters 1 to 8: summary, formulas, quizzes and exams',
   })}
 ${HEAD_COMMON('../../', '#131A25')}
 ${THEME_EARLY}
@@ -408,7 +516,7 @@ function pickerHTML(a, r) {
     if ((ex.page || null) !== page) fail(`site.json: "${x.exam}" needs "page": ${JSON.stringify(page)}, like the picker's card`);
     const day = ex.date ? new Date(`${ex.date}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (ex.time ? ' · ' + ex.time : '') : 'Date to be announced';
     const when = `<span class="e-when"${ex.date ? ` data-date="${esc(ex.date)}"` : ''}>${UI_ICONS.calendar}<span class="nw">${esc(day)}</span><span class="e-left" aria-live="off"></span></span>`;
-    const stats = x.page ? `<p class="e-stats">${meta([`${r.nEx} exercise days`, `${r.nSets} practice sets`, 'notes coming soon'])}</p>` : '';
+    const stats = x.page ? `<p class="e-stats">${meta([`${chapters.length} chapter summaries`, `${r.nFormulas} formulas`, `${r.nEx} exercise days`, `${r.nSets} practice sets`])}</p>` : '';
     const inner = `${EXAM_ICONS[x.id]}<span class="e-head"><span class="kicker">${esc(x.kicker)}</span><span class="e-title">${esc(x.title)}</span></span>
       <p class="e-text">${esc(x.text)}</p>${stats}
       <span class="e-foot">${when}${x.page ? `<span class="pill">Open${UI_ICONS.arrow}</span>` : '<span class="e-soon">Coming soon</span>'}</span>`;
@@ -422,10 +530,10 @@ function pickerHTML(a, r) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EP1 Review</title>
-<meta name="description" content="Review notes for each exam of Engineering Physics 1: exercise sheets, practice sets with worked answers and more to come.">
+<meta name="description" content="Review notes for each exam of Engineering Physics 1: module summaries with worked examples, formulas, exercise sheets and practice sets.">
 ${ogTags({
     title: 'EP1 Review · Engineering Physics 1',
-    description: 'Unofficial review notes for each exam: exercise sheets and practice sets with worked answers.',
+    description: 'Unofficial review notes for each exam: module summaries with worked examples, formulas and quiz sheets with worked answers.',
     url: 'physics/', image: 'og-physics.png',
     alt: 'EP1 Review, Engineering Physics 1: the midterm (Chapters 1 to 8), with the final coming later',
   })}
@@ -443,7 +551,7 @@ ${FONT_LINKS}
   <div class="appbar-actions">${subjectSwitch('math', '../math/')}</div>
 </div></header>
 <main>
-  ${band('Exams', '試験', 'One page of notes for each exam. The midterm page has the exercise-day sheets and practice sets with worked answers; summaries, practice problems and formulas follow.')}
+  ${band('Exams', '試験', 'One page of notes for each exam. The midterm page has a summary of every module with worked examples, the formulas, and quiz sheets with worked answers; practice problems follow.')}
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
     ${cards}
