@@ -17,6 +17,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Exam pages get it from `math/assets/` like the calculator. The home page and the exam picker link the two files instead, so they are in `CORE` in `sw.js`.
 - `site.json` holds exam dates (and each exam's `page`, once it has one, which the home page links to) and the "What's new" list, for the home page, the picker and the Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
+- The app icon is a picture, and each subject's pages keep their badge in the browser tab. `python3 src/app_icon.py` makes all the icon files; see "App icon" below.
 - `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
 - Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-math-integrals.png`, `og-physics.png` (the Physics picker) and `og-physics-midterm.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
 
@@ -179,6 +180,16 @@ A few details about the password:
 - The browser's own Print gets the open tab without the app bar, tab bar, search and floating buttons. Printouts always use dark ink on white, also in dark mode.
 - Pages break between parts and solution steps, never inside one.
 - `check_features.py` checks both kinds of printout with print media emulated.
+
+## App icon
+
+- The app's icon is a picture the user chose: a chibi anime character in a Santa outfit, not one of the site's own drawings. `src/app-icon.png` is the square it was cut to, and `python3 src/app_icon.py` makes every size from it, in the repository root:
+  - `apple-touch-icon.png`: the Home Screen icon on an iPhone. Every page names it, so the icon is the same whichever page is added to the Home Screen.
+  - `icon-192.png`, `icon-512.png` and `icon-maskable-512.png`: the installed app (`manifest.webmanifest`). In the maskable one the picture sits inside the middle 80%, which Android never cuts off.
+  - `favicon.png` and `logo.png`: the home page's browser-tab icon and its logo (`.brand`). The 404 page uses them too.
+- Each subject keeps its badge (`SUBJECT_ICONS` in `src/shared/icons.mjs`). The script also writes the badges as the subject pages' tab icons (`favicon-math.svg` and `favicon-physics.svg`, named by `HEAD_COMMON` in `build-lib.mjs`) and as the pictures of the manifest's shortcuts (`icon-math-192.png` and `icon-physics-192.png`). Run it again when a badge changes. The link previews (`og-*.png`) keep the badges too.
+- To use a new picture, run `python3 src/app_icon.py picture.jpg left top right bottom`. The four numbers are the crop box in pixels; without them it takes the largest square from the top. Then bump `CACHE` in `sw.js`, because images are served from the saved copy first. An iPhone keeps its Home Screen icon until the site is added to the Home Screen again.
+- `check_features.py` checks the tab icon of every page, the files and sizes the manifest names, and the logo.
 
 ## A private, unlocked copy
 

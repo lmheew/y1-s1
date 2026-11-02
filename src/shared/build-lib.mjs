@@ -149,10 +149,12 @@ export const writeIfChanged = (file, data) => {
 
 // the theme picked on any page (light or dark), set before the first paint; page.js takes over from there
 export const THEME_EARLY = `<script>try{var t=(JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{}).theme;if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);document.documentElement.setAttribute('data-theme-early','')}}catch(e){}</script>`;
-export const HEAD_COMMON = (up, dark = '#151C17') => `<meta name="robots" content="noindex, nofollow">
+// the browser tab shows the subject's badge (favicon-math.svg, favicon-physics.svg); the Home Screen icon is the app's
+// own, the same on every page (src/app_icon.py makes both)
+export const HEAD_COMMON = (up, dark = '#151C17', subject = 'math') => `<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="${dark}" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="${up}favicon.svg" type="image/svg+xml">
+<link rel="icon" href="${up}favicon-${subject}.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${up}apple-touch-icon.png">
 <link rel="manifest" href="${up}manifest.webmanifest">`;
 // a link preview (Open Graph): what LINE, Discord and others show when the page is shared; src/og.py draws the image

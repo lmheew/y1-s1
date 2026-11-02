@@ -105,8 +105,32 @@ with sync_playwright() as p:
                     size = (int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big'))
                 check(f'link preview for {url}: title, description, card and a 1200 x 630 image', all(og.get(k) for k in ['og:title', 'og:description', 'og:url'])
                       and og.get('twitter:card') == 'summary_large_image' and size == (1200, 630), (og.get('og:title'), img, size))
+            # icons: every page gives the Home Screen the app icon; the browser tab shows the subject's badge on its
+            # pages and the app icon on the home page (all made by src/app_icon.py)
+            def png_size(name):
+                with open(os.path.join(REPO, name), 'rb') as fh:
+                    head = fh.read(24)
+                return '%dx%d' % (int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big'))
+            tabs = {'/': 'favicon.png', '/math/': 'favicon-math.svg', '/math/derivatives/': 'favicon-math.svg', '/math/integrals/': 'favicon-math.svg',
+                    '/physics/': 'favicon-physics.svg', '/physics/midterm/': 'favicon-physics.svg'}
+            for url, want in tabs.items():
+                pg.goto(BASE + url)
+                got = pg.evaluate("['icon', 'apple-touch-icon'].map((r) => new URL(document.querySelector(`link[rel=\"${r}\"]`).getAttribute('href'), location.href).pathname)")
+                check(f'icons for {url}: the tab shows {want}, the Home Screen gets the app icon',
+                      got == ['/' + want, '/apple-touch-icon.png'] and os.path.exists(os.path.join(REPO, want)), got)
+            man = json.load(open(os.path.join(REPO, 'manifest.webmanifest')))
+            named = [(i['src'], i['sizes']) for i in man['icons']] + [(i['src'], i['sizes']) for s in man['shortcuts'] for i in s['icons']]
+            named += [('apple-touch-icon.png', '180x180'), ('favicon.png', '64x64'), ('logo.png', '108x108')]
+            wrong = [(src, want) for src, want in named if not os.path.exists(os.path.join(REPO, src)) or png_size(src) != want]
+            check('app icon files are there, at the sizes the manifest and the pages give', not wrong, wrong)
+            badge = lambda s: 'icon-physics-192.png' if s['url'].startswith('physics/') else 'icon-math-192.png'
+            check("the manifest's shortcuts show their subject's badge, not the app icon",
+                  all(i['src'] == badge(s) for s in man['shortcuts'] for i in s['icons']) and any(s['url'].startswith('physics/') for s in man['shortcuts']))
             pg.goto(BASE + '/')
             pg.wait_for_selector('#news li')
+            pg.wait_for_function("document.querySelector('.brand img').complete")
+            logo = pg.evaluate("(() => { const i = document.querySelector('.brand img'); return [i.naturalWidth, Math.round(i.getBoundingClientRect().width)]; })()")
+            check('home: the logo is the app icon, drawn 36 px wide', logo == [108, 36], logo)
         check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
         shot('home', True)
@@ -390,6 +414,9 @@ with sync_playwright() as p:
     links = pg.locator('a').evaluate_all("(as) => as.map((a) => a.getAttribute('href'))")
     check('404: says the page was not found and links home and to the Math page', 'Page not found' in pg.locator('h1').inner_text()
           and '/y1-s1/' in links and '/y1-s1/math/' in links and overflow(pg) <= 0, links)
+    pg.wait_for_function("document.querySelector('.brand img').complete")
+    check('404: its tab icon and logo are the app icon', pg.evaluate("document.querySelector('link[rel=icon]').getAttribute('href')") == '/y1-s1/favicon.png'
+          and pg.evaluate("document.querySelector('.brand img').naturalWidth") == 108)
     pg.locator('a.go.main').click()
     pg.wait_for_selector('#news li')
     check('404: its home link opens the home page from any address', pg.url.endswith('/y1-s1/'))

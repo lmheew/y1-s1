@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +70,7 @@
   .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
   .appbar-row { display: flex; align-items: center; height: 60px; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); text-decoration: none; }
-  .brand svg { width: 36px; height: 36px; flex: none; }
+  .brand img { width: 36px; height: 36px; flex: none; border-radius: 9px; box-shadow: 0 0 0 1px var(--line); } /* the app icon (logo.png) */
   .brand-text { display: grid; line-height: 1.2; }
   .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
   .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
@@ -148,7 +148,7 @@
 <body>
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="./" aria-label="Study Notes, home">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg>
+    <img src="logo.png" width="36" height="36" alt="">
     <span class="brand-text"><b>Study Notes</b><small>Year 1 · Semester 1</small></span>
   </a>
 </div></header>

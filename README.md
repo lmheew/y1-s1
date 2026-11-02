@@ -15,6 +15,7 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `index.html`: the home page: subjects, upcoming exams with countdowns, what's new, and how to install it.
 - `site.json`: exam dates and the "What's new" list.
 - `sw.js`, `manifest.webmanifest` and the `icon-*.png` files: offline use and "Add to Home Screen".
+- The icons: `apple-touch-icon.png`, `icon-*.png`, `favicon.png` and `logo.png` are the app icon, made by `src/app_icon.py` from `src/app-icon.png`; `favicon-math.svg` and `favicon-physics.svg` are each subject's badge, which its pages show in the browser tab.
 - `math/`: the CLA1 review, built from `src/math/`, so don't edit it by hand: `index.html` is the exam picker, `derivatives/` the Calculus midterm 1 page, `integrals/` the Calculus midterm 2 page, and `assets/` the styles, scripts and math fonts the exam pages share.
 - `math/derivatives/locked.json`: the in-class quiz sheets and past midterms, encrypted. The Quizzes and Exams tabs open them with the password.
 - `src/math/`: the Calculus midterm 1 content (`content.mjs`, `followups.mjs`, `exams.mjs`, `extras.mjs`), the interactive graphs (`graphs.js`), the page style and script, the build, and numeric checks for every answer. `src/math/integrals/` holds the Calculus midterm 2 content (`content.mjs`, `extras.mjs`) and its checks (`verify.py`).
