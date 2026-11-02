@@ -14,6 +14,7 @@
   ],
   "shortcuts": [
     { "name": "Calculus & Linear Algebra 1", "short_name": "Math", "url": "math/", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "Calculus midterm 1: exams and mock midterms", "short_name": "Midterm 1", "url": "math/derivatives/#exams", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+    { "name": "Calculus midterm 1: exams and mock midterms", "short_name": "Midterm 1", "url": "math/derivatives/#exams", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Calculus midterm 2: integrals", "short_name": "Midterm 2", "url": "math/integrals/", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }

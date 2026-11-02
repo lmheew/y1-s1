@@ -1,12 +1,13 @@
 // Builds the Math section (CLA1 review) of the study site. All math is pre-rendered with KaTeX,
 // which is vendored in src/vendor/katex, so the build needs no network and no npm install.
 //
-// The section has one page per exam: math/ is the picker, and math/derivatives/ holds the notes for Calculus
-// midterm 1 (the content modules in this folder). The styles, scripts and math fonts every exam page uses are
-// shared files in math/assets/, so a device downloads them once and each exam page carries only its own notes.
+// The section has one page per exam: math/ is the picker, math/derivatives/ holds the notes for Calculus midterm 1
+// (the content modules in this folder) and math/integrals/ those for Calculus midterm 2 (src/math/integrals/). The
+// styles, scripts and math fonts every exam page uses are shared files in math/assets/, so a device downloads them
+// once and each exam page carries only its own notes.
 //
-//   node src/math/build.mjs site               writes math/index.html (the picker), math/derivatives/index.html and
-//                                              math/assets/, and math/derivatives/locked.json when SITE_PASSWORD is set
+//   node src/math/build.mjs site               writes math/index.html (the picker), the exam pages and math/assets/,
+//                                              and math/derivatives/locked.json when SITE_PASSWORD is set
 //   node src/math/build.mjs artifact <out>     writes one self-contained page with the in-class sheets in plain view
 //   node src/math/build.mjs open               decrypts src/math/private.sealed.json into src/math/private/
 //   node src/math/build.mjs seal               encrypts src/math/private/ into src/math/private.sealed.json
@@ -24,6 +25,8 @@ import { tags, formulas, exactValues, BADGE, TAB_ICONS, UI_ICONS, UNIT_ICONS, EX
 import { followups } from './followups.mjs';
 import { subjectSwitch } from '../shared/icons.mjs';
 import { mocks } from './exams.mjs';
+import * as INT from './integrals/content.mjs';
+import * as INTX from './integrals/extras.mjs';
 import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
   THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, KATEX_DIR } from '../shared/build-lib.mjs';
@@ -31,42 +34,52 @@ import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
 const MATH = path.join(ROOT, 'math');
-// the exam page these content modules build (Calculus midterm 1), and the shared files of every exam page
-const PAGE_DIR = path.join(MATH, 'derivatives');
+// the shared files of every exam page, and the locked sheets of Calculus midterm 1 (in-class quizzes, past midterms)
 const ASSETS = path.join(MATH, 'assets');
-const LOCKED = path.join(PAGE_DIR, 'locked.json');
+const LOCKED = path.join(MATH, 'derivatives', 'locked.json');
 const SEALED = path.join(SRC, 'private.sealed.json');
 const PRIVATE = path.join(SRC, 'private');
 const rel = (p) => path.relative(ROOT, p);
 // site.json (repository root): exam dates and the "What's new" list, shared with the home page
 const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
-const LAST_UPDATED = [
-  ...SITE.news.filter((n) => n.subject === 'math' || n.subject === 'all').map((n) => n.date),
-  ...units.map((u) => u.added), ...Object.values(practice).flat().map((p) => p.added),
-  ...formulas.map((g) => g.added), ...mocks.map((m) => m.added),
-].filter(Boolean).sort().pop() || '2026-10-01';
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
-// "Last updated": the newest date in What's new for this page (site.json) or on anything in it (`added`)
+const newestOf = (dates) => dates.filter(Boolean).sort().pop() || '';
+// "Last updated" of an exam page: the newest date in What's new that links to the page (site.json) or on anything
+// in it (`added`). The picker's is the newest of all of them.
+const mathNews = SITE.news.filter((n) => n.subject === 'math' || n.subject === 'all');
+const pageUpdated = (P) => newestOf([
+  ...mathNews.filter((n) => (n.link || '').startsWith(`math/${P.id}/`)).map((n) => n.date),
+  ...P.units.map((u) => u.added), ...Object.values(P.practice).flat().map((p) => p.added),
+  ...P.formulas.map((g) => g.added), ...P.mocks.map((m) => m.added),
+]) || '2026-10-01';
 
 // ---------- the exams, for the picker (math/) ----------
 // One card per exam, in course order. `exam` is its name in site.json (for the date), and `page` is its folder under
-// math/ once its notes exist; until then the card says when they will appear. The derivative part is the content in
-// this folder. Another exam's page needs its own content modules, storage keys and a build entry like buildPage().
+// math/ once its notes exist; until then the card says when they will appear. Each exam page is an entry in PAGES
+// below, with its own content modules and storage keys.
 const EXAMS = [
   { id: 'derivatives', page: 'derivatives', exam: 'Calculus midterm 1', kicker: 'Calculus midterm 1', title: 'Derivatives',
     text: 'Limits and continuity, derivative rules, extrema, series and Taylor polynomials, plus an introduction to differential equations.' },
-  { id: 'integrals', exam: 'Calculus midterm 2 (integrals)', kicker: 'Calculus midterm 2', title: 'Integrals',
-    text: 'Notes will appear here after the first class on integrals.' },
+  { id: 'integrals', page: 'integrals', exam: 'Calculus midterm 2 (integrals)', kicker: 'Calculus midterm 2', title: 'Integrals',
+    text: 'Riemann sums and definite integrals, primitive functions, integration by parts and substitution, applications, polar curves and improper integrals. Notes are added after each class.' },
   { id: 'linear-algebra', exam: 'Linear Algebra midterm', kicker: 'Linear Algebra midterm', title: 'Linear algebra',
     text: 'Notes will appear here after the first Linear Algebra class.' },
 ];
 
-
-
 // A practice problem's id (the key for its saved mark): its own `id` when it was moved from another unit, else unit number.n
 const probId = (u, p, pi) => p.id || `${u.id.slice(1)}.${pi + 1}`;
-// "Day 10 & 11" -> "10–11" for the small practice rings
-const dayShort = (u) => u.days.replace(/^Day /, '').replace(' & ', '–');
+// a lesson's label: its day numbers ("Day 1 & 2"), or its dates ("2 & 3 Nov") when the schedule gives no day numbers
+const dayOf = (u) => u.days || u.dates;
+// "Day 10 & 11" -> "10–11" (or "2 & 3 Nov" -> "2–3") for the small practice rings
+const dayShort = (u) => (u.days ? u.days.replace(/^Day /, '').replace(' & ', '–') : u.dates.replace(/^(\d+) & (\d+).*$/, '$1–$2'));
+// the span of an exam's lessons for its card and Formulas tab: "Days 1–12", or from the dates, "2–20 Nov"
+function spanOf(units) {
+  const dayNums = units.flatMap((u) => ((u.days || '').match(/\d+/g) || []).map(Number));
+  if (dayNums.length) return `Days ${Math.min(...dayNums)}–${Math.max(...dayNums)}`;
+  const ends = (s) => { const n = s.match(/\d+/g).map(Number); return { lo: n[0], hi: n[n.length - 1], mon: s.match(/[A-Z][a-z]{2}/)[0] }; };
+  const a = ends(units[0].dates), b = ends(units[units.length - 1].dates);
+  return a.mon === b.mon ? `${a.lo}–${b.hi} ${b.mon}` : `${a.lo} ${a.mon} – ${b.hi} ${b.mon}`;
+}
 // interactive graphs (graphs.js draws them when they scroll into view), placed after a unit's key ideas
 const GRAPHS = {
   u2: [['secant', 'Secant to tangent', String.raw`Drag $h$ toward $0$. The secant slope $\frac{f(1+h)-f(1)}{h}$ of $f(x)=x^2$ approaches the tangent slope $f'(1)=2$.`]],
@@ -79,35 +92,99 @@ const GRAPHS = {
 };
 const GRAPHS_ADDED = '2026-10-29';
 const TESTBAR_ADDED = '2026-10-29';
-const graphHTML = ([kind, title, note]) => `
-  <figure class="explore" id="gx-${kind}" data-graph="${kind}" data-added="${GRAPHS_ADDED}">
+const graphHTML = (added) => ([kind, title, note]) => `
+  <figure class="explore" id="gx-${kind}" data-graph="${kind}" data-added="${added}">
     <figcaption class="gx-title"><span class="kicker">Explore</span>${esc(title)}</figcaption>
     <div class="gx-stage"><p class="gx-wait">Loading the graph…</p></div>
     <p class="gx-note">${inline(note, false)}</p>
   </figure>`;
+// a part of a page whose content comes with later classes
+const soon = (text) => `<p class="soon-box">${UI_ICONS.calendar}<span>${esc(text)}</span></p>`;
+
+// ---------- the exam pages ----------
+// Each exam page has its own content and its own keys in browser storage, which page.js reads from <body data-page>
+// (Calculus midterm 1 keeps page.js's defaults): store (practice marks, the open tab), seen (its key in study-seen, for
+// New labels and its card on the picker; the home page finds it from a What's new entry's link) and scores (mock scores).
+// lede: the band texts that differ between pages; soon: what a tab says while its content is still to come.
+const DERIVATIVES = {
+  id: 'derivatives', name: 'Calculus midterm 1', short: 'Midterm 1 · Derivatives',
+  units, habits, practice, tags, formulas, followups, mocks, icons: UNIT_ICONS, graphs: GRAPHS, graphsAdded: GRAPHS_ADDED,
+  testbarAdded: TESTBAR_ADDED, seen: 'math', conf: null,
+  title: 'CLA1 Midterm 1 Review',
+  description: 'Review for Calculus midterm 1 (derivatives) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
+  og: {
+    title: 'CLA1 Review · Calculus midterm 1 (derivatives)',
+    description: 'Unofficial review notes for Calculus midterm 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
+    url: 'math/derivatives/', image: 'og-math-derivatives.png',
+    alt: 'CLA1 Review, Calculus midterm 1, derivatives: summary, practice, formulas, quizzes and exams',
+  },
+  lede: {
+    summary: 'One section per lesson in the course schedule: the key ideas, and the common mistakes to avoid.',
+    practice: (total) => `${total} practice problems, most in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`,
+  },
+};
+const INTEGRALS = {
+  id: 'integrals', name: 'Calculus midterm 2', short: 'Midterm 2 · Integrals',
+  units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: {}, mocks: [],
+  icons: INTX.UNIT_ICONS, graphs: INTX.GRAPHS, graphsAdded: INTX.GRAPHS_ADDED, testbarAdded: '', seen: 'math-integrals',
+  conf: { store: 'cla1-integrals-review', seen: 'math-integrals', home: 'summary', scores: 'cla1-integrals-mock-scores',
+    suggest: ['Riemann sum', 'right endpoint', 'sum of squares', 'upper sum', 'signed area', 'partial sum'], tryWords: '"Riemann" or "area"' },
+  title: 'CLA1 Midterm 2 Review',
+  description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions and formulas, added after each class.',
+  og: {
+    title: 'CLA1 Review · Calculus midterm 2 (integrals)',
+    description: 'Unofficial review notes for Calculus midterm 2: key ideas, practice problems with worked solutions and formulas, added after each class.',
+    url: 'math/integrals/', image: 'og-math-integrals.png',
+    alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice and formulas, with quizzes and mock midterms to come',
+  },
+  lede: {
+    summary: 'One section per lesson in the course schedule, added after each class: the key ideas, and the common mistakes to avoid. Lessons still to come are greyed out.',
+    practice: (total) => `${total} practice problems with worked solutions. Try each one on paper, open the answer, then mark how it went.`,
+    formulas: 'Every formula from the lessons so far on one page, plus the exact trig values you need without a calculator.',
+    quizzes: 'From 5 &amp; 6 Nov, each lesson pair has an in-class quiz. Its sheet (password needed) and two open follow-ups are added here after the class.',
+    exams: 'Upcoming exams with a countdown. Mock midterms for Calculus midterm 2 follow once more lessons are covered.',
+  },
+  soon: {
+    quizzes: 'The first in-class quiz on integrals is on 5 & 6 Nov.',
+    mocks: 'Mock midterms with a timer and self-scoring are coming as the lessons are covered.',
+  },
+};
+const PAGES = [DERIVATIVES, INTEGRALS];
+for (const P of PAGES) P.updated = pageUpdated(P);
+// the picker's "Last updated": the newest of every Math page and of Math's What's new
+const PICKER_UPDATED = newestOf([...mathNews.map((n) => n.date), ...PAGES.map((P) => P.updated)]);
 
 // ---------- the page ----------
+// P: the exam page (DERIVATIVES, INTEGRALS).
 // quizzes: the in-class sheets (from src/math/private/inclass.mjs) or null when they aren't available.
 // past: the past midterm papers (src/math/private/past.mjs) or null.
 // locked: true for the public site, where in-class sheets and past papers become password panels and their HTML goes to `sheets`.
 // lockedNos / lockedPast: what is locked when `quizzes` / `past` are null (taken from math/locked.json).
-function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
+function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const INDEX = [];
   const PRIV = [];
+  const { units, habits, practice, tags, formulas, followups, mocks } = P;
+  const UNIT_ICONS = P.icons;
+  // the lessons taught so far; the rest of the schedule shows as greyed-out tiles
+  const ready = units.filter((u) => !u.upcoming);
 
   // Summary
-  const tilesHTML = units.map((u) => `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${UNIT_ICONS[u.id]}<span class="tile-k">${esc(u.days)}</span><span class="tile-t">${esc(u.title)}</span>${u.quiz ? `<span class="tile-q">${u.quiz}</span>` : ''}</button>`).join('')
+  const tileQ = (u) => u.quiz || (u.starred ? 'In-class quiz' : '');
+  const tileInner = (u) => `${UNIT_ICONS[u.id]}<span class="tile-k">${esc(dayOf(u))}</span><span class="tile-t">${esc(u.title)}</span>${tileQ(u) ? `<span class="tile-q">${tileQ(u)}</span>` : ''}`;
+  const tilesHTML = units.map((u) => (u.upcoming
+    ? `<div class="tile upcoming">${tileInner(u)}<span class="tile-soon">Notes after class</span></div>`
+    : `<button type="button" class="tile" data-goto="summary" data-target="su-${u.id}">${tileInner(u)}</button>`)).join('')
     + `<button type="button" class="tile" data-goto="summary" data-target="su-habits">${UNIT_ICONS.habits}<span class="tile-k">Before the exam</span><span class="tile-t">Exam-day habits</span></button>`;
-  const summaryHTML = units.map((u) => {
+  const summaryHTML = ready.map((u) => {
     const ideas = items(u.ideas).map((it, i) => {
       const id = `su-${u.id}-k${i + 1}`;
       const label = (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => texPlain(m.slice(1, -1)));
-      INDEX.push(entry('Summary', 'summary', id, `${label || 'Key idea'} — ${u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), u.quiz || u.days));
+      INDEX.push(entry('Summary', 'summary', id, `${label || 'Key idea'} — ${u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), u.quiz || dayOf(u)));
       return `<li id="${id}">${inline(it, false)}</li>`;
     }).join('');
     const watch = items(u.watch).map((it, i) => {
       const id = `su-${u.id}-w${i + 1}`;
-      INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + (u.quiz || u.days)));
+      INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + (u.quiz || dayOf(u))));
       return `<li id="${id}">${inline(it, false)}</li>`;
     }).join('');
     return `
@@ -115,7 +192,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${meta([u.days, u.dates, u.quiz, u.note])}</p><h2>${esc(u.title)}</h2></div></header>
   ${u.intro ? `<p class="unit-note">${inline(u.intro, false)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
-  ${(GRAPHS[u.id] || []).map(graphHTML).join('')}
+  ${(P.graphs[u.id] || []).map(graphHTML(P.graphsAdded)).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
 </section>`;
   }).join('') + `
@@ -128,15 +205,15 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   // Practice
   let total = 0;
   const ids = new Set();
-  const practiceHTML = units.map((u) => {
-    const probs = practice[u.id];
+  const practiceHTML = ready.map((u) => {
+    const probs = practice[u.id] || [];
     const cards = probs.map((p, pi) => {
       total++;
       const id = probId(u, p, pi);
       if (ids.has(id)) throw new Error(`two practice problems share the id ${id}`);
       ids.add(id);
       const elId = `prob-${id.replace('.', '-')}`;
-      INDEX.push(entry('Practice', 'practice', elId, `Practice · ${u.days} · Q.${pi + 1} — ${p.src}`, plain([p.stem, ...p.parts].join(' ')),
+      INDEX.push(entry('Practice', 'practice', elId, `Practice · ${dayOf(u)} · Q.${pi + 1} — ${p.src}`, plain([p.stem, ...p.parts].join(' ')),
         [tags[id] || '', plain(p.hint || ''), plain(p.answer.join(' ')), u.title].join(' ')));
       const hint = p.hint ? toggle('hint', 'Hint', 'Hide hint', blocks(p.hint)) : '';
       const sol = toggle('sol', 'Show answer', 'Hide answer', answerBox(p.answer) + `<div class="steps">${blocks(p.sol)}</div>
@@ -154,11 +231,11 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     }).join('');
     return `
 <section class="punit" id="p${u.id}">
-  <header class="punit-head"><div><p class="kicker">${meta([u.days, u.quiz ? `like ${u.quiz}` : '', (u.note || '').toLowerCase()])}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
+  <header class="punit-head"><div><p class="kicker">${meta([dayOf(u), u.quiz ? `like ${u.quiz}` : '', (u.note || '').toLowerCase()])}</p><h2>${esc(u.title)}</h2></div><span class="ucount">0/${probs.length}</span></header>
   <div class="probs">${cards}</div>
 </section>`;
   }).join('');
-  const unitRings = units.map((u) => `<button type="button" class="uring" data-goto="practice" data-target="p${u.id}" data-unit="p${u.id}" aria-label="Practice for ${esc(u.days)}: ${esc(u.title)}">${ring(17, '', 'ring-sm')}<span class="uring-no${dayShort(u).length > 3 ? ' long' : ''}">${dayShort(u)}</span><span class="uring-count">0/${practice[u.id].length}</span></button>`).join('');
+  const unitRings = ready.map((u) => `<button type="button" class="uring" data-goto="practice" data-target="p${u.id}" data-unit="p${u.id}" aria-label="Practice for ${esc(dayOf(u))}: ${esc(u.title)}">${ring(17, '', 'ring-sm')}<span class="uring-no${dayShort(u).length > 3 ? ' long' : ''}">${dayShort(u)}</span><span class="uring-count">0/${(practice[u.id] || []).length}</span></button>`).join('');
 
   // Formulas
   const formulasHTML = formulas.map((g) => `
@@ -246,9 +323,8 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   const quizJump = nos.map((no) => `<button type="button" class="chip" data-goto="quizzes" data-target="qg${no}">Quiz ${no}</button>`).join('');
   const quizUnits = units.filter((u) => u.quiz);
   const qnum = (u) => u.quiz.replace(/^Quiz /, '');
-  const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits[0].quiz;
-  const dayNums = units.flatMap((u) => (u.days.match(/\d+/g) || []).map(Number));
-  const daySpan = `Days ${Math.min(...dayNums)}–${Math.max(...dayNums)}`;
+  const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits.length ? quizUnits[0].quiz : '';
+  const daySpan = spanOf(units);
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
   // Exams: upcoming exams (dates from site.json; page.js shows the countdown) and the mock midterms
@@ -317,6 +393,10 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     `<button type="button" class="seg-btn" role="tab" data-seg="${pi}" aria-controls="${p.id}" aria-selected="${pi === 0}">${esc(p.seg)}${pastLock ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : ''}<span class="seg-score"></span></button>`).join('')}</div>
       ${pastSheets}
     </section>` : '';
+  // an exam page without mocks yet says they are coming
+  const mocksInner = mocks.length ? `<div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
+    `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">Mock ${mi + 1}<span class="seg-score"></span></button>`).join('')}</div>
+      ${mockSheets}` : soon(P.soon.mocks);
   const examsHTML = `
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
@@ -324,18 +404,23 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
     </section>
     <section class="qgroup mockgroup" id="mocks">
       <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
-      <div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
-    `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">Mock ${mi + 1}<span class="seg-score"></span></button>`).join('')}</div>
-      ${mockSheets}
+      ${mocksInner}
     </section>${pastHTML}`;
+  // Quizzes: a jump row and one group per quiz, or, before the first quiz, when it is
+  const quizzesTab = nos.length ? `<nav class="qjump" aria-label="Jump to a quiz">${quizJump}</nav>${quizzesHTML}
+      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}` : `
+    <section class="qgroup" id="qg-soon">
+      <header class="qg-head"><p class="kicker">In-class quizzes</p><h2>Coming with the next lesson</h2></header>
+      ${soon(P.soon.quizzes)}
+    </section>`;
 
   const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
   // The newest `added` date in each tab, so the tab can show a dot before its content is built
   const newest = (dates) => dates.filter(Boolean).sort().pop() || '';
   const NEWEST = {
-    summary: newest([...units.map((u) => u.added), Object.keys(GRAPHS).length ? GRAPHS_ADDED : '']),
+    summary: newest([...units.map((u) => u.added), Object.keys(P.graphs).length ? P.graphsAdded : '']),
     practice: newest(Object.values(practice).flat().map((p) => p.added)),
-    formulas: newest([...formulas.map((g) => g.added), TESTBAR_ADDED]),
+    formulas: newest([...formulas.map((g) => g.added), P.testbarAdded]),
     quizzes: newest(Object.values(followups).flat().map((f) => f.added)),
     exams: newest([...mocks.map((m) => m.added), ...pastList.map((p) => p.added)]),
   };
@@ -362,14 +447,13 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
       ${practiceHTML}
       <div class="reset-row"><button type="button" class="linkbtn" id="reset">Clear all marks</button><span>Marks are saved in this browser only.</span></div>`,
     formulas: `
-      <div class="testbar" data-added="${TESTBAR_ADDED}">
+      <div class="testbar"${P.testbarAdded ? ` data-added="${P.testbarAdded}"` : ''}>
         <button type="button" class="pill" id="test-btn" aria-pressed="false">${UI_ICONS.eye}<span>Test me</span></button>
         <p class="test-hint">Hides every formula and exact value. Say it to yourself, then tap to check.</p>
         <button type="button" class="linkbtn" id="test-reset" hidden>Hide all again</button>
       </div>
       ${exactHTML}${formulasHTML}`,
-    quizzes: `<nav class="qjump" aria-label="Jump to a quiz">${quizJump}</nav>${quizzesHTML}
-      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}`,
+    quizzes: quizzesTab,
     exams: examsHTML,
   };
   const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
@@ -380,7 +464,7 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   }).join('\n');
   const body = `
 <header class="appbar"><div class="wrap appbar-row">
-  <a class="brand" href="#summary" aria-label="CLA1 Review, Calculus midterm 1, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Midterm 1 · Derivatives</small></span></a>
+  <a class="brand" href="#summary" aria-label="CLA1 Review, ${P.name}, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>${P.short}</small></span></a>
   <div class="appbar-actions">
     ${subjectSwitch('physics', '../../physics/')}
     <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
@@ -388,13 +472,13 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   </div>
 </div></header>
 
-<nav class="tabbar" aria-label="Sections" data-updated="${LAST_UPDATED}"><div class="tabbar-row" role="tablist">
+<nav class="tabbar" aria-label="Sections" data-updated="${P.updated}"><div class="tabbar-row" role="tablist">
   ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'summary'}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>
 
 <main%MAIN_ATTRS%>
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
-    ${band('Summary', 'まとめ', 'One section per lesson in the course schedule: the key ideas, and the common mistakes to avoid.')}
+    ${band('Summary', 'まとめ', P.lede.summary)}
     <div class="wrap content">
       <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
       ${summaryHTML}
@@ -402,24 +486,24 @@ function render({ quizzes, past, locked, lockedNos, lockedPast = [] }) {
   </section>
 
   <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
-    ${band('Practice', '練習問題', `${total} practice problems, most in the same format as the quizzes. Try each one on paper, open the answer, then mark how it went.`)}
+    ${band('Practice', '練習問題', P.lede.practice(total))}
     ${lazyBox('practice')}
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', `Every formula from <span class="nw">${daySpan}</span> on one page, plus the exact trig values you need without a calculator.`)}
+    ${band('Formulas', '公式集', P.lede.formulas || `Every formula from <span class="nw">${daySpan}</span> on one page, plus the exact trig values you need without a calculator.`)}
     ${lazyBox('formulas')}
   </section>
 
   <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
-    ${band('Quizzes', '小テスト', hasLocks
+    ${band('Quizzes', '小テスト', !nos.length ? P.lede.quizzes : hasLocks
     ? 'Each quiz has the in-class sheet (password needed) and two open follow-ups: A uses the same skills with new numbers, and B targets common mistakes. Start the timer and work without notes.'
     : 'Each quiz has the in-class sheet and two follow-ups: A uses the same skills with new numbers, and B targets common mistakes. Start the timer and work without notes.')}
     ${lazyBox('quizzes')}
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, ${mocks.length} mock exams for Calculus midterm 1 covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', !mocks.length ? P.lede.exams : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 </main>
@@ -428,14 +512,15 @@ ${lazyScripts}
   return { body, INDEX, PRIV, sheets, total, hasLocks: hasLocks || pastLock, nos, pastList, daySpan };
 }
 
-// site: the footer of a page at math/derivatives/ (links up to the picker and the home page); the artifact has none
-function foot(site) {
+// site: the footer of a page at math/<exam>/ (links up to the picker and the home page); the artifact has none.
+// updated: the page's "Last updated" date.
+function foot(site, updated) {
   return `
 <footer class="site-foot"><div class="wrap">
   <p class="deco cheer">Good luck in your studies!</p>
   ${site ? '<p class="foot-links"><a href="../">← All exams</a> <a href="../../">All subjects</a></p>' : ''}
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
-  <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
+  <p class="fine">Last updated <time datetime="${updated}">${fmtDate(updated)}</time>.</p>
   <p class="fine">Math typeset with KaTeX (${site ? '<a href="../../src/vendor/katex/LICENSE.txt">MIT License</a>' : 'MIT License'}).</p>
 </div></footer>
 
@@ -531,7 +616,7 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   const quizzes = ring ? await loadQuizzes(ring) : null;
   const past = ring ? await loadPast(ring) : null;
   let box = readJSON(LOCKED);
-  const r = render({ quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
+  const r = render(DERIVATIVES, { quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
   if (quizzes) {
     const payload = { sheets: r.sheets, index: r.PRIV };
     let same = false;
@@ -547,6 +632,19 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   const lockedSrc = r.hasLocks && box ? 'locked.json?v=' + hash(fs.readFileSync(LOCKED)) : '';
   if (r.hasLocks && !lockedSrc) fail(`in-class sheets are listed but ${rel(LOCKED)} is missing; build with SITE_PASSWORD.`);
   const a = writeAssets();
+  writePage(DERIVATIVES, r, a, lockedSrc);
+  // Calculus midterm 2 has no locked sheets yet: its in-class quizzes start after this build's lesson
+  const ri = render(INTEGRALS, { quizzes: null, past: null, locked: true });
+  if (ri.hasLocks) fail('Calculus midterm 2 lists locked sheets, but its build has no locked file yet');
+  writePage(INTEGRALS, ri, a, '');
+  const picker = pickerHTML(a, { derivatives: r, integrals: ri });
+  writeIfChanged(path.join(MATH, 'index.html'), picker);
+  console.log('wrote', rel(path.join(MATH, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
+    '· shared files:', a.css, a.js, `and ${a.fonts.length} fonts in`, rel(ASSETS));
+}
+
+// one exam page at math/<P.id>/index.html. a: the shared files; lockedSrc: its locked file with version, or ''
+function writePage(P, r, a, lockedSrc) {
   // the two fonts nearly every formula uses start loading with the page
   const PRELOAD = ['KaTeX_Main-Regular', 'KaTeX_Math-Italic'];
   if (!PRELOAD.every((f) => a.fonts.includes(f))) fail('a preloaded KaTeX font is not among the shared fonts');
@@ -555,14 +653,9 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CLA1 Midterm 1 Review</title>
-<meta name="description" content="Review for Calculus midterm 1 (derivatives) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
-${ogTags({
-    title: 'CLA1 Review · Calculus midterm 1 (derivatives)',
-    description: 'Unofficial review notes for Calculus midterm 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
-    url: 'math/derivatives/', image: 'og-math-derivatives.png',
-    alt: 'CLA1 Review, Calculus midterm 1, derivatives: summary, practice, formulas, quizzes and exams',
-  })}
+<title>${P.title}</title>
+<meta name="description" content="${P.description}">
+${ogTags(P.og)}
 ${HEAD_COMMON('../../')}
 ${THEME_EARLY}
 ${FONT_LINKS}
@@ -570,28 +663,35 @@ ${PRELOAD.map((f) => `<link rel="preload" href="../assets/fonts/${f}.woff2" as="
 <link rel="preload" href="../assets/${a.js}" as="script">
 <link rel="stylesheet" href="../assets/${a.css}">
 </head>
-<body>
+<body${P.conf ? ` data-page="${esc(JSON.stringify(P.conf))}"` : ''}>
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
-${foot(true)}
+${foot(true, P.updated)}
 ${indexScript(r.INDEX)}
 <script src="../assets/${a.js}"></script>
 </body>
 </html>
 `;
-  const out = path.join(PAGE_DIR, 'index.html');
+  const out = path.join(MATH, P.id, 'index.html');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   writeIfChanged(out, html);
   console.log('wrote', rel(out), (html.length / 1024).toFixed(0) + ' KB · problems:', r.total, '· public index entries:', r.INDEX.length,
-    '· quizzes:', r.nos.join(' '), r.hasLocks ? '(in-class sheets locked)' : '');
-  const picker = pickerHTML(a, r);
-  writeIfChanged(path.join(MATH, 'index.html'), picker);
-  console.log('wrote', rel(path.join(MATH, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
-    '· shared files:', a.css, a.js, `and ${a.fonts.length} fonts in`, rel(ASSETS));
+    '· quizzes:', r.nos.join(' ') || 'none yet', r.hasLocks ? '(in-class sheets locked)' : '');
+}
+
+// the facts under an exam's card on the picker
+function statsOf(P, r) {
+  const ready = P.units.filter((u) => !u.upcoming).length, all = P.units.length;
+  if (ready === all) return [`${all} lessons`, `${r.total} practice problems`, `${r.nos.length} quizzes`, `${P.mocks.length} mocks`, `${r.pastList.length} past midterms`];
+  // an exam still being taught: the lessons so far, and only the parts it already has
+  return [`${ready} of ${all} lessons`, `${r.total} practice problems`, r.nos.length ? `${r.nos.length} quizzes` : '',
+    P.mocks.length ? `${P.mocks.length} mocks` : '', r.pastList.length ? `${r.pastList.length} past midterms` : ''];
 }
 
 // ---------- the exam picker (math/index.html) ----------
 // Old addresses were the one Math page (math/#exams, math/#prob-1-1…): the picker has no anchors of its own, so any
 // address with a # goes on to the derivative part, where those sections now live.
-function pickerHTML(a, r) {
+// built: each exam page's render() result, by page id
+function pickerHTML(a, built) {
   const cards = EXAMS.map((x) => {
     const ex = SITE.exams.find((e) => e.name === x.exam);
     if (!ex) fail(`site.json has no exam named "${x.exam}" (the picker's ${x.id} card)`);
@@ -600,13 +700,16 @@ function pickerHTML(a, r) {
     if ((ex.page || null) !== page) fail(`site.json: "${x.exam}" needs "page": ${JSON.stringify(page)}, like the picker's card`);
     const day = ex.date ? new Date(`${ex.date}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (ex.time ? ' · ' + ex.time : '') : 'Date to be announced';
     const when = `<span class="e-when"${ex.date ? ` data-date="${esc(ex.date)}"` : ''}>${UI_ICONS.calendar}<span class="nw">${esc(day)}</span><span class="e-left" aria-live="off"></span></span>`;
-    const stats = x.page ? `<p class="e-stats">${meta([`${units.length} lessons`, `${r.total} practice problems`, `${r.nos.length} quizzes`, `${mocks.length} mocks`, `${r.pastList.length} past midterms`])}</p>` : '';
+    const P = x.page && PAGES.find((p) => p.id === x.page);
+    const r = x.page && built[x.page];
+    if (x.page && !(P && r)) fail(`the picker's ${x.id} card opens math/${x.page}/, but no exam page was built there`);
+    const stats = x.page ? `<p class="e-stats">${meta(statsOf(P, r))}</p>` : '';
     const inner = `${EXAM_ICONS[x.id]}<span class="e-head"><span class="kicker">${meta([x.kicker, x.page ? r.daySpan : ''])}</span><span class="e-title">${esc(x.title)}</span></span>
       <p class="e-text">${esc(x.text)}</p>${stats}
       <span class="e-foot">${when}${x.page ? `<span class="pill">Open${UI_ICONS.arrow}</span>` : '<span class="e-soon">Coming soon</span>'}</span>`;
     // data-seen: the exam page's key in study-seen, for the New label
     return x.page
-      ? `<a class="exam" id="exam-${x.id}" href="${x.page}/" data-updated="${LAST_UPDATED}" data-seen="math">${inner}</a>`
+      ? `<a class="exam" id="exam-${x.id}" href="${x.page}/" data-updated="${P.updated}" data-seen="${P.seen}">${inner}</a>`
       : `<div class="exam soon" id="exam-${x.id}">${inner}</div>`;
   }).join('\n    ');
   return `<!doctype html>
@@ -621,7 +724,7 @@ ${ogTags({
     title: 'CLA1 Review · Calculus &amp; Linear Algebra 1',
     description: 'Unofficial review notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
     url: 'math/', image: 'og-math.png',
-    alt: 'CLA1 Review, Calculus and Linear Algebra 1: Calculus midterm 1 (derivatives), with midterm 2 (integrals) and the Linear Algebra midterm coming soon',
+    alt: 'CLA1 Review, Calculus and Linear Algebra 1: Calculus midterm 1 (derivatives) and midterm 2 (integrals), with the Linear Algebra midterm coming soon',
   })}
 ${HEAD_COMMON('../')}
 ${THEME_EARLY}
@@ -647,7 +750,7 @@ ${FONT_LINKS}
 <footer class="site-foot"><div class="wrap">
   <p class="foot-links"><a href="../">← All subjects</a></p>
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page.</p>
-  <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
+  <p class="fine">Last updated <time datetime="${PICKER_UPDATED}">${fmtDate(PICKER_UPDATED)}</time>.</p>
 </div></footer>
 <script>${PICKER_JS}</script>
 </body>
@@ -661,7 +764,7 @@ async function buildArtifact(out) {
   const quizzes = await loadQuizzes(ring);
   if (!quizzes) fail('the in-class sheets are needed: run `open` first, or set SITE_PASSWORD.');
   const past = await loadPast(ring);
-  const r = render({ quizzes, past, locked: false, lockedNos: [] });
+  const r = render(DERIVATIVES, { quizzes, past, locked: false, lockedNos: [] });
   const { css, js, kcss } = inlineAssets();
   // claude.ai artifact: the host supplies the document skeleton, so the page starts at <title>
   const html = `<title>CLA1 Midterm Review</title>
@@ -671,7 +774,7 @@ ${FONT_LINKS}
 <style>${kcss}</style>
 <style>${KATEX_TWEAK}</style>
 ${r.body.replace('%MAIN_ATTRS%', '')}
-${foot(false)}
+${foot(false, DERIVATIVES.updated)}
 ${indexScript(r.INDEX)}
 <script>${js}</script>
 `;

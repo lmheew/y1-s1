@@ -115,12 +115,14 @@ with sync_playwright() as p:
         pg.goto(BASE + '/math/')
         pg.wait_for_selector('.exams')
         cards = pg.locator('.exam')
-        check(f'{label}: picker: three exams in course order, only Calculus midterm 1 opens', cards.count() == 3
+        check(f'{label}: picker: three exams in course order, Calculus midterms 1 and 2 open', cards.count() == 3
               and [cards.nth(i).get_attribute('id') for i in range(3)] == ['exam-derivatives', 'exam-integrals', 'exam-linear-algebra']
-              and pg.locator('a.exam').count() == 1 and pg.locator('a.exam .pill').count() == 1 and pg.locator('.exam.soon .e-soon').count() == 2)
-        # (its New label is checked below, on a device that hasn't opened anything yet)
+              and pg.locator('a.exam').count() == 2 and pg.locator('a.exam .pill').count() == 2 and pg.locator('.exam.soon .e-soon').count() == 1)
+        # (their New labels are checked below, on a device that hasn't opened anything yet)
         check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
               and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
+        check(f'{label}: picker: Calculus midterm 2 has its date, its lesson span and the lessons so far', 'Mon 23 Nov' in cards.nth(1).inner_text()
+              and '2–20 nov' in cards.nth(1).locator('.kicker').inner_text().lower() and 'of 6 lessons' in cards.nth(1).locator('.e-stats').inner_text())
         check(f'{label}: picker: an undated exam says so', 'Date to be announced' in cards.nth(2).inner_text())
         check(f'{label}: picker: no sideways scroll', overflow(pg) <= 0, overflow(pg))
         shot('picker', True)
@@ -323,7 +325,8 @@ with sync_playwright() as p:
     check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == pg.locator('#news .n-day').count())
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
-    check('new: first visit: the picker marks Calculus midterm 1 New', pg.locator('#exam-derivatives .new-pill').count() == 1)
+    check('new: first visit: the picker marks Calculus midterms 1 and 2 New', pg.locator('#exam-derivatives .new-pill').count() == 1
+          and pg.locator('#exam-integrals .new-pill').count() == 1)
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
     check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
@@ -338,6 +341,16 @@ with sync_playwright() as p:
     check('new: next visit: tabs not opened yet keep their dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
     check('new: next visit: no New labels in the tabs already opened', pg2.locator('#m1 .new-pill').count() == 0
           and pg2.locator('#view-summary .new-pill').count() == 0, (pg2.locator('#m1 .new-pill').count(), pg2.locator('#view-summary .new-pill').count()))
+    # Calculus midterm 2 keeps its own keys in study-seen ("math-integrals:<tab>"): its dots and Calculus midterm 1's don't mix
+    pg2.goto(BASE + '/math/integrals/')
+    pg2.wait_for_selector('#view-summary .unit')
+    check('new: Calculus midterm 2 has its own tab dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
+    check('new: Calculus midterm 2 marks its new lesson and graph', pg2.locator('#su-u1 .unit-head .new-pill').count() == 1
+          and pg2.locator('#gx-riemann .new-pill').count() == 1, pg2.locator('#su-u1 .new-pill').count())
+    pg2.click('#tab-practice')
+    pg2.goto(BASE + '/math/derivatives/')
+    pg2.wait_for_selector('.calc-fab')
+    check("new: opening midterm 2's Practice leaves midterm 1's dot alone", 'practice' in dots(pg2), dots(pg2))
     pg2.goto(BASE + '/')
     pg2.wait_for_selector('#news .n-day')
     check('new: next visit: only the subject not opened yet (Physics) keeps its New label on the home page',
@@ -352,7 +365,7 @@ with sync_playwright() as p:
     check('new: once the Physics midterm has been opened, its picker drops its New label', pg2.locator('.new-pill').count() == 0)
     pg2.goto(BASE + '/math/')
     pg2.wait_for_selector('.exams')
-    check('new: once Calculus midterm 1 has been opened, the picker drops its New label', pg2.locator('.new-pill').count() == 0)
+    check('new: once Calculus midterms 1 and 2 have been opened, the picker drops their New labels', pg2.locator('.new-pill').count() == 0)
     # the picker follows the theme picked on an exam page, before its first paint
     pg2.evaluate("localStorage.setItem('cla1-midterm-review', JSON.stringify({ theme: 'dark' }))")
     pg2.reload()
@@ -540,7 +553,7 @@ with sync_playwright() as p:
     pg.evaluate("navigator.serviceWorker.ready")
     pg.wait_for_timeout(1500)
     saved = pg.evaluate("""async () => {
-      const want = ['./', './math/', './math/derivatives/', './physics/', './physics/midterm/', 'site.json', 'src/shared/totop.css',
+      const want = ['./', './math/', './math/derivatives/', './math/integrals/', './physics/', './physics/midterm/', 'site.json', 'src/shared/totop.css',
         'src/shared/totop.js', 'math/assets/math.css', 'math/assets/math.js', 'physics/assets/physics.css', 'physics/assets/physics.js',
         'math/assets/fonts/KaTeX_Main-Regular.woff2'].map((u) => new URL(u, location.href).href);
       for (const name of await caches.keys()) {
@@ -565,6 +578,11 @@ with sync_playwright() as p:
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
     check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 3)
+    # Calculus midterm 2 was never opened online here either
+    pg.goto(BASE + '/math/integrals/')
+    pg.wait_for_selector('#view-summary .unit')
+    check('offline: Calculus midterm 2 opens with no network, styled', pg.locator('#su-u1 .ideas li').count() >= 8
+          and pg.evaluate("getComputedStyle(document.querySelector('.appbar')).position") == 'sticky')
     # the Physics midterm was never opened online either
     pg.goto(BASE + '/physics/midterm/')
     pg.wait_for_selector('#view-summary .wex')

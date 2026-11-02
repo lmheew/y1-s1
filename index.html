@@ -164,7 +164,7 @@
       <a class="subject math" href="math/" id="card-math">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
         <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
-        <p class="s-text">Review notes for each exam. Ready: Calculus midterm 1 (derivatives). Coming: midterm 2 (integrals) and the Linear Algebra midterm.</p>
+        <p class="s-text">Review notes for each exam. Ready: Calculus midterm 1 (derivatives), and midterm 2 (integrals), which grows after each class. Coming: the Linear Algebra midterm.</p>
         <span class="s-foot">
           <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li><li>Exams</li></ul>
           <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
@@ -281,9 +281,13 @@
         seen.news = newest;
         try { storage('localStorage').setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { /* ignore */ }
       }
+      // each exam page keeps its own key in study-seen (page.js); an entry belongs to the page it links to, and the
+      // rest to its subject's key. A subject's card is New while any of its entries is new to that key.
+      const PAGE_KEYS = { math: [['math/integrals/', 'math-integrals']], physics: [] };
+      const keyOf = (n, subj) => { const p = PAGE_KEYS[subj].find(([pre]) => (n.link || '').startsWith(pre)); return p ? p[1] : subj; };
       for (const subj of ['math', 'physics']) {
-        const newest = list.filter((n) => n.subject === subj || n.subject === 'all').map((n) => n.date).sort().pop();
-        if (unseen(newest, subj, seen)) $('#card-' + subj + ' .s-kicker').insertAdjacentHTML('beforeend', PILL);
+        const mine = list.filter((n) => n.subject === subj || n.subject === 'all');
+        if (mine.some((n) => unseen(n.date, keyOf(n, subj), seen))) $('#card-' + subj + ' .s-kicker').insertAdjacentHTML('beforeend', PILL);
       }
     }
     fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })

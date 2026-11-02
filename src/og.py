@@ -1,6 +1,7 @@
 """Draws the link-preview images (Open Graph, 1200 x 630) that LINE, Discord and other apps show when a page's link
 is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/),
-og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/), og-physics.png for the Physics exam picker
+og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/), og-math-integrals.png for the Calculus
+midterm 2 page (math/integrals/, with a Riemann sum in place of the tangent), og-physics.png for the Physics exam picker
 (physics/) and og-physics-midterm.png for the Physics midterm page (physics/midterm/). Physics cards are drawn in the
 Physics blue, with its pendulum badge and a projectile in place of the curve and its tangent.
 
@@ -41,6 +42,14 @@ GRAPH = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
          + f'<polyline points="{CURVE}" class="curve"/>'
          + f'<path d="M{X0 - 70} {T(X0 - 70):.1f} L {X0 + 62} {T(X0 + 62):.1f}" class="tangent"/>'
          + f'<circle cx="{X0}" cy="{f(X0):.1f}" r="11" class="dot"/></svg>')
+
+# Calculus midterm 2: the same bump, with the rectangles of a Riemann sum (right ends) under it, over the grid
+RECTS = ''.join(f'<rect x="{x0}" y="{f(x0 + 40):.1f}" width="40" height="{300 - f(x0 + 40):.1f}" class="strip"/>' for x0 in range(60, 380, 40))
+GRAPH_INT = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
+             + ''.join(f'<path d="M{x} 0V330" class="grid"/>' for x in range(0, 421, 42))
+             + ''.join(f'<path d="M0 {y}H420" class="grid"/>' for y in range(0, 331, 42))
+             + RECTS + '<path d="M20 300H410" class="baseline"/>'
+             + f'<polyline points="{CURVE}" class="curve"/></svg>')
 
 # Physics: a projectile's parabola from the ground, its launch velocity and the ball part way along, over the grid
 PX = lambda t: 40 + 340 * t
@@ -87,6 +96,8 @@ body { position: relative; overflow: hidden; background: #FFFFFF; color: #17201A
 .pill.soon { color: #1F4B8F; box-shadow: inset 0 0 0 2.5px #1F4B8F; background: #FFFFFF; }
 .pill.later { color: #545C55; box-shadow: none; border: 2.5px dashed #3D8A4D; padding: 5.5px 19.5px; }
 .ground { stroke: #9AA9C0; stroke-width: 4; stroke-linecap: round; }
+.strip { fill: #9CC34C; fill-opacity: .5; stroke: #3D8A4D; stroke-width: 3; }
+.baseline { stroke: #7E9A7F; stroke-width: 4; stroke-linecap: round; }
 .head { fill: none; stroke-linejoin: round; }
 /* Physics: the same card in the Physics blue */
 body.phys .band { background: #DCE4F0; border-bottom-color: #1F4B8F; }
@@ -107,8 +118,13 @@ CARDS = {
     'og-math.png': dict(
         title='CLA1 Review', kicker='Calculus &amp; Linear Algebra 1',
         lede='Review notes for each exam, with worked solutions and mock midterms.',
-        pills='<span class="pill on">Midterm 1 · Derivatives</span><span class="pill later">Integrals · soon</span>'
+        pills='<span class="pill on">Midterm 1 · Derivatives</span><span class="pill on">Midterm 2 · Integrals</span>'
               '<span class="pill later">Linear Algebra · soon</span>'),
+    'og-math-integrals.png': dict(
+        graph='int', title='CLA1 Review', kicker='Calculus midterm 2 · Integrals',
+        lede='Key ideas, worked solutions and formulas, added after each class.',
+        pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
+              '<span class="pill later">Quizzes · soon</span><span class="pill later">Mocks · soon</span>'),
     'og-math-derivatives.png': dict(
         title='CLA1 Review', kicker='Calculus midterm 1 · Derivatives',
         lede='Key ideas, worked solutions, formulas, quizzes and mock midterms.',
@@ -133,7 +149,7 @@ CARDS = {
 def page(c):
     phys = c.get('phys')
     return (f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body{" class=phys" if phys else ""}>'
-            f'<div class="band"></div>{GRAPH_PHYS if phys else GRAPH}'
+            f'<div class="band"></div>{GRAPH_PHYS if phys else GRAPH_INT if c.get("graph") == "int" else GRAPH}'
             f'<div class="main"><div class="brand">{BADGE_PHYS if phys else BADGE}<div><div class="title">{c["title"]}</div><div class="kicker">{c["kicker"]}</div></div></div>'
             f'<p class="lede">{c["lede"]}</p></div>'
             f'<div class="pills">{c["pills"]}</div>'

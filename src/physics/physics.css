@@ -94,13 +94,7 @@
   .pfig-wrap { break-inside: avoid; }
 }
 
-/* ---------- sections still to come ---------- */
-.soon-box { display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 13px 16px; border: 1.5px dashed var(--line); border-radius: 4px;
-  font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
-.soon-box .ic { width: 20px; height: 20px; color: var(--green-text); }
-.unit .soon-box { margin-top: 0; }
-.fgroup .soon-box, .punit .soon-box { margin-top: 10px; }
-.mockgroup .soon-box { margin-top: 0; }
+/* sections still to come: .soon-box is in src/math/page.css, shared with Math */
 .ch-mods { font-weight: 500; letter-spacing: .04em; }
 
 /* ---------- Summary: each module's key ideas, then its worked example ---------- */

@@ -1,6 +1,6 @@
 // Interactive graphs in the Summary tab: plain SVG, each drawn the first time it scrolls into view.
-// secant (u2), implicit (u3), concavity (u4), newton and taylor (u5), family and second (u6).
-// The build places <figure data-graph="…">.
+// Calculus midterm 1: secant (u2), implicit (u3), concavity (u4), newton and taylor (u5), family and second (u6).
+// Calculus midterm 2: riemann (u1). The build places <figure data-graph="…">.
 (() => {
   const figs = Array.from(document.querySelectorAll('figure.explore[data-graph]'));
   if (!figs.length) return;
@@ -61,6 +61,10 @@
       liveCurve(f, cls, from, to) { return api.curve(f, cls, from, to, dyn); },
       clear() { dyn.replaceChildren(); top.replaceChildren(); },
       line(x1, y1, x2, y2, cls) { return el('line', { x1: sx(x1), y1: sy(y1), x2: sx(x2), y2: sy(y2), class: cls }, dyn); },
+      // the box between x = x1, x = x2 and the heights 0 and h (below the axis when h < 0), in the layer clear() empties
+      rect(x1, x2, h, cls) {
+        return el('rect', { x: sx(x1), y: sy(Math.max(h, 0)), width: Math.max(sx(x2) - sx(x1), 0), height: Math.abs(sy(h) - sy(0)), class: cls }, dyn);
+      },
       // the line through (x0, y0) with slope m (vertical when m is not finite)
       through(x0, y0, m, cls) {
         if (!Number.isFinite(m)) return el('line', { x1: sx(x0), y1: PAD, x2: sx(x0), y2: H - PAD, class: cls }, dyn);
@@ -303,6 +307,49 @@
       slider(fig, 'b', 0.25, 4, 0.05, b, (v) => { b = v; draw(); return fix(v); });
       slider(fig, 'a', 0, 4, 0.05, a, (v) => { a = v; draw(); return fix(v); });
     },
+  };
+  // Calculus midterm 2: rectangles under f(x) = x² on [0, 2], with n strips and the height taken at the left end,
+  // the midpoint or the right end. The readout gives Δx, the Riemann sum and how far it is from the area 8/3.
+  WIDGETS.riemann = (fig) => {
+    const f = (x) => x * x, B = 2, AREA = 8 / 3;
+    const g = plot(fig.querySelector('.gx-stage'), { x0: -0.25, x1: 2.35, y0: -0.45, y1: 4.6 });
+    g.grid(0.5, 1);
+    const read = readout(fig);
+    const num = (v) => String(Math.round(v * 1e4) / 1e4).replace('-', '−');
+    // [readout name, chip label, where in the strip]
+    const KINDS = { left: ['Left ends', 'Left', 0], mid: ['Midpoints', 'Mid', 0.5], right: ['Right ends', 'Right', 1] };
+    let n = 4, kind = 'right';
+    const draw = () => {
+      g.clear();
+      const dx = B / n, t = KINDS[kind][2];
+      let s = 0;
+      for (let k = 1; k <= n; k++) {
+        const xk = (k - 1 + t) * dx, h = f(xk);
+        s += h * dx;
+        g.rect((k - 1) * dx, k * dx, h, n > 16 ? 'gx-rect many' : 'gx-rect');
+        if (n <= 16) g.dot(xk, h, 'gx-sample', 2.6);
+      }
+      g.liveCurve(f, 'gx-curve', 0, B);
+      const err = s - AREA;
+      read.innerHTML = `${KINDS[kind][0]}, n = ${n}: Δx = ${num(dx)}, S${sub(n)} = <b>${num(s)}</b><br>`
+        + `<span class="gx-soft">Area 8/3 ≈ 2.6667, so the sum is ${Math.abs(err) < 5e-5 ? 'right on it' : `${num(Math.abs(err))} too ${err > 0 ? 'big' : 'small'}`}</span>`;
+    };
+    // the choice of sample point: chips that fill when on (one at a time)
+    const row = document.createElement('div');
+    row.className = 'gx-ctl choices';
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', 'Height taken at');
+    row.innerHTML = '<span class="gx-ctl-name">Height</span>' + Object.entries(KINDS).map(([k, [name, label]]) =>
+      `<button type="button" class="chip" data-kind="${k}" aria-pressed="${k === kind}" aria-label="${name}">${label}</button>`).join('');
+    fig.querySelector('.gx-stage').after(row);
+    row.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-kind]');
+      if (!b) return;
+      kind = b.dataset.kind;
+      row.querySelectorAll('[data-kind]').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+      draw();
+    });
+    slider(fig, 'n', 1, 40, 1, n, (v) => { n = v; draw(); return String(v); });
   };
   function build(fig) {
     if (fig.dataset.drawn) return;

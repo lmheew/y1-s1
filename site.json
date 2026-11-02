@@ -15,7 +15,7 @@
       "name": "Calculus midterm 2 (integrals)",
       "date": "2026-11-23",
       "time": null,
-      "page": null
+      "page": "math/integrals/"
     },
     {
       "subject": "math",
@@ -59,6 +59,12 @@
     }
   ],
   "news": [
+    {
+      "date": "2026-11-02",
+      "subject": "math",
+      "text": "Calculus midterm 2 (integrals) has its own page, starting with Riemann sums and definite integrals: the key ideas with an interactive graph, eight practice problems with step-by-step solutions, and the formulas. Its Summary lists every lesson up to the midterm on 23 Nov.",
+      "link": "math/integrals/"
+    },
     {
       "date": "2026-11-02",
       "subject": "physics",

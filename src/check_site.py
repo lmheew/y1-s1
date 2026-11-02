@@ -87,8 +87,9 @@ with sync_playwright() as p:
         page.click('a.subject[href="math/"]')
         # the Math card opens the exam picker: one card per exam, the ones without notes yet marked coming soon
         page.wait_for_selector('.exams')
-        check(f'{label}: exam picker has the Calculus midterm 1 card and two coming soon',
-              page.locator('a.exam[href="derivatives/"]').count() == 1 and page.locator('.exam.soon .e-soon').count() == 2)
+        check(f'{label}: exam picker has the Calculus midterm 1 and 2 cards and one coming soon',
+              page.locator('a.exam[href="derivatives/"]').count() == 1 and page.locator('a.exam[href="integrals/"]').count() == 1
+              and page.locator('.exam.soon .e-soon').count() == 1)
         check(f'{label}: exam picker has no sideways scroll', overflow(page) <= 0, overflow(page))
         check(f'{label}: exam picker links home', page.locator('.foot-links a[href="../"]').count() == 1)
         shot(page, f'{label}-picker')
@@ -120,8 +121,10 @@ with sync_playwright() as p:
         first.locator('.seg-btn[data-seg="0"]').click()
         check(f'{label}: footer links to all exams and home', page.locator('.foot-links a[href="../"]').count() == 1 and page.locator('.foot-links a[href="../../"]').count() == 1)
         ft = page.locator('.site-foot time').get_attribute('datetime') or ''
-        math_news = [n['date'] for n in json.load(open(os.path.join(ROOT, 'site.json')))['news'] if n.get('subject') in ('math', 'all')]
-        check(f'{label}: footer says when the page was last updated', ft == page.locator('.tabbar').get_attribute('data-updated') and ft >= max(math_news), ft)
+        # each exam page counts the What's new entries that link to it
+        page_news = lambda pre: [n['date'] for n in json.load(open(os.path.join(ROOT, 'site.json')))['news']
+                                 if n.get('subject') in ('math', 'all') and (n.get('link') or '').startswith(pre)]
+        check(f'{label}: footer says when the page was last updated', ft == page.locator('.tabbar').get_attribute('data-updated') and ft >= max(page_news('math/derivatives/')), ft)
 
         # floating calculator: first tap wakes it, a tap elsewhere cancels, two taps open it, a drag snaps to a side
         page.click('#tab-summary')
@@ -281,6 +284,74 @@ with sync_playwright() as p:
         check(f'{label}: no console errors', not errors, errors[:3])
         ctx.close()
 
+        # ---- Calculus midterm 2 (integrals), in a fresh browser: picker → its page, with the lessons taught so far,
+        # the rest of the schedule greyed out, and its own store for practice marks ----
+        ctx = browser.new_context(viewport=vp)
+        ctx.route(re.compile(r'^https?://(?!localhost[:/])'), lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+        page = ctx.new_page()
+        errors = []
+        page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        page.goto(BASE + '/math/')
+        page.click('a.exam[href="integrals/"]')
+        page.wait_for_selector('#view-summary .unit')
+        page.wait_for_load_state('load')
+        check(f'{label}: Calculus midterm 2 opens on Summary', page.locator('#view-summary').is_visible()
+              and page.locator('.brand small').inner_text() == 'Midterm 2 · Integrals')
+        tiles = page.locator('#view-summary .tile')
+        check(f'{label}: midterm 2 tiles follow the schedule: six lessons, five still to come, then the habits',
+              tiles.count() == 7 and page.locator('#view-summary .tile.upcoming').count() == 5
+              and page.locator('#view-summary .tile.upcoming .tile-soon').count() == 5 and page.locator('#view-summary .unit').count() == 1,
+              tiles.all_inner_texts()[:2])
+        check(f'{label}: midterm 2 lessons go by their dates', '2 & 3 nov' in page.locator('#su-u1 .unit-head .kicker').inner_text().lower()
+              and 'riemann sum' in page.locator('#su-u1 h2').inner_text().lower())
+        check(f'{label}: midterm 2 Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
+        page.locator('#gx-riemann').scroll_into_view_if_needed()
+        page.wait_for_selector('#gx-riemann rect.gx-rect')
+        g = page.locator('#gx-riemann')
+        check(f'{label}: the Riemann graph starts with four right-end rectangles, sum 3.75', g.locator('rect.gx-rect').count() == 4
+              and 'S₄ = 3.75' in g.locator('.gx-read').inner_text())
+        g.locator('[data-kind="left"]').click()
+        check(f'{label}: the Riemann graph switches to left ends (1.75)', 'Left ends' in g.locator('.gx-read').inner_text()
+              and '1.75' in g.locator('.gx-read').inner_text() and g.locator('[data-kind="left"]').get_attribute('aria-pressed') == 'true')
+        g.locator('input[type=range]').fill('10')
+        check(f'{label}: the Riemann graph follows n', g.locator('rect.gx-rect').count() == 10 and 'n = 10' in g.locator('.gx-read').inner_text())
+        # the row centres its items, so on one line they share a middle (a wrapped chip would sit a whole line lower)
+        mids = g.evaluate("(f) => [...f.querySelectorAll('.gx-ctl.choices > *')].map((e) => { const r = e.getBoundingClientRect(); return (r.top + r.bottom) / 2; })")
+        check(f'{label}: the height choices sit on one line', len(mids) == 4 and max(mids) - min(mids) < 4, mids)
+        shot(page, f'{label}-integrals-summary')
+        page.click('#tab-practice')
+        page.wait_for_selector('#view-practice .prob')
+        check(f'{label}: midterm 2 Practice has eight problems', page.locator('#view-practice .prob').count() == 8)
+        card = page.locator('#prob-1-1')
+        card.locator('details.sol > summary').click()
+        card.locator('.mbtn[data-mark="got"]').click()
+        stores = page.evaluate("""(() => { const r = (k) => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
+          return { mine: (r('cla1-integrals-review').marks || {})['1.1'] || '', mt1: (r('cla1-midterm-review').marks || {})['1.1'] || '' }; })()""")
+        check(f'{label}: midterm 2 keeps its marks in its own store', stores['mine'] == 'got' and stores['mt1'] == '', stores)
+        check(f'{label}: midterm 2 Practice has no sideways scroll', overflow(page) <= 0, overflow(page))
+        page.click('#tab-formulas')
+        page.wait_for_selector('#view-formulas .frow')
+        check(f'{label}: midterm 2 Formulas has the Riemann-sum sheet and the exact values', page.locator('#fg-g1 .frow').count() == 16
+              and page.locator('#fg-exact').count() == 1)
+        check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
+        page.click('#tab-quizzes')
+        check(f'{label}: midterm 2 Quizzes says when the first quiz is', '5 & 6 Nov' in page.locator('#view-quizzes .soon-box').inner_text())
+        page.click('#tab-exams')
+        page.wait_for_selector('#view-exams .up-item')
+        check(f'{label}: midterm 2 Exams lists the five Math exams, mocks to come', page.locator('#view-exams .up-item').count() == 5
+              and page.locator('#mocks .soon-box').count() == 1)
+        hits = search(page, 'riemann')
+        check(f'{label}: midterm 2 search finds the lesson and its practice', any(t.startswith('Practice · 2 & 3 Nov') for t in hits)
+              and any('Riemann sum and definite integrals' in t for t in hits), hits[:4])
+        ft = page.locator('.site-foot time').get_attribute('datetime') or ''
+        check(f'{label}: midterm 2 footer says when it was last updated', ft == page.locator('.tabbar').get_attribute('data-updated')
+              and ft >= max(page_news('math/integrals/')), ft)
+        check(f'{label}: midterm 2 footer links to all exams and home, and its app bar to Physics',
+              page.locator('.foot-links a[href="../"]').count() == 1 and page.locator('a.subj-btn[href="../../physics/"]').count() == 1)
+        check(f'{label}: midterm 2 has no console errors', not errors, errors[:3])
+        ctx.close()
+
         # ---- Physics, in a fresh browser: home card → exam picker → the midterm page, which opens on Quizzes ----
         ctx = browser.new_context(viewport=vp)
         ctx.route(re.compile(r'^https?://(?!localhost[:/])'), lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -299,6 +370,7 @@ with sync_playwright() as p:
         shot(page, f'{label}-physics-picker')
         page.click('a.exam[href="midterm/"]')
         page.wait_for_selector('#view-summary .wex')
+        page.wait_for_load_state('load')  # the page is large: count its parts once it has arrived in full
         check(f'{label}: Physics opens on Summary', page.locator('#view-summary').is_visible() and page.locator('#tab-summary').get_attribute('aria-selected') == 'true')
         check(f'{label}: Physics Summary has Chapters 1–8, 36 modules, each with a worked example',
               page.locator('#view-summary section.unit').count() == 8 and page.locator('#view-summary .smod').count() == 36

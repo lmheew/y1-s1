@@ -6,8 +6,10 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - The CLA1 review (Calculus & Linear Algebra 1) has one page per exam, all built by `src/math/build.mjs`; never edit anything in `math/` by hand.
   - `/math/` (`math/index.html`) is the exam picker: a card per exam in course order (`EXAMS` in `build.mjs`). An exam without notes yet shows "Coming soon" until its first class. Old addresses of the one Math page (`math/#exams` and so on) go on to the Calculus midterm 1 page, with `location.replace`, so Back doesn't loop.
   - `/math/derivatives/` is Calculus midterm 1 (the derivative part, Days 1–12): the content modules in `src/math`.
+  - `/math/integrals/` is Calculus midterm 2 (the integral part, 2–20 Nov, exam on 23 Nov): the content modules in `src/math/integrals/`. See "Content (src/math/integrals)" below.
   - `math/assets/` holds what every exam page shares: `math.css` (`page.css`, the calculator, back-to-top and KaTeX), `math.js` (`page.js`, `graphs.js`, back-to-top and the calculator) and the KaTeX fonts. Pages name `math.css` and `math.js` with `?v=` and the first 10 characters of the file's SHA-256, so a device downloads them once per change; each exam page carries only its own notes.
-  - A new exam page (integrals, Linear Algebra) needs its own content modules and its own storage keys (practice marks are keyed by problem id), an entry in `EXAMS` with `page`, the same `page` in `site.json`, a build like the derivatives one, and its address in `CORE` in `sw.js`.
+  - Each exam page is an entry in `PAGES` in `build.mjs` (`DERIVATIVES`, `INTEGRALS`), and one `render()` builds them all: its content, its band texts (`lede`), what an empty tab says (`soon`) and its storage keys (`conf`, which `page.js` reads from `<body data-page>`: `store` for practice marks and the open tab, `seen` for its key in `study-seen`, `scores` for mock scores; Calculus midterm 1 keeps `page.js`'s defaults). Practice marks are keyed by problem id, so each page needs its own `store`.
+  - A new exam page (Linear Algebra) needs its own content modules, a `PAGES` entry, `page` in its `EXAMS` card and the same `page` in `site.json`, its address in `CORE` in `sw.js` (bump `CACHE`), its `seen` key in `PAGE_KEYS` in `index.html` (so the home page's Math card knows its What's new entries), and a link preview in `og.py`.
 - The EP1 review (Engineering Physics 1) is `/physics/`, in a darker blue theme, built by `src/physics/build.mjs` the same way; never edit anything in `physics/` by hand. See "Physics" below.
 - Each subject's app bar has a button with the other subject's badge (`subjectSwitch` in `src/shared/icons.mjs`) that opens the other subject's exam picker.
 - `src/shared/build-lib.mjs` holds what both builds share (markup, KaTeX, the lock's encryption, the picker's style and script); `src/shared/icons.mjs` the tab bar and button icons.
@@ -16,7 +18,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `site.json` holds exam dates (and each exam's `page`, once it has one, which the home page links to) and the "What's new" list, for the home page, the picker and the Exams tab.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 - `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
-- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-physics.png` (the Physics picker) and `og-physics-midterm.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
+- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-math-integrals.png`, `og-physics.png` (the Physics picker) and `og-physics-midterm.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
 
 ## Rules
 
@@ -53,17 +55,27 @@ Markup inside the strings:
 - A blank line starts a new block.
 - `(2pt×2)` is styled as a point value.
 
-Strings use `String.raw`, so avoid `${` inside them.
+Strings use `String.raw`, so avoid `${` inside them (to keep a formula from breaking across lines, group it with `\mathord{…}`, not a bare `{…}` right after the `$`).
 
 - **Steps.** Solutions open one step at a time. Each paragraph, or each list item, of `sol` is one step, so write a step per block (`**(1)** …`, blank line, `**(2)** …`).
 - **New labels.** Give anything new an `added: 'YYYY-MM-DD'` (units, practice problems, formula groups, mocks). It gets a "New" label, and its tab a dot, for up to 14 days, and only until the device has seen it: a tab's dot goes when the tab is opened, and the labels inside it stay for the rest of that visit, then go. Also add a line to `news` in `site.json`. The home page's What's new groups entries by date, with one New label per day, which works the same way. The dates seen are kept in localStorage (`study-seen`, shared by both pages), and the copy taken at the start of a visit is kept in sessionStorage (`study-seen-start`).
+
+## Content (src/math/integrals)
+
+These modules are the Calculus midterm 2 page (`math/integrals/`). They use the same markup as Calculus midterm 1.
+
+- `content.mjs`: units, exam-day habits and practice problems. `extras.mjs`: search tags, the Formulas tab, the interactive graphs (`GRAPHS`, drawn by `graphs.js`; `riemann` is the Riemann-sum graph) and the lesson icons. `verify.py`: numeric checks for every answer, Summary claim, formula and the graph (Riemann sums are added up exactly with fractions).
+- Units follow the course schedule (integral part): the slide gives dates, not day numbers, so units have `dates` ("2 & 3 Nov") and no `days`; the build then labels lessons by date everywhere. `starred` marks the lessons with an in-class quiz (the schedule's *).
+- The whole schedule is in `units` from the start. A lesson not taught yet has `upcoming: true` and only `id`, `dates`, `title` and `starred`: it shows as a greyed-out Summary tile ("Notes after class") and nowhere else. After the class, remove `upcoming`, write its `ideas` and `watch`, and add `added`, practice problems, formulas, tags and checks, as for Calculus midterm 1.
+- Practice ids start again at `1.1` here: they live in this page's own store (`cla1-integrals-review`), so they never meet Calculus midterm 1's marks.
+- In-class quizzes start on 5 & 6 Nov; until then Quizzes and the mock part of Exams show a `soon-box`. The first quiz sheet will give the quiz number (and maybe the day numbers): add `quiz` (and `days`) to its unit then. Locked sheets for this page aren't wired yet (the build stops if the page lists any): give it its own private module and `math/integrals/locked.json`, with the same password and salt, like Calculus midterm 1's.
 
 ## Physics (src/physics)
 
 The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the midterm, and the final as "Coming soon") and `/physics/midterm/` the midterm page (Chapters 1–8 of Fundamentals of Physics; the exam is on 13 Nov 2026: six questions in 60 minutes).
 
 - The pages run on Math's page script and style (`src/math/page.js` and `page.css`, with the calculator and back-to-top) in Physics colours (`physics.css`). `<body data-page>` gives `page.js` the page's own settings (its storage keys, `physics` in `study-seen`, the search suggestions); Math uses the defaults. The theme is shared: it is kept in Math's store. `physics/assets/` holds `physics.css` and `physics.js`, named by version like Math's; the KaTeX fonts are Math's (`math/assets/fonts`), so build Math first.
-- **Summary, Formulas and Quizzes have content.** Practice shows a heading per chapter (`chapters` in `content.mjs`) with a "coming soon" box, and Exams the upcoming exams with a "mock midterms coming soon" box. Fill them only when asked, the way Math's are.
+- **Summary, Formulas and Quizzes have content.** Practice shows a heading per chapter (`chapters` in `content.mjs`) with a "coming soon" box (`.soon-box`, in Math's `page.css`, shared with Calculus midterm 2), and Exams the upcoming exams with a "mock midterms coming soon" box. Fill them only when asked, the way Math's are.
 - **Summary** (`summary.mjs`, the tab the page opens on): per chapter, each of the book's modules (`modules` in `content.mjs`: number and title, such as 3-1 Vectors and their components) with its key ideas and one worked example (`ex`: `stem`, optional `fig`, `parts`, `answer`, `sol`, marked up like a problem), then the chapter's "Watch out" list; `habits` is the exam-day list. Keep the ideas short; every worked example is checked in `verify_summary.py`.
 - **Formulas** (`formulas.mjs`): the special angles (`trig`) and constants, then per chapter each module's formulas as `[name, TeX, stars, note]` (stars: 3 core, 2 key result, 1 supporting) and `extra` rows for helpful results the book doesn't print (tagged Extra). No worked examples here: they belong in Summary. `verify_formulas.py` checks every row, most by evaluating the row's own TeX with numbers from the physics, and fails on a row without a check.
 - Quizzes has two groups, each behind a switcher:
@@ -87,6 +99,7 @@ The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the mi
 node src/math/build.mjs site
 node src/physics/build.mjs site
 python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && python3 src/math/verify_followups.py && python3 src/math/verify_mocks.py && node src/math/verify_exact.mjs
+python3 src/math/integrals/verify.py
 python3 src/physics/verify_sets.py && python3 src/physics/verify_summary.py && python3 src/physics/verify_formulas.py
 node src/shared/calculator_test.js
 python3 src/check_site.py
@@ -131,7 +144,7 @@ A few details about the password:
 ## Exam dates, What's new, and speed
 
 - **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild that subject's pages (the pickers write each date in at build time). Countdowns, sorting and "Done" are worked out in the browser.
-- **Last updated.** Every footer gives a date. The home page shows the newest What's new date. The Math pages show the newest of their What's new dates (`math` or `all`) and their `added` dates, written at build time (`LAST_UPDATED` in `build.mjs`, also on the exam page's tab bar as `data-updated`, which lets the home page's Math card and the picker's card know the page has been seen: `math` in `study-seen`). An update that adds no item still moves it once it has a What's new line.
+- **Last updated.** Every footer gives a date. The home page shows the newest What's new date. An exam page shows the newest of its What's new dates (`math` or `all` entries whose `link` starts with the page's address) and its `added` dates, written at build time (`P.updated` in `build.mjs`, also on its tab bar as `data-updated`, which lets the picker's card know the page has been seen: its `seen` key in `study-seen`, `math` for Calculus midterm 1 and `math-integrals` for midterm 2). The picker shows the newest of all of them. An update that adds no item still moves it once it has a What's new line that links to the page. The home page's Math card is New while any Math entry is new to its page's key (`PAGE_KEYS` in `index.html`; entries that link elsewhere use `math`).
 - **Fast first load.** Only the Summary tab is built with the page. Practice, Formulas, Quizzes and Exams travel as text (`<script type="text/x-lazy-html">`) and are built the first time they open. `page.js` `VIEW_INIT` switches on each tab's features then. Keep new tabs lazy too. `leakcheck.mjs` reads the lazy text as well, on every exam page and the picker.
 - **Shared files.** Styles, scripts and the KaTeX fonts live in `math/assets/`, so they are downloaded once, not with every page; that halved what a visit to Calculus midterm 1 downloads (about 400 KB compressed before, under 200 KB after). The two fonts most formulas need are preloaded. A script in each page's head sets the saved light or dark theme before the first paint (`data-theme-early`, which `page.js` doesn't mistake for a host's theme).
 - **Offline.** `sw.js` serves pages and data network-first, with the saved copy when offline; files named with `?v=` (the shared files, `locked.json`) and images and fonts cache-first, keeping only the newest version of each. `CORE` saves the pages, the shared files and the fonts (listed by name) at install, so an exam page opens offline even before its first online visit. Bump `CACHE` in `sw.js` when its `CORE` list changes.
