@@ -501,6 +501,18 @@ with sync_playwright() as p:
     pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
     pg.mouse.click(5, 300)
     check('print: afterwards the Physics answers close again', pg.locator('#pa details.sol[open]').count() == 0)
+    # and a Physics mock midterm, with its score line
+    pg.goto(BASE + '/physics/midterm/#exams')
+    pg.wait_for_selector('#pm1 .print-btn')
+    pg.evaluate('window.__printed = []')
+    pg.locator('#pm1 .print-btn[data-print="paper"]').click()
+    pg.emulate_media(media='print')
+    check('print: a Physics mock prints on its own, with a score line and no answers', pg.evaluate('window.__printed') == ['paper']
+          and shown('.appbar, .tabbar, #pm2, #pm3, #ex-upcoming, .band') == 0 and shown('#pm1 .rq') == 6
+          and shown('#pm1 .print-score') == 1 and shown('#pm1 .reveal, #pm1 .timer, #pm1 .scorebar') == 0)
+    pg.emulate_media(media='screen')
+    pg.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    pg.mouse.click(5, 300)
     ctx.close()
 
     # ---- a narrow phone with every answer and every sheet open: full-size math never pushes the page sideways ----

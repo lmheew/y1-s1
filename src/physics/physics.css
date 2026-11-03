@@ -94,7 +94,6 @@
   .pfig-wrap { break-inside: avoid; }
 }
 
-/* sections still to come: .soon-box is in src/math/page.css, shared with Math */
 .ch-mods { font-weight: 500; letter-spacing: .04em; }
 
 /* ---------- Summary: each module's key ideas, then its worked example ---------- */
@@ -124,3 +123,16 @@
 .flegend { margin: -2px 0 18px; font-size: 12.5px; line-height: 1.8; color: var(--ink-soft); }
 .flegend .stars, .flegend .xtag { margin: 0 3px 0 0; }
 #fg-values .table-wrap { margin-top: 8px; }
+
+/* ---------- Practice: each chapter's problems in three tiers ---------- */
+.ptier-h { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 18px 0 10px; font-size: 15px; line-height: 1.4; }
+.punit-head + .ptier .ptier-h { margin-top: 6px; }
+.tier-tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green-text); font-size: 13px;
+  font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.ptier-x .tier-tag, .tier-tag.tier-x { background: var(--amber-tint); color: var(--amber); }
+.tier-note { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.tier-legend { margin: 0 0 14px; font-size: 12.5px; line-height: 2; color: var(--ink-soft); }
+.tier-legend .tier-tag { font-size: 11.5px; padding: 0 8px; }
+/* a tier whose problems the filter hides leaves no empty heading behind */
+.ptier:not(:has(.prob:not([hidden]))) { display: none; }
+.prob.prq .rq-head { margin-bottom: 0; }

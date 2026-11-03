@@ -66,6 +66,12 @@
       "link": "math/integrals/"
     },
     {
+      "date": "2026-11-03",
+      "subject": "physics",
+      "text": "Physics midterm: Practice and Exams are ready. Practice has 103 problems, chapter by chapter, in three tiers: Foundation, Application, and Advanced in the style of the exercise days. Exams has three mock midterms in the exam’s format, six problems in 60 minutes, with a timer, worked answers and self-marking.",
+      "link": "physics/midterm/#practice"
+    },
+    {
       "date": "2026-11-02",
       "subject": "math",
       "text": "Calculus midterm 2 (integrals) has its own page, starting with Riemann sums and definite integrals: the key ideas with an interactive graph, eight practice problems with step-by-step solutions, and the formulas. Its Summary lists every lesson up to the midterm on 23 Nov.",

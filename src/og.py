@@ -136,13 +136,13 @@ CARDS = {
         pills='<span class="pill on">Calculus &amp; Linear Algebra 1</span><span class="pill soon">Engineering Physics 1</span>'),
     'og-physics.png': dict(
         phys=True, title='EP1 Review', kicker='Engineering Physics 1',
-        lede='Review notes for each exam: summaries, formulas, quiz sheets and practice sets.',
+        lede='Review notes for each exam: summaries, practice problems, formulas and mock midterms.',
         pills='<span class="pill on">Midterm · Chapters 1–8</span><span class="pill later">Final · later</span>'),
     'og-physics-midterm.png': dict(
         phys=True, title='EP1 Review', kicker='Physics midterm · Chapters 1–8',
-        lede='Module summaries with worked examples, formulas and quiz sheets.',
-        pills='<span class="pill on">Summary</span><span class="pill">Formulas</span><span class="pill">Quizzes</span>'
-              '<span class="pill">Exams</span><span class="pill later">Practice · soon</span>'),
+        lede='Summaries, practice problems, formulas, quizzes and mock midterms.',
+        pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
+              '<span class="pill">Quizzes</span><span class="pill">Exams</span>'),
 }
 
 

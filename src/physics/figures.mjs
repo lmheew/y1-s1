@@ -558,6 +558,156 @@ def('c-44', 360, 205, 'Block of mass M on a rough horizontal table, tied by a st
   def('c-10', 300, 235, 'A ball of mass m resting on a vertical spring compressed by d, about to be launched straight up', 'Figure C10', s);
 }
 
+// ===== Practice tab =====
+{
+  const g = plot({ w: 320, h: 220, xr: [0, 15], yr: [0, 10], xt: 2, yt: 2, ylab: '{v} [m/s]', lines: [{ pts: [[0, 0], [4, 8], [10, 8], [14, 0]] }] });
+  def('p2-9', 320, 220, 'Graph of velocity against time: a straight line from 0 at t = 0 up to 8 m/s at 4 s, level at 8 m/s until 10 s, then a straight line down to 0 at 14 s', 'Figure P2-9', g.s);
+}
+{
+  const g = plot({ w: 300, h: 230, xr: [0, 8.8], yr: [-5, 5], yt: 2, ylab: '{v} [m/s]', lines: [{ pts: [[0, -4], [4, 4], [6, 4], [8, 0]] }] });
+  def('p2-12', 300, 230, 'Graph of velocity against time: a straight line from −4 m/s at t = 0 up to 4 m/s at 4 s, level at 4 m/s until 6 s, then a straight line down to 0 at 8 s', 'Figure P2-12', g.s);
+}
+{
+  const g = plot({ w: 300, h: 220, xr: [0, 8], yr: [-3, 3], yt: 1, ylab: '{a} [m/s²]', lines: [
+    { pts: [[0, 2], [4, 2]], c: 'ans' }, { pts: [[4, 0], [6, 0]], c: 'ans' }, { pts: [[6, -2], [8, -2]], c: 'ans' }] });
+  def('p2-12a', 300, 220, 'Answer: acceleration against time, 2 from 0 to 4 s, 0 from 4 to 6 s, −2 from 6 to 8 s', 'Answer to (a): the a–t graph', g.s);
+}
+{ // P4-11: a ball rolling off a staircase (1 m = 220 px; steps 0.20 m deep, 0.25 m high)
+  const E = [90, 40], k = 220, dx = 0.20 * k, dy = 0.25 * k;
+  const pts = [[16, E[1]], E];
+  for (let n = 1; n <= 4; n++) pts.push([E[0] + dx * (n - 1), E[1] + dy * n], [E[0] + dx * n, E[1] + dy * n]);
+  let s = shape([...pts, [E[0] + dx * 4, 286], [16, 286]], 'house');
+  for (let n = 1; n <= 4; n++) s += T(E[0] + dx * (n - 0.5), E[1] + dy * n + 16, String(n), { c: 'ts' });
+  const path_ = [];
+  for (let i = 0; i <= 40; i++) { const x = (Math.sqrt(0.3) * i) / 40; path_.push([E[0] + k * x, E[1] + k * 2.5 * x * x]); }
+  s += poly(path_, 'vel dash') + circ(E[0], E[1] - 7, 7, 'body') + arrow(E[0] + 9, E[1] - 7, E[0] + 56, E[1] - 7, 'vel') + T(E[0] + 62, E[1] - 3, '1.4 m/s', { anchor: 'start', c: 'vel-t' });
+  s += dim(E[0] + dx * 3, E[1] + dy * 4 - 12, E[0] + dx * 4, E[1] + dy * 4 - 12, '') + T(E[0] + dx * 3.5, E[1] + dy * 4 - 20, '0.20 m', { c: 'ts' });
+  s += dim(E[0] - 10, E[1], E[0] - 10, E[1] + dy, '') + T(E[0] - 16, E[1] + dy / 2 + 4, '0.25 m', { anchor: 'end', c: 'ts' });
+  def('p4-11', 320, 290, 'A ball rolls horizontally at 1.4 m/s off the top landing of a staircase whose steps are 0.20 m deep and 0.25 m high; the steps below are numbered 1 to 4, and the dashed path lands on step 3', 'Figure P4-11', s);
+}
+{ // P4-12: a ball aimed at a target that is released at launch (1 m = 5 px)
+  const O = [36, 206], k = 5, Tg = [O[0] + 40 * k, O[1] - 30 * k];
+  let s = ground(16, 300, O[1]);
+  s += line(O[0], O[1], Tg[0], Tg[1], 'thin dash') + line(Tg[0], Tg[1] - 40, Tg[0], Tg[1] - 8, 'str') + line(Tg[0] - 16, Tg[1] - 40, Tg[0] + 16, Tg[1] - 40);
+  s += circ(Tg[0], Tg[1], 8, 'body') + T(Tg[0] + 14, Tg[1] + 4, 'target', { anchor: 'start', c: 'ts' });
+  s += arrow(Tg[0] + 30, Tg[1] + 8, Tg[0] + 30, Tg[1] + 50, 'acc') + T(Tg[0] + 36, Tg[1] + 36, 'released', { anchor: 'start', c: 'ts' });
+  s += arrowAt(O[0], O[1], 60, Math.atan2(3, 4) * 180 / Math.PI, 'vel') + T(O[0] + 30, O[1] - 46, '{v_0}', { anchor: 'end', c: 'vel-t' }) + arc(O[0], O[1], 34, 0, 36.87, '{θ_0}', { lr: 50 });
+  s += dim(O[0], O[1] + 14, Tg[0], O[1] + 14, '40 m', { dy: 16 }) + dim(Tg[0], Tg[1] + 12, Tg[0], O[1], '30 m', { dx: -8, anchor: 'end' });
+  s += T(O[0] - 4, O[1] + 18, 'O', { anchor: 'end', c: 'ts' });
+  def('p4-12', 320, 240, 'A target hangs 30 m above the ground at a horizontal distance of 40 m from the launch point O; the ball is launched along the dashed line straight at the target, which is released at the same moment', 'Figure P4-12', s);
+}
+{ // P5-10: two blocks on a frictionless table and a hanging block
+  let s = line(20, 90, 300, 90) + line(300, 90, 300, 196);
+  for (let x = 26; x < 300; x += 10) s += line(x, 90, x - 7, 97, 'thin soft');
+  s += box(70, 72, 50, 36, '') + T(70, 70, 'A', { c: 'tb' }) + T(70, 84, '{M_A}', { c: 'ts' });
+  s += line(95, 72, 137, 72, 'str');
+  s += box(165, 72, 56, 36, '') + T(165, 70, 'B', { c: 'tb' }) + T(165, 84, '{M_B}', { c: 'ts' });
+  s += line(193, 72, 312, 72, 'str') + pulley(312, 83) + line(312, 83, 300, 96, 'thin');
+  s += line(323, 83, 323, 150, 'str') + box(323, 170, 34, 40, '') + T(323, 166, 'C', { c: 'tb' }) + T(323, 182, '{m}', { c: 'ts' });
+  s += T(28, 114, 'Frictionless table', { anchor: 'start', c: 'ts' });
+  def('p5-10', 360, 210, 'Blocks A (mass M_A) and B (mass M_B) on a frictionless table, tied together; a string from B runs over a pulley at the edge to block C of mass m, which hangs', 'Figure P5-10', s);
+}
+{ // P5-11: two equal blocks on a double slope (30° and 60°), joined over a pulley at the peak
+  const L = [20, 200], Rt = [300, 200], P0 = [230, 200 - 70 * Math.sqrt(3)];
+  let s = shape([L, P0, Rt], 'house');
+  s += arc(L[0], L[1], 40, 0, 30, '30°', { lr: 56 }) + arc(Rt[0], Rt[1], 30, 120, 180, '60°', { lr: 46 });
+  const pc = [P0[0], P0[1] - 13];
+  s += pulley(pc[0], pc[1], 11) + line(pc[0], pc[1], P0[0], P0[1], 'thin');
+  const [l0x, l0y] = at(L[0], L[1], 140, 30), [lc, lcy] = at(l0x, l0y, 14, 120);
+  const [r0x, r0y] = at(Rt[0], Rt[1], 70, 120), [rc, rcy] = at(r0x, r0y, 14, 30);
+  s += box(lc, lcy, 40, 28, '{m}', 30) + box(rc, rcy, 40, 28, '{m}', -60);
+  s += line(...at(lc, lcy, 20, 30), ...at(pc[0], pc[1], 11, 120), 'str') + line(...at(rc, rcy, 20, 120), ...at(pc[0], pc[1], 11, 30), 'str');
+  def('p5-11', 320, 215, 'A double slope with faces at 30° (left) and 60° (right); a block of mass m sits on each face, joined by a string over a pulley at the peak', 'Figure P5-11', s);
+}
+{ // P5-12: a pendulum hanging in an accelerating car
+  let s = `<rect class="house" x="40" y="58" width="220" height="112" rx="10"/>` + circ(92, 178, 16, 'body') + circ(208, 178, 16, 'body') + ground(20, 290, 194);
+  const pv = [170, 58], Ls = 82, th = 37;
+  const [bx, by] = at(pv[0], pv[1], Ls, -90 - th);
+  s += line(pv[0], pv[1], pv[0], pv[1] + 92, 'thin dot') + line(pv[0], pv[1], bx, by, 'str') + circ(bx, by, 8, 'body') + arc(pv[0], pv[1], 34, -90 - th, -90, '{θ}', { lr: 48 });
+  s += arrow(198, 34, 262, 34, 'acc') + T(268, 38, '{a}', { anchor: 'start', c: 'acc' });
+  def('p5-12', 300, 205, 'A car accelerating to the right with acceleration a; a ball hangs on a string from its ceiling, and the string leans back at angle θ from the vertical', 'Figure P5-12', s);
+}
+{ // P6-10: a block held against a rough wall by a push at θ above the horizontal
+  const W = 220;
+  let s = line(W, 16, W, 204);
+  for (let y = 22; y < 204; y += 10) s += line(W, y, W + 7, y + 7, 'thin soft');
+  s += box(W - 25, 112, 50, 44, '{m}');
+  const end = [W - 52, 118], th = 37, Lf = 86;
+  const st = [end[0] - Lf * Math.cos(rad(th)), end[1] + Lf * Math.sin(rad(th))];
+  s += arrow(st[0], st[1], end[0], end[1], 'frc') + T(st[0] + 18, st[1] - 24, '{F}', { anchor: 'end', c: 'frc' });
+  s += line(st[0], st[1], st[0] + 54, st[1], 'thin dot') + arc(st[0], st[1], 36, 0, th, '{θ}', { lr: 50 });
+  s += T(W + 12, 214, 'rough wall ({μ_s})', { anchor: 'end', c: 'ts' });
+  def('p6-10', 300, 222, 'A block of mass m held against a rough vertical wall on the right by a push F that points into the wall at angle θ above the horizontal', 'Figure P6-10', s);
+}
+{
+  const g = plot({ w: 300, h: 220, xr: [0, 7], yr: [0, 12], xt: 1, yt: 2, xlab: '{x} [m]', ylab: '{F} [N]', lines: [{ pts: [[0, 10], [4, 10], [6, 0], [7, 0]] }] });
+  def('p7-7', 300, 220, 'Graph of force against position: F = 10 N from x = 0 to 4 m, then a straight line down to 0 at x = 6 m, and 0 beyond', 'Figure P7-7', g.s);
+}
+{
+  const g = plot({ w: 300, h: 230, xr: [0, 7], yr: [0, 9], xt: 1, yt: 2, xlab: '{x} [m]', ylab: '{U} [J]', lines: [{ pts: [[0, 6], [2, 0], [4, 0], [6, 8]] }, { pts: [[0, 4], [6.6, 4]], c: 'dash soft' }],
+    notes: [{ x: 3, y: 4, s: '{E} = 4.0 J', dy: -8 }] });
+  def('p8-9', 300, 230, 'Graph of potential energy against position: U falls in a straight line from 6 J at x = 0 to 0 at x = 2 m, stays 0 until 4 m, then rises in a straight line to 8 J at 6 m; a dashed line marks E = 4.0 J', 'Figure P8-9', g.s);
+}
+{ // P8-14: a block above a spring on a frictionless slope
+  const A = [26, 200], th = 30, Lr = 270;
+  const [Bx, By] = at(A[0], A[1], Lr, th);
+  let s = slopeHatch(A[0], A[1], Bx, By) + line(A[0], A[1], Bx, A[1]) + arc(A[0], A[1], 46, 0, th, '30°', { lr: 62 });
+  const [w1x, w1y] = at(A[0], A[1], 10, th), [w2x, w2y] = at(w1x, w1y, 28, th + 90);
+  s += line(w1x, w1y, w2x, w2y);
+  const [sx0, sy0] = at(A[0], A[1], 10, th);
+  s += `<g transform="rotate(${-th} ${r1(sx0)} ${r1(sy0)})">${spring(sx0, sx0 + 74, sy0 - 13, { coils: 6, amp: 7 })}</g>`;
+  const [ex, ey] = at(...at(A[0], A[1], 46, th), 30, th + 90);
+  s += T(ex, ey, '{k}', { c: 'ts' });
+  const [bx0, by0] = at(A[0], A[1], 220, th), [bcx, bcy] = at(bx0, by0, 15, th + 90);
+  s += box(bcx, bcy, 40, 30, '{m}', th);
+  const [d1x, d1y] = at(...at(A[0], A[1], 84, th), 40, th + 90), [d2x, d2y] = at(...at(A[0], A[1], 200, th), 40, th + 90);
+  s += dim(d1x, d1y, d2x, d2y, '1.8 m', { dy: -10 });
+  def('p8-14', 300, 215, 'A block of mass m at rest on a frictionless slope at 30°, 1.8 m above the free end of a spring of spring constant k that lies along the slope near its foot', 'Figure P8-14', s);
+}
+
+// ===== Mock midterms =====
+{
+  const g = plot({ w: 300, h: 240, xr: [0, 8], yr: [-3, 5], yt: 1, ylab: '{a} [m/s²]', lines: [
+    { pts: [[0, -2], [3, -2]] }, { pts: [[3, 4], [5, 4]] }, { pts: [[5, 0], [8, 0]] }] });
+  def('m2-3', 300, 240, 'Graph of acceleration against time: −2 m/s² from 0 to 3 s, 4 m/s² from 3 to 5 s, 0 from 5 to 8 s', 'Figure M2-3', g.s);
+}
+{
+  const g = plot({ w: 300, h: 250, xr: [0, 8], yr: [-3, 7], yt: 2, ylab: '{v} [m/s]', lines: [{ pts: [[0, 4], [3, -2], [5, 6], [8, 6]], c: 'ans' }],
+    dots: [[2, 0], [3.5, 0]], notes: [{ x: 3, y: -2, s: '(3, −2)', dx: 8, dy: 12, anchor: 'start' }, { x: 5, y: 6, s: '(5, 6)', dy: -9 }] });
+  def('m2-3a', 300, 250, 'Answer: velocity against time, straight lines from (0, 4) to (3, −2) to (5, 6), then level at 6 m/s until 8 s; it crosses zero at 2 s and 3.5 s', 'Answer to 3-1: the v–t graph', g.s);
+}
+{ // M2-5: two blocks on a rough floor, block 2 pulled at 37°
+  let s = ground(16, 304, 150);
+  s += box(70, 130, 56, 40, '1') + line(98, 130, 152, 130, 'str') + box(180, 130, 56, 40, '2');
+  const [fx, fy] = at(208, 118, 74, 37);
+  s += arrow(208, 118, fx, fy, 'frc') + T(fx + 6, fy + 4, '20 N', { anchor: 'start', c: 'frc' });
+  s += line(208, 118, 262, 118, 'thin dot') + arc(208, 118, 32, 0, 37, '37°', { lr: 46 });
+  s += T(160, 176, 'rough floor ({μ_k} = 0.25)', { c: 'ts' });
+  def('m2-5', 320, 190, 'Blocks 1 and 2, each 2.0 kg, joined by a string on a rough floor; a 20 N force pulls block 2 at 37° above the horizontal', 'Figure M2-5', s);
+}
+{ // M3-4: a projectile launched up a slope (1 m = 25 px)
+  const O = [30, 205], k = 25;
+  const top = [O[0] + 262, O[1] - 262 * 0.75];
+  let s = slopeHatch(O[0], O[1], top[0], top[1]) + line(O[0], O[1], top[0], O[1]);
+  const pts = [];
+  for (let i = 0; i <= 40; i++) { const t = i / 40; pts.push([O[0] + k * 8.4 * t, O[1] - k * (11.2 * t - 4.9 * t * t)]); }
+  s += poly(pts, 'vel dash') + circ(O[0] + k * 8.4, O[1] - k * 6.3, 5, 'pt');
+  s += arrowAt(O[0], O[1], 62, 53.13, 'vel') + T(O[0] + 24, O[1] - 64, '14 m/s', { anchor: 'end', c: 'vel-t' });
+  s += arc(O[0], O[1], 70, 0, 36.87, '37°', { lr: 86 }) + arc(O[0], O[1], 44, 0, 53.13) + T(...at(O[0], O[1], 50, 66), '53°', { anchor: 'end', c: 'ts' });
+  s += T(O[0] - 4, O[1] + 18, 'O', { anchor: 'end', c: 'ts' });
+  def('m3-4', 310, 225, 'A ball launched from O at the foot of a slope that rises at 37°, with speed 14 m/s at 53° above the horizontal; the dashed path lands on the slope', 'Figure M3-4', s);
+}
+{ // M3-6: a block on a smooth dome
+  const C = [150, 196], Rd = 112;
+  let s = ground(20, 280, C[1]) + path(`M${C[0] - Rd},${C[1]} A${Rd},${Rd} 0 0 1 ${C[0] + Rd},${C[1]}`, 'body-ln');
+  s += dot(C[0], C[1]) + line(C[0], C[1], C[0], C[1] - Rd - 34, 'thin dot');
+  const [bx, by] = at(C[0], C[1], Rd + 9, 90 - 36);
+  s += line(C[0], C[1], ...at(C[0], C[1], Rd, 90 - 36), 'thin') + box(bx, by, 18, 18, '', -36) + arc(C[0], C[1], 34, 54, 90, '{φ}', { lr: 46 });
+  s += box(C[0], C[1] - Rd - 9, 18, 18, '', 0, 'body ghost') + arrow(C[0] + 12, C[1] - Rd - 9, C[0] + 52, C[1] - Rd - 9, 'vel') + T(C[0] + 58, C[1] - Rd - 5, '{v_0}', { anchor: 'start', c: 'vel-t' });
+  s += T(C[0] - 52, C[1] - 46, '{R}', { c: 'ts' }) + line(C[0], C[1], ...at(C[0], C[1], Rd, 150), 'thin dash');
+  def('m3-6', 300, 210, 'A smooth hemispherical dome of radius R; a block starts at the top with speed v0 and is shown further down, where the line from the centre to it makes angle φ with the vertical', 'Figure M3-6', s);
+}
+
 export const FIGS = F;
 export const figHTML = (id) => {
   const f = F[id];
