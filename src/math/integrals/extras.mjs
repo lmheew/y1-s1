@@ -42,7 +42,6 @@ export const formulas = [
     ['With an antiderivative', R`F'=f\ \Rightarrow\ \int_a^b f(x)\,dx=F(b)-F(a)`],
   ]},
   { id: 'g1b', title: 'Definite integrals on any interval', quiz: '2 & 3 Nov', added: NOV3, rows: [
-    ['General Riemann sum', R`\int_a^b f(x)\,dx=\lim_{\max\Delta x_k\to0}\sum_{k=1}^{n}f(\xi_k)\,\Delta x_k`],
     ['Any interval [a, b]', R`\int_a^b f\,dx=\int_0^b f\,dx-\int_0^a f\,dx`],
     ['Powers on [a, b]', R`\int_a^b x^m\,dx=\frac{b^{m+1}-a^{m+1}}{m+1}`],
     ['Zero width', R`\int_a^a f\,dx=0`],

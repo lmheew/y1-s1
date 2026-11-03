@@ -207,18 +207,6 @@ for m in (1, 2, 3, 4):
                   riemann(lambda x: x ** m, 0, L, n), (L / n) ** (m + 1) * sum(k ** m for k in range(1, n + 1)))
     N = 10 ** 5
     check(f"leading term: sum k^{m} is about n^{m + 1}/{m + 1}", sum(k ** m for k in range(1, N + 1)) / (N ** (m + 1) / (m + 1)), 1, 1e-4)
-# the general definition: unequal strips and any points in them tend to the same limit, for continuous functions
-import random
-rng = random.Random(7)
-for name, fn, a0, b0, exact in (("x^2+x-2 on [0,2]", lambda x: x * x + x - 2, 0.0, 2.0, 2 / 3), ("e^x on [0,1]", exp, 0.0, 1.0, math.e - 1),
-                                ("cos on [0,1.3]", cos, 0.0, 1.3, sin(1.3))):
-    errs = []
-    for n in (200, 2000, 20000):
-        cuts = sorted([a0, b0] + [rng.uniform(a0, b0) for _ in range(n - 1)])
-        s = sum(fn(rng.uniform(cuts[i], cuts[i + 1])) * (cuts[i + 1] - cuts[i]) for i in range(n))
-        errs.append(abs(s - exact))
-    check(f"general definition: {name}, random strips and points, n = 20000", errs[-1], 0, 2e-3)
-    check_true(f"general definition: {name}, the error shrinks as the strips do", errs[2] < errs[0], f"errors {errs}")
 # any interval: int_a^b = int_0^b - int_0^a, and (b^(m+1) - a^(m+1))/(m+1), also for a > b and negative ends
 for (a0, b0) in ((1, 3), (-1, 2), (2, -1), (-2, -0.5), (0.5, 0.5)):
     for m in (0, 1, 2, 3, 4):

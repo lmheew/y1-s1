@@ -22,10 +22,7 @@ $$\begin{aligned}\text{right end: }x_k&=a+k\,\Delta x\\[2pt]\text{left end: }x_k
 So $x_k$ says where strip $k$ is, and $f(x_k)$ how tall it is. The slides write $N$ for the number of strips: it is the same as $n$ here.
 - **Riemann sum and definite integral:**
 $$\begin{gathered}S_n=\sum_{k=1}^{n}f(x_k)\,\Delta x\\[6pt]\int_a^b f(x)\,dx=\lim_{n\to\infty}S_n\end{gathered}$$
-The sign $\int$ is a stretched S for "sum", and $dx$ comes from $\Delta x$. Here $a$ is the lower limit and $b$ the upper limit. The result is a number, so the letter for the variable doesn't matter: $\int_0^2x^2\,dx=\int_0^2t^2\,dt$.
-- **The general definition:** the strips may have different widths $\Delta x_k$, with any point $\xi_k$ in strip $k$, as long as even the widest strip shrinks to $0$:
-$$\int_a^b f(x)\,dx=\lim_{\max\Delta x_k\to0}\sum_{k=1}^{n}f(\xi_k)\,\Delta x_k$$
-For a continuous $f$ every choice gives the same limit ($f$ is integrable). So equal strips and an endpoint, as in the five steps below, are always allowed.
+The sign $\int$ is a stretched S for "sum", and $dx$ comes from $\Delta x$. Here $a$ is the lower limit and $b$ the upper limit. Left ends, right ends and midpoints all give the same limit. The result is a number, so the letter for the variable doesn't matter: $\int_0^2x^2\,dx=\int_0^2t^2\,dt$.
 - **Partial sums:** the sum for $x^2$ needs the partial sum of $k^2$, and the one for $x^3$ that of $k^3$:
 $$\begin{aligned}\sum_{k=1}^{n}1&=n\\[2pt]\sum_{k=1}^{n}k&=\frac{n(n+1)}{2}\\[2pt]\sum_{k=1}^{n}k^2&=\frac{n(n+1)(2n+1)}{6}\\[2pt]\sum_{k=1}^{n}k^3&=\frac{n^2(n+1)^2}{4}\end{aligned}$$
 A constant comes out of the sum: $\sum c\,a_k=c\sum a_k$. With left ends, $\sum_{k=1}^{n}(k-1)^2=0^2+1^2+\dots+(n-1)^2$, so replace $n$ by $n-1$ in the formula.

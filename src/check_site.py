@@ -334,7 +334,7 @@ with sync_playwright() as p:
         page.click('#tab-formulas')
         page.wait_for_selector('#view-formulas .frow')
         check(f'{label}: midterm 2 Formulas has the Riemann-sum sheet, the any-interval sheet and the exact values', page.locator('#fg-g1 .frow').count() == 18
-              and page.locator('#fg-g1b .frow').count() == 10
+              and page.locator('#fg-g1b .frow').count() == 9
               and page.locator('#fg-exact').count() == 1)
         check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-quizzes')
