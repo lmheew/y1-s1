@@ -60,6 +60,12 @@
   ],
   "news": [
     {
+      "date": "2026-11-03",
+      "subject": "math",
+      "text": "Calculus midterm 2: the second class on Riemann sums and definite integrals is added. The class example x² + x − 2 shows how the integral and the area differ, then integrals on any interval [a, b], the properties of the definite integral, and why some functions such as sin x / x have no antiderivative formula. Four new practice problems and a second formula group.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-02",
       "subject": "math",
       "text": "Calculus midterm 2 (integrals) has its own page, starting with Riemann sums and definite integrals: the key ideas with an interactive graph, eight practice problems with step-by-step solutions, and the formulas. Its Summary lists every lesson up to the midterm on 23 Nov.",

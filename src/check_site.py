@@ -95,6 +95,7 @@ with sync_playwright() as p:
         shot(page, f'{label}-picker')
         page.click('a.exam[href="derivatives/"]')
         page.wait_for_selector('#view-summary')
+        page.wait_for_load_state('load')  # the page is large: its script must be running before the tabs are clicked
         for view in ['summary', 'practice', 'formulas', 'quizzes']:
             page.click(f'#tab-{view}')
             check(f'{label}: {view} tab shows', page.locator(f'#view-{view}').is_visible())
@@ -322,7 +323,7 @@ with sync_playwright() as p:
         shot(page, f'{label}-integrals-summary')
         page.click('#tab-practice')
         page.wait_for_selector('#view-practice .prob')
-        check(f'{label}: midterm 2 Practice has eight problems', page.locator('#view-practice .prob').count() == 8)
+        check(f'{label}: midterm 2 Practice has twelve problems', page.locator('#view-practice .prob').count() == 12)
         card = page.locator('#prob-1-1')
         card.locator('details.sol > summary').click()
         card.locator('.mbtn[data-mark="got"]').click()
@@ -332,7 +333,8 @@ with sync_playwright() as p:
         check(f'{label}: midterm 2 Practice has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-formulas')
         page.wait_for_selector('#view-formulas .frow')
-        check(f'{label}: midterm 2 Formulas has the Riemann-sum sheet and the exact values', page.locator('#fg-g1 .frow').count() == 16
+        check(f'{label}: midterm 2 Formulas has the Riemann-sum sheet, the any-interval sheet and the exact values', page.locator('#fg-g1 .frow').count() == 18
+              and page.locator('#fg-g1b .frow').count() == 10
               and page.locator('#fg-exact').count() == 1)
         check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-quizzes')

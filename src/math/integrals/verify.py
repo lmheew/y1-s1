@@ -102,6 +102,54 @@ check("P1.8b value 26/3", integral(sq, 1, 3), 26 / 3)
 check("P1.8b 27/3 - 1/3", Fr(27, 3) - Fr(1, 3), Fr(26, 3))
 check("P1.8b int (1+x)^2 on [0,2]", integral(lambda x: (1 + x) ** 2, 0, 2), 26 / 3)
 check("P1.8 large n approaches 1/4", float(riemann(cube, 0, 1, 2000)), 0.25, 1e-3)
+# 1.9  the class example x^2 + x - 2 on [0, 2] (3 Nov)
+f = lambda x: x * x + x - 2
+F = lambda x: Fr(x) ** 3 / 3 + Fr(x) ** 2 / 2 - 2 * Fr(x)
+for n in NS:
+    S = riemann(f, 0, 2, n)
+    check(f"P1.9 S_{n} = 2/3 + 6/n + 4/(3n^2)", S, Fr(2, 3) + Fr(6, n) + Fr(4, 3 * n * n))
+    check(f"P1.9 S_{n} before simplifying", S, Fr(4 * (n + 1) * (2 * n + 1), 3 * n * n) + Fr(2 * (n + 1), n) - 4)
+    check(f"P1.9 S_{n} as three sums", S, Fr(8, n ** 3) * sum(k * k for k in range(1, n + 1)) + Fr(4, n * n) * sum(range(1, n + 1)) - Fr(4, n) * n)
+    check(f"P1.9 f(x_k) = 4k^2/n^2 + 2k/n - 2 (n={n}, k=3)", f(Fr(6, n)), Fr(36, n * n) + Fr(6, n) - 2)
+check("P1.9 n = 4 by hand: 2.25", riemann(f, 0, 2, 4), Fr(9, 4))
+check("P1.9 integral 2/3", integral(f, 0, 2), 2 / 3)
+check("P1.9 F(2) - F(0) = 8/3 + 2 - 4", F(2) - F(0), Fr(2, 3))
+check("P1.9 F(1) = 1/3 + 1/2 - 2 = -7/6", F(1), Fr(-7, 6))
+check("P1.9 integral on [0,1] = -7/6", integral(f, 0, 1), -7 / 6)
+check("P1.9 integral on [1,2] = 2/3 + 7/6 = 11/6", integral(f, 1, 2), 11 / 6)
+check("P1.9 area 7/6 + 11/6 = 3", integral(f, 1, 2) - integral(f, 0, 1), 3)
+check("P1.9 f = (x+2)(x-1)", f(0.37), (0.37 + 2) * (0.37 - 1))
+check_true("P1.9 f < 0 on [0,1), f > 0 on (1,2]", all(f(x / 100) < 0 for x in range(0, 100)) and all(f(1 + x / 100) > 0 for x in range(1, 101)))
+# 1.10  any interval, from the results on [0, L]
+P = lambda L, m: Fr(L) ** (m + 1) / (m + 1)          # the integral of x^m from 0 to L
+check("P1.10a int_2^4 x = 8 - 2", P(4, 1) - P(2, 1), 6)
+check("P1.10a numeric", integral(lambda x: x, 2, 4), 6)
+check("P1.10a trapezoid (2+4)/2*2", Fr(2 + 4, 2) * 2, 6)
+check("P1.10b int_1^2 x^3 = 4 - 1/4", P(2, 3) - P(1, 3), Fr(15, 4))
+check("P1.10b numeric", integral(cube, 1, 2), 3.75)
+check("P1.10c 3*(27-1)/3 = 26", 3 * (P(3, 2) - P(1, 2)), 26)
+check("P1.10c 2*(9-1)/2 = 8", 2 * (P(3, 1) - P(1, 1)), 8)
+check("P1.10c int_1^3 1 = 2", P(3, 0) - P(1, 0), 2)
+check("P1.10c int_1^3 (3x^2-2x+1) = 20", integral(lambda x: 3 * x * x - 2 * x + 1, 1, 3), 20)
+check("P1.10c via F = x^3 - x^2 + x", (27 - 9 + 3) - (1 - 1 + 1), 20)
+# 1.11  properties, with an f and a g that have the given integrals: f(x) = 3.9 - 1.4x, g(x) = -1/2
+f = lambda x: 3.9 - 1.4 * x
+g = lambda x: -0.5
+check("P1.11 data: int_0^2 f = 5", integral(f, 0, 2), 5)
+check("P1.11 data: int_0^5 f = 2", integral(f, 0, 5), 2)
+check("P1.11 data: int_0^2 g = -1", integral(g, 0, 2), -1)
+check("P1.11a int_2^5 f = -3", integral(f, 2, 5), -3)
+check("P1.11b int_5^2 f = 3", integral(f, 5, 2), 3)
+check("P1.11c int_0^2 (3f - 2g) = 17", integral(lambda x: 3 * f(x) - 2 * g(x), 0, 2), 17)
+check("P1.11d int_2^2 f = 0", integral(f, 2, 2), 0)
+# 1.12  x^2 - 4 on [0, 3]: the integral -3, the area 23/3
+f = lambda x: x * x - 4
+check("P1.12 integral 9 - 12 = -3", integral(f, 0, 3), -3)
+check("P1.12 int_0^2 = 8/3 - 8 = -16/3", integral(f, 0, 2), -16 / 3)
+check("P1.12 int_2^3 = 7/3", integral(f, 2, 3), 7 / 3)
+check("P1.12 int_2^3 as int_0^3 - int_0^2", Fr(-3) - Fr(-16, 3), Fr(7, 3))
+check("P1.12 area 16/3 + 7/3 = 23/3", integral(lambda x: abs(x * x - 4), 0, 2, 4000) + integral(lambda x: abs(x * x - 4), 2, 3, 4000), 23 / 3)
+check_true("P1.12 f < 0 on [0,2), f > 0 on (2,3]", all(f(x / 100) < 0 for x in range(0, 200)) and all(f(2 + x / 100) > 0 for x in range(1, 101)))
 
 # ================= SUMMARY (u1) =================
 # partial sums, for many n
@@ -151,6 +199,60 @@ check("right sums of x-1 on [0,2] tend to 0", float(riemann(lambda x: x - 1, 0, 
 # with an antiderivative: F(x) = x^3/3 gives L^3/3; the habits' 16/3
 check("F = x^3/3: F(2) - F(0)", Fr(2) ** 3 / 3, Fr(8, 3))
 check("16/3 is about 5.33", 16 / 3, 5.3333333, 1e-6)
+# (3 Nov) the class example x^2 + x - 2 is checked under P1.9; the quick way for x^m on [0, L]
+for m in (1, 2, 3, 4):
+    for L in (Fr(1), Fr(3, 2), Fr(2)):
+        for n in (3, 8):
+            check(f"quick way: S_n = (L/n)^(m+1) sum k^m (m={m}, L={L}, n={n})",
+                  riemann(lambda x: x ** m, 0, L, n), (L / n) ** (m + 1) * sum(k ** m for k in range(1, n + 1)))
+    N = 10 ** 5
+    check(f"leading term: sum k^{m} is about n^{m + 1}/{m + 1}", sum(k ** m for k in range(1, N + 1)) / (N ** (m + 1) / (m + 1)), 1, 1e-4)
+# the general definition: unequal strips and any points in them tend to the same limit, for continuous functions
+import random
+rng = random.Random(7)
+for name, fn, a0, b0, exact in (("x^2+x-2 on [0,2]", lambda x: x * x + x - 2, 0.0, 2.0, 2 / 3), ("e^x on [0,1]", exp, 0.0, 1.0, math.e - 1),
+                                ("cos on [0,1.3]", cos, 0.0, 1.3, sin(1.3))):
+    errs = []
+    for n in (200, 2000, 20000):
+        cuts = sorted([a0, b0] + [rng.uniform(a0, b0) for _ in range(n - 1)])
+        s = sum(fn(rng.uniform(cuts[i], cuts[i + 1])) * (cuts[i + 1] - cuts[i]) for i in range(n))
+        errs.append(abs(s - exact))
+    check(f"general definition: {name}, random strips and points, n = 20000", errs[-1], 0, 2e-3)
+    check_true(f"general definition: {name}, the error shrinks as the strips do", errs[2] < errs[0], f"errors {errs}")
+# any interval: int_a^b = int_0^b - int_0^a, and (b^(m+1) - a^(m+1))/(m+1), also for a > b and negative ends
+for (a0, b0) in ((1, 3), (-1, 2), (2, -1), (-2, -0.5), (0.5, 0.5)):
+    for m in (0, 1, 2, 3, 4):
+        check(f"powers on [{a0},{b0}], m={m}", integral(lambda x: x ** m, a0, b0), (b0 ** (m + 1) - a0 ** (m + 1)) / (m + 1))
+    check(f"any interval: int_a^b cos = int_0^b - int_0^a ({a0},{b0})", integral(cos, a0, b0), integral(cos, 0, b0) - integral(cos, 0, a0))
+check("example: int_1^2 x^2 = (8-1)/3", integral(sq, 1, 2), 7 / 3)
+# properties, for any order of a, b, c
+f1, g1 = (lambda x: exp(x) - x * x), (lambda x: sin(3 * x) + 2)
+for (a0, b0, c0) in ((0, 1, 2.5), (0, 2.5, 1), (1.5, -0.5, 0.7)):
+    check(f"joining intervals ({a0},{b0},{c0})", integral(f1, a0, b0) + integral(f1, b0, c0), integral(f1, a0, c0))
+    check(f"swapping the limits ({a0},{b0})", integral(f1, b0, a0), -integral(f1, a0, b0))
+    check(f"sums and constants ({a0},{b0})", integral(lambda x: 2.5 * f1(x) - 4 * g1(x), a0, b0), 2.5 * integral(f1, a0, b0) - 4 * integral(g1, a0, b0))
+    check(f"a constant function: int 7 dx = 7(b-a) ({a0},{b0})", integral(lambda x: 7.0, a0, b0), 7 * (b0 - a0))
+check("zero width", integral(f1, 1.3, 1.3), 0)
+check_true("comparison: x^2 <= x on [0,1], so int x^2 <= int x", integral(sq, 0, 1) <= integral(lambda x: x, 0, 1))
+check("the variable's name doesn't matter: int_0^2 t^2 dt", integral(lambda t: t * t, 0, 2), integral(sq, 0, 2))
+# definite integral and antiderivative: the area from 0 to L has derivative f(L)
+for L in (0.5, 1.2, 2.0):
+    A = lambda L: integral(sq, 0, L)
+    check(f"area function A(L) = L^3/3 at {L}", A(L), L ** 3 / 3)
+    check(f"A'(L) = f(L) = L^2 at {L}", (A(L + 1e-4) - A(L - 1e-4)) / 2e-4, L * L, 1e-6)
+# no formula for F: sin x / x (value 1 at 0) still has an integral, about 0.946
+sinc = lambda x: 1.0 if x == 0 else sin(x) / x
+v = integral(sinc, 0, 1)
+check("int_0^1 sin x / x rounds to 0.946", round(v, 3), 0.946)
+check("by its Taylor series, term by term", sum((-1) ** j / ((2 * j + 1) * math.factorial(2 * j + 1)) for j in range(8)), v)
+check("first terms 1 - 1/18 + 1/600 - 1/35280", 1 - 1 / 18 + 1 / 600 - 1 / 35280, v, 1e-6)
+check("a Riemann sum gets there too (midpoints, n = 4)", float(riemann(lambda x: sinc(float(x)), 0, 1, 4, 'mid')), v, 1e-3)
+check_true("sin x / x tends to 1 at 0", abs(sin(1e-6) / 1e-6 - 1) < 1e-9)
+check("e^(-x^2) has an integral too: right sums tend to 0.74682", float(riemann(lambda x: exp(-float(x) ** 2), 0, 1, 20000)), 0.746824, 1e-4)
+# watch-outs of 3 Nov
+check("watch: the -2 gives -4 in S_n: (4/n) * n", Fr(4, 7) * 7, 4)
+check("watch: int_1^2 x^2 = 8/3 - 1/3", integral(sq, 1, 2), 8 / 3 - 1 / 3)
+check("watch: int_2^0 x = -2", integral(lambda x: x, 2, 0), -2)
 
 # ================= FORMULAS =================
 # Riemann sum and definite integral, for a function that is not a polynomial

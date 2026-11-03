@@ -1,6 +1,7 @@
 // The Calculus midterm 2 page's search tags, formula sheet, interactive graphs and lesson icons (original drawings).
 const R = String.raw;
 const NOV2 = '2026-11-02';
+const NOV3 = '2026-11-03';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -12,6 +13,10 @@ export const tags = {
   '1.6': 'riemann sum cubes left endpoints sum of cubes shift',
   '1.7': 'signed area negative below axis riemann sum actual area triangle',
   '1.8': 'limit as definite integral recognize riemann sum read a b',
+  '1.9': 'class example x^2 + x - 2 riemann sum three sums signed area area of region split at zero',
+  '1.10': 'any interval a b subtract integral from 0 powers x^m trapezoid split constants linearity',
+  '1.11': 'properties joining intervals additivity swap limits reverse sign linearity constant zero width',
+  '1.12': 'negative integral signed area area of region split at zero x^2 - 4',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -31,8 +36,22 @@ export const formulas = [
     ['Left ends: n becomes n − 1', R`\sum_{k=1}^{n}(k-1)^2=\frac{(n-1)n(2n-1)}{6}`],
     ['Increasing f', R`\text{left sum}<\int_a^b f(x)\,dx<\text{right sum}`],
     ['Powers from 0 to L', R`\int_0^L x^m\,dx=\frac{L^{m+1}}{m+1}`],
+    ['Quick way: xᵐ on [0, L]', R`S_n=\left(\frac{L}{n}\right)^{m+1}\sum_{k=1}^{n}k^m`],
+    ['Leading term (n large)', R`\sum_{k=1}^{n}k^m\approx\frac{n^{m+1}}{m+1}`],
     ['Signed area', R`\int_a^b f(x)\,dx=A_{\text{above}}-A_{\text{below}}`],
     ['With an antiderivative', R`F'=f\ \Rightarrow\ \int_a^b f(x)\,dx=F(b)-F(a)`],
+  ]},
+  { id: 'g1b', title: 'Definite integrals on any interval', quiz: '2 & 3 Nov', added: NOV3, rows: [
+    ['General Riemann sum', R`\int_a^b f(x)\,dx=\lim_{\max\Delta x_k\to0}\sum_{k=1}^{n}f(\xi_k)\,\Delta x_k`],
+    ['Any interval [a, b]', R`\int_a^b f\,dx=\int_0^b f\,dx-\int_0^a f\,dx`],
+    ['Powers on [a, b]', R`\int_a^b x^m\,dx=\frac{b^{m+1}-a^{m+1}}{m+1}`],
+    ['Zero width', R`\int_a^a f\,dx=0`],
+    ['Swapping the limits', R`\int_b^a f\,dx=-\int_a^b f\,dx`],
+    ['Joining intervals', R`\int_a^b f\,dx+\int_b^c f\,dx=\int_a^c f\,dx`],
+    ['Sums and constants', R`\int_a^b(\alpha f+\beta g)\,dx=\alpha\int_a^b f\,dx+\beta\int_a^b g\,dx`],
+    ['A constant function', R`\int_a^b c\,dx=c\,(b-a)`],
+    ['Comparison (a ≤ b)', R`f\le g\ \Rightarrow\ \int_a^b f\,dx\le\int_a^b g\,dx`],
+    ['Name of the variable', R`\int_a^b f(x)\,dx=\int_a^b f(t)\,dt`],
   ]},
 ];
 
