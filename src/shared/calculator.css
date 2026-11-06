@@ -10,9 +10,10 @@
   background: rgba(44, 50, 46, .8); color: #FFFFFF; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, .18); opacity: .42; cursor: pointer;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-  transition: opacity .18s ease, box-shadow .18s ease, transform .34s cubic-bezier(.25, 1.3, .5, 1), translate .26s ease; }
+  transition: opacity .18s ease, box-shadow .18s ease, transform .34s cubic-bezier(.25, 1.3, .5, 1), translate .26s ease, border-radius .26s ease; }
 .calc-fab::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
-.calc-fab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.calc-fab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  transition: translate .26s ease, width .26s ease, height .26s ease; }
 .calc-fab .dots { fill: currentColor; stroke: none; }
 .calc-fab .i-close { display: none; width: 20px; height: 20px; stroke-width: 2; }
 .calc-fab.open .i-calc { display: none; }
@@ -21,13 +22,19 @@
 .calc-fab.armed, .calc-fab.dragging, .calc-fab.open { opacity: 1; }
 .calc-fab.armed { box-shadow: 0 0 0 3px var(--lime), 0 4px 14px rgba(0, 0, 0, .25); animation: calc-armed 1.2s ease-in-out infinite; }
 .calc-fab.dragging { box-shadow: 0 10px 24px rgba(0, 0, 0, .32); cursor: grabbing; }
-.calc-fab.no-anim, .calc-fab.dragging { transition: opacity .18s ease, box-shadow .18s ease, translate .26s ease; }
+.calc-fab.no-anim, .calc-fab.dragging { transition: opacity .18s ease, box-shadow .18s ease, translate .26s ease, border-radius .26s ease; }
 .calc-fab.off { opacity: .26; }
 .calc-fab.off::after { content: ""; position: absolute; width: 28px; height: 2px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); }
 .calc-fab:focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; opacity: 1; }
-/* at rest it sits half inside its edge, so it covers less of the page; woken, open, dragged or focused, it comes out */
-.calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: -22px 0; }
-.calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: 22px 0; }
+/* at rest it is a slim tab on its edge: 22 of its 44 px show, square against the edge and rounded outside, with a
+   smaller icon whole in the middle of what shows, so it covers almost none of the page; woken, open, dragged or
+   focused, it comes out as the round button */
+.calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: -32px 0; border-radius: 0 14px 14px 0; }
+.calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) svg { width: 17px; height: 17px; translate: 11px 0; }
+.calc-fab.off:not(.armed):not(.open):not(.dragging):not(:focus-visible)::after { width: 20px; translate: 11px 0; }
+.calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: 32px 0; border-radius: 14px 0 0 14px; }
+.calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) svg,
+.calc-fab.off[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible)::after { translate: -11px 0; }
 /* tucked into its edge while the page scrolls down, back on the way up (totop.js sets .fab-away on the root);
    it stays put while it is woken, open, being dragged or focused */
 .fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { opacity: 0; translate: calc(-100% - 16px) 0; pointer-events: none; }

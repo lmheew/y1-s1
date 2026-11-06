@@ -655,7 +655,7 @@ with sync_playwright() as p:
               and pg.locator('#view-night .nrow').count() > 20 and overflow(pg) <= 0, (pg.locator('#view-night .nsec').count(), pg.locator('#view-night .nrow').count()))
     ctx.close()
 
-    # ---- phones: a slimmer band, its intro one line until tapped; the calculator half inside its edge at rest ----
+    # ---- phones: a slimmer band, its intro one line until tapped; the calculator a slim tab on its edge at rest ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
@@ -668,8 +668,8 @@ with sync_playwright() as p:
     check('phone: the band is slim and its intro one line', band_h <= 130 and lede.bounding_box()['height'] <= line + 1, (band_h, lede.bounding_box()['height'], line))
     lede.click()
     check('phone: a tap shows the whole intro', lede.bounding_box()['height'] > line * 1.5)
-    fab = pg.evaluate("(() => { const r = document.querySelector('.calc-fab').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; })()")
-    check('phone: the calculator rests half inside the left edge', fab[0] < 0 and fab[0] + fab[1] <= 34, fab)
+    fab = pg.evaluate("(() => { const r = document.querySelector('.calc-fab').getBoundingClientRect(), i = document.querySelector('.calc-fab svg').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), Math.round(i.left), Math.round(i.right)]; })()")
+    check('phone: at rest the calculator is a 22 px tab on the left edge with its icon whole', fab[0] < 0 and fab[1] == 22 and fab[2] >= 0 and fab[3] <= 22, fab)
     ctx.close()
 
     # ---- the home page: progress and "Pick up where you left off" from the exam pages ----

@@ -166,7 +166,7 @@ A few details about the password:
 
 ## The floating calculator
 
-- It's a ghost button parked on the left or right edge, bottom left by default. At rest it sits half inside its edge (22 of its 44 px), so it covers less of the page; it comes out when it is woken, open, dragged or focused. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across. On the right edge it stays above the back-to-top button.
+- It's a ghost button parked on the left or right edge, bottom left by default. At rest it is a slim tab on its edge (22 of its 44 px show, square against the edge and rounded outside, with a smaller icon whole in what shows), so it covers almost none of the page; it comes out as the round button when it is woken, open, dragged or focused. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across. On the right edge it stays above the back-to-top button.
 - The first tap makes it opaque and shows "Tap again to open". A second tap on it opens the calculator. A tap anywhere else, or 4 seconds without one, cancels. Enter on the focused button opens it at once.
 - The calculator follows the Windows standard layout, with memory (MC MR M+ M− MS and the M▾ list) and no history. It works with exact fractions, so 1 ÷ 3 × 3 = 1 and 0.1 + 0.2 = 0.3. It shows results the way Windows does: 16 digits, and "1.e+16" style above that. `calculator_test.js` holds the Windows cases; keep them passing.
 - The window doesn't block the page. It moves by its title bar and closes with ×, Esc (once it's cleared), or one tap on the button.

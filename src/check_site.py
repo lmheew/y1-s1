@@ -146,8 +146,13 @@ with sync_playwright() as p:
         fab_tucked = lambda: page.evaluate("""(() => { const f = document.querySelector('.calc-fab'), r = f.getBoundingClientRect();
           return getComputedStyle(f).opacity === '0' && (r.right <= 0 || r.left >= document.documentElement.clientWidth); })()""")
         totop_tucked = lambda: page.evaluate("getComputedStyle(document.querySelector('.totop')).visibility === 'hidden'")
+        vw = page.evaluate('document.documentElement.clientWidth')
+        # at rest the button is a slim tab: only 22 of its 44 px are on screen, so taps go to the middle of what shows
+        on_screen = lambda b: (min(max(b['x'] + b['width'] / 2, 11), vw - 11), b['y'] + b['height'] / 2)
         box = fab.bounding_box()
-        fx, fy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        check(f'{label}: at rest the calculator is a slim tab on the left edge, its icon whole', -24 <= box['x'] <= -20
+              and page.evaluate("(() => { const r = document.querySelector('.calc-fab svg').getBoundingClientRect(); return r.left >= 0 && r.right <= 23; })()"), box)
+        fx, fy = on_screen(box)
         page.mouse.click(fx, fy)
         check(f'{label}: calculator button wakes on the first tap', is_armed() and page.locator('.calc-tip.show').count() == 1)
         # a tap on plain text (the band's description): a tile there would scroll the page down, which tucks the
@@ -159,6 +164,7 @@ with sync_playwright() as p:
         page.mouse.click(fx, fy)
         page.wait_for_timeout(300)
         check(f'{label}: two taps open the calculator', page.locator('.calc-panel').is_visible())
+        check(f'{label}: open, it is the round button again, fully on screen', fab.bounding_box()['x'] >= 0)
         for act, v in [('digit', '1'), ('op', '/'), ('digit', '3'), ('op', '*'), ('digit', '3'), ('eq', '')]:
             page.locator(f'.calc-keys [data-act="{act}"]' + (f'[data-v="{v}"]' if v else '')).click()
         check(f'{label}: 1 ÷ 3 × 3 = 1', page.locator('.calc-value').inner_text() == '1', page.locator('.calc-value').inner_text())
@@ -168,7 +174,6 @@ with sync_playwright() as p:
         page.locator('.calc-x[data-act="close"]').click()
         page.wait_for_timeout(400)
         check(f'{label}: closing the calculator brings the floating buttons back', not away() and not fab_tucked())
-        vw = page.evaluate('document.documentElement.clientWidth')
         page.mouse.move(fx, fy)
         page.mouse.down()
         for i in range(1, 13):
@@ -178,8 +183,8 @@ with sync_playwright() as p:
         page.mouse.up()
         page.wait_for_timeout(500)
         box = fab.bounding_box()
-        # at rest it sits half inside the edge (22 px of its 44)
-        check(f'{label}: dragged past the middle, it sticks to the right side, half inside the edge', abs(box['x'] + box['width'] - (vw - 10 + 22)) <= 2, box)
+        # at rest a slim tab: 22 of its 44 px show
+        check(f'{label}: dragged past the middle, it sticks to the right side as a slim tab', abs(box['x'] - (vw - 22)) <= 2, box)
 
         # back-to-top: hidden at the top, shown after scrolling down, a tap goes smoothly back up; the calculator
         # parked in the bottom-right corner stays above it
@@ -187,7 +192,7 @@ with sync_playwright() as p:
         page.wait_for_timeout(300)
         check(f'{label}: back-to-top is hidden at the top', not totop_on())
         vh = page.evaluate('innerHeight')
-        fx, fy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+        fx, fy = on_screen(box)
         page.mouse.move(fx, fy)
         page.mouse.down()
         for i in range(1, 13):
@@ -207,7 +212,7 @@ with sync_playwright() as p:
         check(f'{label}: scrolling up brings them back', not away() and not fab_tucked() and not totop_tucked() and totop_on())
         t, c = page.locator('.totop').bounding_box(), fab.bounding_box()
         check(f'{label}: calculator parked bottom right sits above back-to-top', c['y'] + c['height'] <= t['y'] and abs(t['width'] - 44) < 1, (c, t))
-        page.mouse.click(c['x'] + c['width'] / 2, c['y'] + c['height'] / 2)
+        page.mouse.click(*on_screen(c))
         page.evaluate('scrollBy(0, 400)')
         page.wait_for_timeout(400)
         check(f'{label}: a woken calculator stays while the page scrolls down', away() and is_armed() and not fab_tucked() and totop_tucked())
