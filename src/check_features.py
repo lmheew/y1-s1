@@ -368,8 +368,9 @@ with sync_playwright() as p:
     # Calculus midterm 2 keeps its own keys in study-seen ("math-integrals:<tab>"): its dots and Calculus midterm 1's don't mix
     pg2.goto(BASE + '/math/integrals/')
     pg2.wait_for_selector('#view-summary .unit')
-    check('new: Calculus midterm 2 has its own tab dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
-    check('new: Calculus midterm 2 marks its new lesson and graph', pg2.locator('#su-u1 .unit-head .new-pill').count() == 1
+    check('new: Calculus midterm 2 has its own tab dots', dots(pg2) == ['practice', 'formulas', 'quizzes'], dots(pg2))
+    check('new: Calculus midterm 2 marks its new lessons and graph', pg2.locator('#su-u2 .unit-head .new-pill').count() == 1
+          and pg2.locator('#su-u1 .unit-head .new-pill').count() == 1
           and pg2.locator('#gx-riemann .new-pill').count() == 1, pg2.locator('#su-u1 .new-pill').count())
     pg2.click('#tab-practice')
     pg2.goto(BASE + '/math/derivatives/')

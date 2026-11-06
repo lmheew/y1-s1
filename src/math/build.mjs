@@ -7,15 +7,18 @@
 // once and each exam page carries only its own notes.
 //
 //   node src/math/build.mjs site               writes math/index.html (the picker), the exam pages and math/assets/,
-//                                              and math/derivatives/locked.json when SITE_PASSWORD is set
+//                                              and each page's locked.json (math/derivatives/, math/integrals/)
+//                                              when SITE_PASSWORD is set
 //   node src/math/build.mjs artifact <out>     writes one self-contained page with the in-class sheets in plain view
 //   node src/math/build.mjs open               decrypts src/math/private.sealed.json into src/math/private/
 //   node src/math/build.mjs seal               encrypts src/math/private/ into src/math/private.sealed.json
 //   node src/math/build.mjs rekey              changes the password (SITE_PASSWORD = current, NEW_SITE_PASSWORD = new)
 //
 // The in-class quiz sheets are private. Their source (src/math/private/, git-ignored) is kept in the repository only
-// encrypted, and the site gets them only as math/derivatives/locked.json, opened in the browser with the password.
-// Without SITE_PASSWORD the build keeps the current locked.json as it is.
+// encrypted, and the site gets them only as each exam page's locked.json, opened in the browser with the password:
+// math/derivatives/locked.json (private/inclass.mjs and past.mjs) and math/integrals/locked.json
+// (private/inclass-integrals.mjs). Both use the same password and salt, so one unlock opens every page.
+// Without SITE_PASSWORD the build keeps the current locked files as they are.
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -27,6 +30,7 @@ import { subjectSwitch } from '../shared/icons.mjs';
 import { mocks } from './exams.mjs';
 import * as INT from './integrals/content.mjs';
 import * as INTX from './integrals/extras.mjs';
+import * as INTF from './integrals/followups.mjs';
 import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
   THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, KATEX_DIR } from '../shared/build-lib.mjs';
@@ -37,6 +41,8 @@ const MATH = path.join(ROOT, 'math');
 // the shared files of every exam page, and the locked sheets of Calculus midterm 1 (in-class quizzes, past midterms)
 const ASSETS = path.join(MATH, 'assets');
 const LOCKED = path.join(MATH, 'derivatives', 'locked.json');
+// Calculus midterm 2's in-class sheets: the same password and salt as Calculus midterm 1's
+const LOCKED_INT = path.join(MATH, 'integrals', 'locked.json');
 const SEALED = path.join(SRC, 'private.sealed.json');
 const PRIVATE = path.join(SRC, 'private');
 const rel = (p) => path.relative(ROOT, p);
@@ -72,10 +78,11 @@ const probId = (u, p, pi) => p.id || `${u.id.slice(1)}.${pi + 1}`;
 const dayOf = (u) => u.days || u.dates;
 // "Day 10 & 11" -> "10–11" (or "2 & 3 Nov" -> "2–3") for the small practice rings
 const dayShort = (u) => (u.days ? u.days.replace(/^Day /, '').replace(' & ', '–') : u.dates.replace(/^(\d+) & (\d+).*$/, '$1–$2'));
-// the span of an exam's lessons for its card and Formulas tab: "Days 1–12", or from the dates, "2–20 Nov"
+// the span of an exam's lessons for its card and Formulas tab: "Days 1–12", or from the dates, "2–20 Nov" (also while
+// only some lessons have day numbers yet, as on Calculus midterm 2)
 function spanOf(units) {
   const dayNums = units.flatMap((u) => ((u.days || '').match(/\d+/g) || []).map(Number));
-  if (dayNums.length) return `Days ${Math.min(...dayNums)}–${Math.max(...dayNums)}`;
+  if (dayNums.length && units.every((u) => u.days)) return `Days ${Math.min(...dayNums)}–${Math.max(...dayNums)}`;
   const ends = (s) => { const n = s.match(/\d+/g).map(Number); return { lo: n[0], hi: n[n.length - 1], mon: s.match(/[A-Z][a-z]{2}/)[0] }; };
   const a = ends(units[0].dates), b = ends(units[units.length - 1].dates);
   return a.mon === b.mon ? `${a.lo}–${b.hi} ${b.mon}` : `${a.lo} ${a.mon} – ${b.hi} ${b.mon}`;
@@ -125,17 +132,17 @@ const DERIVATIVES = {
 };
 const INTEGRALS = {
   id: 'integrals', name: 'Calculus midterm 2', short: 'Midterm 2 · Integrals',
-  units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: {}, mocks: [],
+  units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: INTF.followups, mocks: [],
   icons: INTX.UNIT_ICONS, graphs: INTX.GRAPHS, graphsAdded: INTX.GRAPHS_ADDED, testbarAdded: '', seen: 'math-integrals',
   conf: { store: 'cla1-integrals-review', seen: 'math-integrals', home: 'summary', scores: 'cla1-integrals-mock-scores',
-    suggest: ['Riemann sum', 'right endpoint', 'sum of squares', 'upper sum', 'signed area', 'partial sum'], tryWords: '"Riemann" or "area"' },
+    suggest: ['primitive', 'arctan', 'Riemann sum', 'signed area', 'ln', 'sin'], tryWords: '"primitive" or "area"' },
   title: 'CLA1 Midterm 2 Review',
-  description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions and formulas, added after each class.',
+  description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas and quizzes, added after each class.',
   og: {
     title: 'CLA1 Review · Calculus midterm 2 (integrals)',
-    description: 'Unofficial review notes for Calculus midterm 2: key ideas, practice problems with worked solutions and formulas, added after each class.',
+    description: 'Unofficial review notes for Calculus midterm 2: key ideas, practice problems with worked solutions, formulas and quizzes, added after each class.',
     url: 'math/integrals/', image: 'og-math-integrals.png',
-    alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice and formulas, with quizzes and mock midterms to come',
+    alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice, formulas and quizzes, with mock midterms to come',
   },
   lede: {
     summary: 'One section per lesson in the course schedule, added after each class: the key ideas, and the common mistakes to avoid. Lessons still to come are greyed out.',
@@ -559,7 +566,7 @@ function writeAssets() {
 // stay unlocked after a rebuild, and refuses a password that doesn't open them: a typo here would lock everyone out.
 async function keyring(pw, { fresh = false } = {}) {
   if (!pw || !normalize(pw)) fail('set SITE_PASSWORD (the password for the in-class sheets).');
-  const current = [readJSON(LOCKED), readJSON(SEALED)].filter(Boolean);
+  const current = [readJSON(LOCKED), readJSON(LOCKED_INT), readJSON(SEALED)].filter(Boolean);
   if (current.length && !fresh) {
     const ring = { salt: unb64(current[0].salt), iter: current[0].iter };
     ring.key = await deriveKey(pw, ring.salt, ring.iter);
@@ -605,6 +612,29 @@ async function loadPrivate(ring, file, name) {
 }
 const loadQuizzes = (ring) => loadPrivate(ring, 'inclass.mjs', 'quizzes');
 const loadPast = (ring) => loadPrivate(ring, 'past.mjs', 'past');
+const loadIntQuizzes = (ring) => loadPrivate(ring, 'inclass-integrals.mjs', 'quizzes');
+
+// An exam page's locked file: its in-class sheets (and past papers), sealed with the ring and rewritten only when they
+// change. `quizzes` null (no password): the current file stays as it is. Returns the box the page links to.
+async function sealLocked(ring, file, box, quizzes, r) {
+  if (!quizzes) return box;
+  const payload = { sheets: r.sheets, index: r.PRIV };
+  let same = false;
+  if (box) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.past || []) === JSON.stringify(r.pastList); } catch { same = false; } }
+  if (same) return box;
+  // `quizzes` and `past` (titles, minutes, points) stay readable, so a build without the password can still draw the panels
+  const next = await sealBox(ring, payload, { quizzes: quizzes.map((q) => q.no), past: r.pastList });
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(next) + '\n');
+  console.log('wrote', rel(file), (fs.statSync(file).size / 1024).toFixed(0) + ' KB · in-class entries:', r.PRIV.length);
+  return next;
+}
+// the page's data-locked address: its locked file with the file's version, or '' when it has nothing locked
+function lockedAddress(P, r, box, file) {
+  const src = r.hasLocks && box ? 'locked.json?v=' + hash(fs.readFileSync(file)) : '';
+  if (r.hasLocks && !src) fail(`${P.name} lists locked sheets but ${rel(file)} is missing; build with SITE_PASSWORD.`);
+  return src;
+}
 
 // ---------- commands ----------
 const PASSWORD = process.env.SITE_PASSWORD || '';
@@ -617,26 +647,17 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   const past = ring ? await loadPast(ring) : null;
   let box = readJSON(LOCKED);
   const r = render(DERIVATIVES, { quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
-  if (quizzes) {
-    const payload = { sheets: r.sheets, index: r.PRIV };
-    let same = false;
-    if (box) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.past || []) === JSON.stringify(r.pastList); } catch { same = false; } }
-    if (!same) {
-      // `past` (titles, minutes, points) stays readable, so a build without the password can still draw the panels
-      box = await sealBox(ring, payload, { quizzes: quizzes.map((q) => q.no), past: r.pastList });
-      fs.mkdirSync(path.dirname(LOCKED), { recursive: true });
-      fs.writeFileSync(LOCKED, JSON.stringify(box) + '\n');
-      console.log('wrote', rel(LOCKED), (fs.statSync(LOCKED).size / 1024).toFixed(0) + ' KB · in-class entries:', r.PRIV.length);
-    }
-  }
-  const lockedSrc = r.hasLocks && box ? 'locked.json?v=' + hash(fs.readFileSync(LOCKED)) : '';
-  if (r.hasLocks && !lockedSrc) fail(`in-class sheets are listed but ${rel(LOCKED)} is missing; build with SITE_PASSWORD.`);
+  box = await sealLocked(ring, LOCKED, box, quizzes, r);
+  const lockedSrc = lockedAddress(DERIVATIVES, r, box, LOCKED);
+  // Calculus midterm 2: its own in-class sheets (private/inclass-integrals.mjs) and locked file
+  const intQuizzes = ring ? await loadIntQuizzes(ring) : null;
+  let boxI = readJSON(LOCKED_INT);
+  const ri = render(INTEGRALS, { quizzes: intQuizzes, past: null, locked: true, lockedNos: boxI ? boxI.quizzes : [] });
+  boxI = await sealLocked(ring, LOCKED_INT, boxI, intQuizzes, ri);
+  const lockedSrcI = lockedAddress(INTEGRALS, ri, boxI, LOCKED_INT);
   const a = writeAssets();
   writePage(DERIVATIVES, r, a, lockedSrc);
-  // Calculus midterm 2 has no locked sheets yet: its in-class quizzes start after this build's lesson
-  const ri = render(INTEGRALS, { quizzes: null, past: null, locked: true });
-  if (ri.hasLocks) fail('Calculus midterm 2 lists locked sheets, but its build has no locked file yet');
-  writePage(INTEGRALS, ri, a, '');
+  writePage(INTEGRALS, ri, a, lockedSrcI);
   const picker = pickerHTML(a, { derivatives: r, integrals: ri });
   writeIfChanged(path.join(MATH, 'index.html'), picker);
   console.log('wrote', rel(path.join(MATH, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
@@ -805,11 +826,12 @@ async function rekey() {
   const next = process.env.NEW_SITE_PASSWORD || '';
   if (!normalize(next)) fail('set NEW_SITE_PASSWORD as well.');
   const old = await keyring(PASSWORD);
-  const lockedBox = readJSON(LOCKED), sealedBox = readJSON(SEALED);
-  const lockedData = lockedBox && await openBox(old.key, lockedBox);
+  const sealedBox = readJSON(SEALED);
+  const lockedFiles = [LOCKED, LOCKED_INT].map((file) => ({ file, box: readJSON(file) })).filter((x) => x.box);
+  for (const x of lockedFiles) x.data = await openBox(old.key, x.box);
   const sealedData = sealedBox && await openBox(old.key, sealedBox);
   const ring = await keyring(next, { fresh: true });
-  if (lockedData) fs.writeFileSync(LOCKED, JSON.stringify(await sealBox(ring, lockedData, { quizzes: lockedBox.quizzes, past: lockedBox.past || [] })) + '\n');
+  for (const x of lockedFiles) fs.writeFileSync(x.file, JSON.stringify(await sealBox(ring, x.data, { quizzes: x.box.quizzes, past: x.box.past || [] })) + '\n');
   if (sealedData) fs.writeFileSync(SEALED, JSON.stringify(await sealBox(ring, sealedData)) + '\n');
   console.log('re-encrypted with the new password. Devices that chose "Remember" will ask for it once.');
   await buildSite('', { afterRekey: true });

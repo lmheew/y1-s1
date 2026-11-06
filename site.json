@@ -60,6 +60,12 @@
   ],
   "news": [
     {
+      "date": "2026-11-06",
+      "subject": "math",
+      "text": "Calculus midterm 2: primitive functions (Day 16 & 17) are added: primitives and the +C, the indefinite integral, F(b) − F(a), the fundamental primitive functions (powers, 1/x, eˣ and bˣ, sin and cos, arctan) and what to watch out for, with nine practice problems and two formula groups. Quizzes has In-class Quiz 06 (password needed) with Follow-up A and B. The Riemann-sum lesson is shorter now, down to what the quizzes ask.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-03",
       "subject": "math",
       "text": "Calculus midterm 2: the second class on Riemann sums and definite integrals is added. The class example x² + x − 2 shows how the integral and the area differ, then integrals on any interval [a, b], the properties of the definite integral, and why some functions such as sin x / x have no antiderivative formula. Four new practice problems and a second formula group.",

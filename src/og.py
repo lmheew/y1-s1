@@ -124,7 +124,7 @@ CARDS = {
         graph='int', title='CLA1 Review', kicker='Calculus midterm 2 · Integrals',
         lede='Key ideas, worked solutions and formulas, added after each class.',
         pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
-              '<span class="pill later">Quizzes · soon</span><span class="pill later">Mocks · soon</span>'),
+              '<span class="pill">Quizzes</span><span class="pill later">Mocks · soon</span>'),
     'og-math-derivatives.png': dict(
         title='CLA1 Review', kicker='Calculus midterm 1 · Derivatives',
         lede='Key ideas, worked solutions, formulas, quizzes and mock midterms.',

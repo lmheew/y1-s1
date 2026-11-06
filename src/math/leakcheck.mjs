@@ -14,8 +14,11 @@ if (!fs.existsSync(inclass)) { console.error('error: src/math/private/inclass.mj
 const { quizzes } = await import(pathToFileURL(inclass).href);
 const pastFile = path.join(SRC, 'private', 'past.mjs');
 const past = fs.existsSync(pastFile) ? (await import(pathToFileURL(pastFile).href)).past : [];
-// every private question, in-class or past paper
-const privateQs = [...quizzes.flatMap((q) => q.qs), ...past.flatMap((p) => p.qs)];
+// Calculus midterm 2's in-class sheets (math/integrals/locked.json)
+const intFile = path.join(SRC, 'private', 'inclass-integrals.mjs');
+const intQuizzes = fs.existsSync(intFile) ? (await import(pathToFileURL(intFile).href)).quizzes : [];
+// every private question, in-class (both exam pages) or past paper
+const privateQs = [...quizzes.flatMap((q) => q.qs), ...intQuizzes.flatMap((q) => q.qs), ...past.flatMap((p) => p.qs)];
 const MATH = path.join(ROOT, 'math');
 const exams = fs.readdirSync(MATH, { withFileTypes: true }).filter((d) => d.isDirectory() && fs.existsSync(path.join(MATH, d.name, 'index.html')))
   .map((d) => path.join('math', d.name, 'index.html'));
@@ -29,7 +32,9 @@ for (const f of [path.join('math', 'index.html'), ...exams]) {
   pub += page.replace(/<script type="application\/json" id="search-index">[\s\S]*?<\/script>/, '') + lazy.join('\n') + '\n';
   index += (page.match(/<script type="application\/json" id="search-index">([\s\S]*?)<\/script>/) || [, '[]'])[1];
 }
-const shared = ['content.mjs', 'followups.mjs', 'extras.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+// the public sources of both exam pages: wording they print on purpose doesn't count
+const shared = ['content.mjs', 'followups.mjs', 'extras.mjs', 'integrals/content.mjs', 'integrals/followups.mjs', 'integrals/extras.mjs']
+  .map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 let leaks = 0, checked = 0;
 for (const x of privateQs) {
@@ -49,5 +54,5 @@ for (const x of privateQs) {
   }
 }
 const ids = (pub.match(/id="(rq\d+|p\d{4})-q\d+"/g) || []).length + (index.match(/"id":"(rq\d+|p\d{4})-q\d+"/g) || []).length;
-console.log(`checked ${checked} private formulas and sentences (in-class sheets and ${past.length} past midterms) against ${exams.length + 1} pages: ${leaks} in public; private question ids: ${ids}`);
+console.log(`checked ${checked} private formulas and sentences (${quizzes.length + intQuizzes.length} in-class sheets and ${past.length} past midterms) against ${exams.length + 1} pages: ${leaks} in public; private question ids: ${ids}`);
 process.exit(leaks || ids ? 1 : 0);

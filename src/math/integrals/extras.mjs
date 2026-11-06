@@ -1,27 +1,32 @@
 // The Calculus midterm 2 page's search tags, formula sheet, interactive graphs and lesson icons (original drawings).
 const R = String.raw;
 const NOV2 = '2026-11-02';
-const NOV3 = '2026-11-03';
+const NOV6 = '2026-11-06';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
   '1.1': 'riemann sum estimate n = 4 left right midpoint endpoints rectangles',
   '1.2': 'riemann sum line linear right endpoints limit trapezoid sum of k',
   '1.3': 'riemann sum two partial sums squares sum of k',
-  '1.4': 'riemann sum a ≠ 0 expand square right endpoints',
-  '1.5': 'riemann sum decreasing upper sum lower sum right endpoints',
-  '1.6': 'riemann sum cubes left endpoints sum of cubes shift',
   '1.7': 'signed area negative below axis riemann sum actual area triangle',
   '1.8': 'limit as definite integral recognize riemann sum read a b',
   '1.9': 'class example x^2 + x - 2 riemann sum three sums signed area area of region split at zero',
-  '1.10': 'any interval a b subtract integral from 0 powers x^m trapezoid split constants linearity',
   '1.11': 'properties joining intervals additivity swap limits reverse sign linearity constant zero width',
-  '1.12': 'negative integral signed area area of region split at zero x^2 - 4',
+  '1.12': 'negative integral signed area area of region split at zero x^2 - 4 primitive',
+  '2.1': 'primitive function antiderivative ambiguity integration constant +C condition check by differentiating',
+  '2.2': 'indefinite integral power rule square root 1/x^2 negative exponent ln split fraction',
+  '2.3': 'indefinite integral sin cos e^x minus sign divide by a tan 1/cos^2',
+  '2.4': 'exponential any base 2^x b^x ln b b^(ax) 1/5^x negative exponent',
+  '2.5': 'logarithm ln 1/(ax+b) absolute value partial fractions derivative of the bottom',
+  '2.6': 'simplify first factor difference of squares e^(2x) expand divide',
+  '2.7': 'definite integral F(b) - F(a) fundamental theorem primitive sin e^(2x) ln',
+  '2.8': 'swap limits exchange initial final points arctan tan^-1 1/(1+x^2)',
+  '2.9': 'area with a primitive split at zero signed area F(b) - F(a)',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
 export const formulas = [
-  { id: 'g1', title: 'Riemann sum and definite integrals', quiz: '2 & 3 Nov', added: NOV2, rows: [
+  { id: 'g1', title: 'Riemann sum and definite integrals', quiz: 'Day 14 & 15', added: NOV2, rows: [
     ['Strip width', R`\Delta x=\frac{b-a}{n}`],
     ['Right endpoint', R`x_k=a+k\,\Delta x`],
     ['Left endpoint', R`x_k=a+(k-1)\,\Delta x`],
@@ -33,24 +38,36 @@ export const formulas = [
     ['Sum of k', R`\sum_{k=1}^{n}k=\frac{n(n+1)}{2}`],
     ['Sum of squares', R`\sum_{k=1}^{n}k^2=\frac{n(n+1)(2n+1)}{6}`],
     ['Sum of cubes', R`\sum_{k=1}^{n}k^3=\frac{n^2(n+1)^2}{4}`],
-    ['Left ends: n becomes n − 1', R`\sum_{k=1}^{n}(k-1)^2=\frac{(n-1)n(2n-1)}{6}`],
-    ['Increasing f', R`\text{left sum}<\int_a^b f(x)\,dx<\text{right sum}`],
-    ['Powers from 0 to L', R`\int_0^L x^m\,dx=\frac{L^{m+1}}{m+1}`],
-    ['Quick way: xᵐ on [0, L]', R`S_n=\left(\frac{L}{n}\right)^{m+1}\sum_{k=1}^{n}k^m`],
-    ['Leading term (n large)', R`\sum_{k=1}^{n}k^m\approx\frac{n^{m+1}}{m+1}`],
     ['Signed area', R`\int_a^b f(x)\,dx=A_{\text{above}}-A_{\text{below}}`],
-    ['With an antiderivative', R`F'=f\ \Rightarrow\ \int_a^b f(x)\,dx=F(b)-F(a)`],
   ]},
-  { id: 'g1b', title: 'Definite integrals on any interval', quiz: '2 & 3 Nov', added: NOV3, rows: [
-    ['Any interval [a, b]', R`\int_a^b f\,dx=\int_0^b f\,dx-\int_0^a f\,dx`],
-    ['Powers on [a, b]', R`\int_a^b x^m\,dx=\frac{b^{m+1}-a^{m+1}}{m+1}`],
-    ['Zero width', R`\int_a^a f\,dx=0`],
+  { id: 'g2', title: 'Primitive functions and definite integrals', quiz: 'Day 16 & 17 · Quiz 06', added: NOV6, rows: [
+    ['General form on [a, b]', R`S_N=\sum_{k=1}^{N}f\!\left(a+\frac{k(b-a)}{N}\right)\frac{b-a}{N}`],
+    ['Primitive function', R`F'(x)=f(x)`],
+    ['Indefinite integral', R`\int f(x)\,dx=F(x)+C`],
+    ['Two primitives of f', R`F'=G'=f\ \Rightarrow\ G=F+C`],
+    ['Sums and constants', R`\int(\alpha f+\beta g)\,dx=\alpha\int f\,dx+\beta\int g\,dx`],
+    ['With a primitive', R`\int_a^b f(x)\,dx=\Big[F(x)\Big]_a^b=F(b)-F(a)`],
     ['Swapping the limits', R`\int_b^a f\,dx=-\int_a^b f\,dx`],
+    ['Zero width', R`\int_a^a f\,dx=0`],
     ['Joining intervals', R`\int_a^b f\,dx+\int_b^c f\,dx=\int_a^c f\,dx`],
-    ['Sums and constants', R`\int_a^b(\alpha f+\beta g)\,dx=\alpha\int_a^b f\,dx+\beta\int_a^b g\,dx`],
     ['A constant function', R`\int_a^b c\,dx=c\,(b-a)`],
-    ['Comparison (a ≤ b)', R`f\le g\ \Rightarrow\ \int_a^b f\,dx\le\int_a^b g\,dx`],
-    ['Name of the variable', R`\int_a^b f(x)\,dx=\int_a^b f(t)\,dt`],
+    ['Area of the region', R`A=\int_a^b|f(x)|\,dx`],
+  ]},
+  { id: 'g2b', title: 'Fundamental primitive functions', quiz: 'Day 16 & 17 · Quiz 06', added: NOV6, rows: [
+    ['Powers (n ≠ −1)', R`\int x^n\,dx=\frac{x^{n+1}}{n+1}+C`],
+    ['1/x', R`\int\frac{1}{x}\,dx=\ln|x|+C`],
+    ['eˣ', R`\int e^x\,dx=e^x+C`],
+    ['eᵃˣ', R`\int e^{ax}\,dx=\frac{1}{a}e^{ax}+C`],
+    ['Any base: bˣ', R`\int b^x\,dx=\frac{b^x}{\ln b}+C`],
+    ['bᵃˣ', R`\int b^{ax}\,dx=\frac{b^{ax}}{a\ln b}+C`],
+    ['Sine', R`\int\sin x\,dx=-\cos x+C`],
+    ['Cosine', R`\int\cos x\,dx=\sin x+C`],
+    ['sin ax', R`\int\sin ax\,dx=-\frac{1}{a}\cos ax+C`],
+    ['cos ax', R`\int\cos ax\,dx=\frac{1}{a}\sin ax+C`],
+    ['1/cos² x', R`\int\frac{1}{\cos^2x}\,dx=\tan x+C`],
+    ['1/(ax + b)', R`\int\frac{1}{ax+b}\,dx=\frac{1}{a}\ln|ax+b|+C`],
+    ['1/(1 + x²)', R`\int\frac{1}{1+x^2}\,dx=\arctan x+C`],
+    ['Values of arctan', R`\begin{gathered}\arctan0=0,\quad\arctan\tfrac{1}{\sqrt3}=\tfrac{\pi}{6}\\\arctan1=\tfrac{\pi}{4},\quad\arctan\sqrt3=\tfrac{\pi}{3}\end{gathered}`],
   ]},
 ];
 

@@ -23,7 +23,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 
 ## Rules
 
-- **Never commit `src/math/private/`, `src/physics/private/` or the password.** Both folders are git-ignored. The in-class quiz sheets and the past midterm papers exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and `math/derivatives/locked.json` (what the site opens with the password). `locked.json` also keeps a readable list of the past papers' titles, times and points, so a build without the password can still draw their password panels.
+- **Never commit `src/math/private/`, `src/physics/private/` or the password.** Both folders are git-ignored. The in-class quiz sheets and the past midterm papers exist in the repository only encrypted: `src/math/private.sealed.json` (their source) and each exam page's `locked.json` (`math/derivatives/locked.json`, `math/integrals/locked.json`: what the site opens with the password). `locked.json` also keeps a readable list of the past papers' titles, times and points, so a build without the password can still draw their password panels.
 - The password is saved in the user's Claude memory, because they asked for that. Otherwise they give it in chat. Never put it in the repository: not in files, not in commit messages.
 - Wording stays non-personal: no "your quizzes", no "from your chats", no student-ID versions.
 - Each subject keeps its colour: Math green, Physics the darker blue.
@@ -65,12 +65,13 @@ Strings use `String.raw`, so avoid `${` inside them (to keep a formula from brea
 
 These modules are the Calculus midterm 2 page (`math/integrals/`). They use the same markup as Calculus midterm 1.
 
-- `content.mjs`: units, exam-day habits and practice problems. `extras.mjs`: search tags, the Formulas tab, the interactive graphs (`GRAPHS`, drawn by `graphs.js`; `riemann` is the Riemann-sum graph) and the lesson icons. `verify.py`: numeric checks for every answer, Summary claim, formula and the graph (Riemann sums are added up exactly with fractions).
-- Units follow the course schedule (integral part): the slide gives dates, not day numbers, so units have `dates` ("2 & 3 Nov") and no `days`; the build then labels lessons by date everywhere. `starred` marks the lessons with an in-class quiz (the schedule's *).
+- `content.mjs`: units, exam-day habits and practice problems. `extras.mjs`: search tags, the Formulas tab, the interactive graphs (`GRAPHS`, drawn by `graphs.js`; `riemann` is the Riemann-sum graph) and the lesson icons. `followups.mjs`: Follow-up A and B for each in-class quiz, like Calculus midterm 1's. `verify.py`: numeric checks for every answer (practice and follow-ups), Summary claim, formula and the graph (Riemann sums are added up exactly with fractions; every primitive is checked by differentiating it at several points).
+- Units follow the course schedule (integral part): the slide gives dates, not day numbers, so every unit has `dates` ("2 & 3 Nov"). A lesson gets `days` and `quiz` once a quiz sheet shows them: Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov (the two classes before) Days 14 and 15. Lessons still to come keep their dates only, and the picker's span stays "2–20 Nov" until every lesson has day numbers (`spanOf`). `starred` marks the lessons with an in-class quiz (the schedule's *).
+- 2 & 3 Nov was shortened on 6 Nov (at the user's request: it had grown complicated and isn't what the quizzes ask). It keeps Δx and the sample points, the Riemann sum and its limit, the partial sums, the five steps, the two class examples, signed area and the F(b) − F(a) shortcut; upper and lower sums, the quick way for xᵐ, integrals on [a, b] from ∫₀ᵇ − ∫₀ᵃ and the functions without a primitive formula were cut, with practice 1.4, 1.5, 1.6 and 1.10 and their formula rows. The properties moved to 5 & 6 Nov. The remaining problems keep their old ids in `id`.
 - The whole schedule is in `units` from the start. A lesson not taught yet has `upcoming: true` and only `id`, `dates`, `title` and `starred`: it shows as a greyed-out Summary tile ("Notes after class") and nowhere else. After the class, remove `upcoming`, write its `ideas` and `watch`, and add `added`, practice problems, formulas, tags and checks, as for Calculus midterm 1.
 - A lesson pair is one unit over its two days. After the second day, extend its ideas and watch list and move its `added` to that day, so it is New again on devices that saw the first day. A lesson may have more than one formula group (`g1`, `g1b`).
 - Practice ids start again at `1.1` here: they live in this page's own store (`cla1-integrals-review`), so they never meet Calculus midterm 1's marks.
-- In-class quizzes start on 5 & 6 Nov; until then Quizzes and the mock part of Exams show a `soon-box`. The first quiz sheet will give the quiz number (and maybe the day numbers): add `quiz` (and `days`) to its unit then. Locked sheets for this page aren't wired yet (the build stops if the page lists any): give it its own private module and `math/integrals/locked.json`, with the same password and salt, like Calculus midterm 1's.
+- In-class quizzes start with Quiz 06 (5 & 6 Nov). This page's sheets are retyped in `private/inclass-integrals.mjs` (sealed with the rest of `private/`) and reach the site as `math/integrals/locked.json`, with the same password and salt as Calculus midterm 1's, so one unlock (and "Remember on this device") opens both pages and Physics. Their checks are in `private/verify_inclass.py`, and `leakcheck.mjs` reads them too. The mock part of Exams shows a `soon-box` until the first mock.
 
 ## Physics (src/physics)
 
@@ -134,9 +135,9 @@ With the private folders open, also run `node src/math/leakcheck.mjs`, `node src
 ## A new in-class quiz (needs the password)
 
 1. `SITE_PASSWORD='…' node src/math/build.mjs open` decrypts the private sources into `src/math/private/`.
-2. Retype the quiz into `private/inclass.mjs`, and add its checks to `private/verify_inclass.py`.
-3. Write Follow-up A and B in `followups.mjs`, with checks in `verify_followups.py`.
-4. `SITE_PASSWORD='…' node src/math/build.mjs site` re-seals `private/` and rebuilds `math/derivatives/locked.json`.
+2. Retype the quiz into `private/inclass.mjs` (Calculus midterm 1) or `private/inclass-integrals.mjs` (Calculus midterm 2), and add its checks to `private/verify_inclass.py`.
+3. Write Follow-up A and B in `followups.mjs`, with checks in `verify_followups.py` (Calculus midterm 2: `integrals/followups.mjs`, checks in `integrals/verify.py`). Give them `added`.
+4. `SITE_PASSWORD='…' node src/math/build.mjs site` re-seals `private/` and rebuilds the page's `locked.json`.
 5. Run `node src/math/leakcheck.mjs` and every check. All must pass.
 6. Commit and push. `private/` stays out of git.
 
