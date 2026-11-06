@@ -76,60 +76,99 @@
   .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
 
   .band { background: var(--band); border-bottom: 5px solid var(--green); }
-  .band .wrap { padding-block: 24px 20px; }
+  .band .wrap { padding-block: 16px 14px; }
   .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; line-height: 1.15; }
-  .band-title .en { font-size: clamp(32px, 9vw, 44px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
+  .band-title .en { font-size: clamp(30px, 8vw, 40px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
   .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; }
-  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
-  .band-lede { margin-top: 8px; font-size: 15px; color: var(--ink-soft); max-width: 60ch; }
+  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 26px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
+  .band-lede { margin-top: 4px; font-size: 14.5px; color: var(--ink-soft); }
 
-  main { padding-block: 24px 8px; display: grid; gap: 30px; }
+  main { padding-block: 20px 8px; display: grid; gap: 28px; }
   .sec-title { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--green); font-size: 19px; font-weight: 700; line-height: 1.3; }
   .new-pill { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--lime); color: #1B2A0E;
     font-size: 10.5px; font-weight: 900; line-height: 1.3; letter-spacing: .06em; text-transform: uppercase; vertical-align: middle; }
+  .nw { white-space: nowrap; }
 
-  .subjects { display: grid; gap: 14px; }
-  .subject { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
-    display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px; border: 1.5px solid var(--c); border-radius: 4px;
-    background: var(--surface); color: var(--ink); text-decoration: none; }
-  a.subject:hover { background: var(--c-tint); }
-  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
-  .s-icon { grid-row: span 2; width: 52px; height: 52px; }
-  .s-icon svg { width: 100%; height: 100%; display: block; }
-  .s-kicker { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
-  .s-title { display: block; margin-top: 2px; font-size: 20px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
-  .s-text { grid-column: 2; font-size: 14.5px; color: var(--ink-soft); }
-  .s-foot { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 8px; }
-  .s-parts { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
-  .s-parts li { padding: 2px 10px; border-radius: 999px; background: var(--c-tint); color: var(--c-text); font-size: 12.5px; font-weight: 700; }
-  .s-go { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; background: var(--c); color: #FFFFFF; font-size: 14px; font-weight: 700; line-height: 1; }
-  .s-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .s-soon { display: inline-block; padding: 4px 12px; border: 1.5px solid var(--c); border-radius: 999px; color: var(--c-text); font-size: 13px; font-weight: 700; }
-  :root[data-theme="dark"] .s-go { color: #0E1310; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-go { color: #0E1310; } }
+  /* next up: the soonest exam as a card with its countdown, Practice progress and links; then the others with a date */
+  .next { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
+    display: grid; gap: 8px; padding: 16px; border: 2px solid var(--c); border-radius: 6px; background: var(--surface); }
+  .next.physics, .up-item.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
+  .nx-top { display: flex; align-items: center; gap: 12px; }
+  .nx-top svg { width: 44px; height: 44px; flex: none; display: block; }
+  .nx-head { flex: 1; min-width: 0; display: grid; line-height: 1.25; }
+  .nx-kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
+  .nx-title { margin: 2px 0 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
+  .nx-left { flex: none; display: grid; justify-items: end; line-height: 1.1; color: var(--c-text); }
+  .nx-left b { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .nx-left small { font-size: 12px; font-weight: 700; }
+  .next.soon .nx-left { color: var(--amber); }
+  .nx-when { font-size: 14px; color: var(--ink-soft); }
+  .prog { display: grid; gap: 5px; font-size: 13.5px; color: var(--ink-soft); }
+  .prog-bar { display: flex; height: 8px; border-radius: 8px; background: var(--line); overflow: hidden; }
+  .prog-bar i { display: block; height: 100%; background: var(--c); }
+  .prog-bar i.rev { background: var(--amber); }
+  .prog b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .nx-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .nx-btns a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; line-height: 1.1; text-decoration: none; }
+  .nx-btns .go { background: var(--c); color: #FFFFFF; }
+  .nx-btns .alt { border: 1.5px solid var(--c); color: var(--c-text); background: var(--surface); }
+  .nx-btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  :root[data-theme="dark"] .nx-btns .go { color: #0E1310; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nx-btns .go { color: #0E1310; } }
+  @media (hover: hover) { .nx-btns .alt:hover { background: var(--c-tint); } }
 
   .up-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .up-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
+  .up-list:empty { display: none; }
+  #up-list { margin-top: 10px; }
+  .up-item { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
   a.up-item:hover { background: var(--tint); }
-  .up-cal { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--tint); color: var(--green-text); }
+  .up-cal { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--c-tint); color: var(--c-text); }
   .up-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
   .up-name { font-size: 15.5px; font-weight: 700; }
   .up-when { font-size: 13px; color: var(--ink-soft); }
-  .up-left { flex: none; font-size: 14px; font-weight: 700; color: var(--green-text); font-variant-numeric: tabular-nums; }
+  .up-prog { font-size: 12.5px; color: var(--ink-soft); }
+  .up-left { flex: none; font-size: 14px; font-weight: 700; color: var(--c-text); font-variant-numeric: tabular-nums; }
   .up-item.soon { border-color: var(--amber); }
   .up-item.soon .up-left { color: var(--amber); }
   .up-item.past { opacity: .6; }
-  .up-more { margin-top: 10px; font-size: 13.5px; color: var(--ink-soft); }
-  .up-more a { color: var(--green-text); font-weight: 700; white-space: nowrap; }
-  .nw { white-space: nowrap; }
+  .resume { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 11px 14px; border: 1.5px dashed var(--green); border-radius: 4px;
+    color: var(--ink); text-decoration: none; }
+  .resume > svg { width: 22px; height: 22px; flex: none; color: var(--green-text); }
+  .rs-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
+  .rs-main b { font-size: 14.5px; }
+  .rs-main small { font-size: 13px; color: var(--ink-soft); }
+  @media (hover: hover) { .resume:hover { background: var(--tint); } }
 
+  .subjects { display: grid; gap: 12px; }
+  @media (min-width: 640px) { .subjects { grid-template-columns: 1fr 1fr; } }
+  .subject { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 12px; padding: 14px; border: 1.5px solid var(--c); border-radius: 4px;
+    background: var(--surface); color: var(--ink); text-decoration: none; }
+  a.subject:hover { background: var(--c-tint); }
+  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
+  .s-icon { width: 44px; height: 44px; }
+  .s-icon svg { width: 100%; height: 100%; display: block; }
+  .s-kicker { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
+  .s-title { display: block; margin-top: 2px; font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+  .s-text { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-soft); }
+  .s-go { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 7px 14px; border-radius: 999px; background: var(--c); color: #FFFFFF; font-size: 13.5px; font-weight: 700; line-height: 1; }
+  .s-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  :root[data-theme="dark"] .s-go { color: #0E1310; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-go { color: #0E1310; } }
+
+  /* What's new: a headline per entry, tapped open for the whole note and its link */
   .news, .n-items { list-style: none; margin: 0; padding: 0; display: grid; }
-  .news { gap: 14px; }
+  .news { gap: 12px; }
   .n-date { margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
-  .n-items li { padding: 9px 0; border-bottom: 1px solid var(--line); }
-  .news a { color: var(--ink); text-decoration: none; }
-  .news a:hover .n-text { text-decoration: underline; }
-  .n-text { font-size: 14.5px; }
+  .n-items li { border-bottom: 1px solid var(--line); }
+  .n-items details > summary { display: flex; align-items: center; gap: 10px; padding: 10px 0; list-style: none; cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1.4; }
+  .n-items details > summary::-webkit-details-marker { display: none; }
+  .n-items summary .n-t { flex: 1; min-width: 0; }
+  .n-items summary svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--green-text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+  .n-items details[open] > summary svg { transform: rotate(90deg); }
+  .n-text { margin: 0 0 10px; font-size: 14px; color: var(--ink-soft); }
+  .n-open { display: inline-block; margin: -2px 0 12px; font-size: 14px; font-weight: 700; color: var(--green-text); }
 
   .offline { padding: 16px; border: 1.5px dashed var(--green); border-radius: 4px; }
   .offline h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
@@ -154,38 +193,39 @@
 </div></header>
 
 <div class="band"><div class="wrap">
-  <h1 class="band-title"><span class="en">Subjects</span><span class="jp" lang="ja">科目</span></h1>
-  <p class="band-lede">Notes for first-year engineering courses: key ideas, practice problems with worked solutions, formula sheets, quizzes and mock exams.</p>
+  <h1 class="band-title"><span class="en">Today</span><span class="jp" lang="ja">今日</span></h1>
+  <p class="band-lede" id="today">Notes for first-year engineering courses: key ideas, practice problems, formula sheets, quizzes and mock exams.</p>
 </div></div>
 
 <main class="wrap">
-  <section aria-label="Subjects">
+  <section aria-labelledby="next-title">
+    <h2 class="sec-title" id="next-title">Next up</h2>
+    <div id="next"><p class="up-when">Loading…</p></div>
+    <ul class="up-list" id="up-list"></ul>
+    <a class="resume" id="resume" href="./" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.2h3.2"/><path d="M12 8.5V12l2.5 2"/></svg><span class="rs-main"><b>Pick up where you left off</b><small id="resume-where"></small></span></a>
+  </section>
+
+  <section aria-labelledby="subj-title">
+    <h2 class="sec-title" id="subj-title">Subjects</h2>
     <div class="subjects">
       <a class="subject math" href="math/" id="card-math">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
         <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
-        <p class="s-text">Review notes for each exam. Ready: Calculus midterm 1 (derivatives), and midterm 2 (integrals), which grows after each class. Coming: the Linear Algebra midterm.</p>
-        <span class="s-foot">
-          <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li><li>Exams</li></ul>
-          <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
-        </span>
+        <p class="s-text">Calculus midterms 1 and 2 (integrals, which grows after each class). Coming: the Linear Algebra midterm.</p>
+        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
       </a>
       <a class="subject physics" href="physics/" id="card-physics">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
         <span><span class="s-kicker">Physics · EP1</span><span class="s-title">Engineering Physics 1</span></span>
-        <p class="s-text">Review notes for each exam. Ready: the midterm (Chapters 1–8), with a summary of every module and a worked example for each, 103 practice problems in three tiers, the formula sheet, the exercise-day sheets, three practice sets and three mock midterms.</p>
-        <span class="s-foot">
-          <ul class="s-parts" aria-label="Sections"><li>Summary</li><li>Practice</li><li>Formulas</li><li>Quizzes</li><li>Exams</li></ul>
-          <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
-        </span>
+        <p class="s-text">The midterm, Chapters 1–8: summaries, 103 practice problems, formulas, quiz sheets and mock midterms.</p>
+        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
       </a>
     </div>
   </section>
 
-  <section aria-labelledby="up-title">
-    <h2 class="sec-title" id="up-title">Upcoming exams</h2>
-    <ul class="up-list" id="up-list"><li class="up-item"><span class="up-main"><span class="up-when">Loading…</span></span></li></ul>
-    <p class="up-more">Timed practice: mock midterms for <a href="math/derivatives/#exams">Calculus midterm 1</a> and the <a href="physics/midterm/#exams">Physics midterm</a>.</p>
+  <section aria-labelledby="later-title">
+    <h2 class="sec-title" id="later-title">Other exams</h2>
+    <ul class="up-list" id="later-list"></ul>
   </section>
 
   <section aria-labelledby="news-title">
@@ -214,32 +254,80 @@
     const $ = (s) => document.querySelector(s);
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const CAL = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>';
+    const CHEV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>';
     const fresh = (date) => { const t = new Date(date + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
     const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
-    // an exam links to its own page's Exams tab (page in site.json), or else to its subject's page
+    // an exam links to its own page (page in site.json), or else to its subject's page
     const COURSE_PAGE = { math: 'math/', physics: 'physics/' };
+    const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg>';
+    const BADGE = { math: $('#card-math .s-icon').innerHTML, physics: $('#card-physics .s-icon').innerHTML };
+    // what the exam pages record for this device (page.js): each page's Practice progress and where it was left
+    let pages = {};
+    try { pages = JSON.parse(localStorage.getItem('study-pages') || 'null') || {}; } catch (e) { pages = {}; }
+    function progress(page, hero) {
+      const p = page && pages[page];
+      if (!p || !p.total) return hero && page ? '<div class="prog"><span>Practice: not started yet</span></div>' : '';
+      const pc = (n) => Math.max(0, Math.min(100, (100 * n) / p.total)).toFixed(1) + '%';
+      const text = `Practice: <b>${p.got}</b> of ${p.total} got it${p.rev ? ` · <b>${p.rev}</b> to review` : ''}`;
+      return hero ? `<div class="prog"><div class="prog-bar" role="img" aria-label="${p.got} of ${p.total} practice problems got it, ${p.rev || 0} to review"><i style="width:${pc(p.got)}"></i><i class="rev" style="width:${pc(p.rev || 0)}"></i></div><span>${text}</span></div>`
+        : `<span class="up-prog">${text}</span>`;
+    }
 
     function exams(list) {
-      const ul = $('#up-list');
       const today = todayJST();
       // the course name only tells exams apart once there is more than one course
       const several = new Set(list.map((x) => x.course)).size > 1;
       const rows = list.map((x) => {
-        let when = 'Date to be announced', left = '', cls = '', sort = Infinity;
+        let when = 'Date to be announced', left = '', cls = '', sort = Infinity, days = null;
         if (x.date) {
-          const days = Math.round((new Date(x.date + 'T00:00:00+09:00').getTime() - today) / DAY);
+          days = Math.round((new Date(x.date + 'T00:00:00+09:00').getTime() - today) / DAY);
           when = new Date(x.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (x.time ? ' · ' + x.time : '');
           left = days < 0 ? 'Done' : days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
           cls = days < 0 ? ' past' : days <= 7 ? ' soon' : '';
           sort = days < 0 ? 1e9 + days : days;
         }
+        return { x, days, when, left, cls, sort };
+      }).sort((a, b) => a.sort - b.sort);
+      const row = ({ x, when, left, cls }) => {
         const href = x.page ? x.page + '#exams' : COURSE_PAGE[x.subject];
-        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${several ? esc(x.course) + ' · ' : ''}<span class="nw">${esc(when)}</span></span></span><span class="up-left">${left}</span>`;
-        return { sort, html: href ? `<li><a class="up-item${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item${cls}">${inner}</li>` };
-      });
-      rows.sort((a, b) => a.sort - b.sort);
-      ul.innerHTML = rows.map((r) => r.html).join('') || '<li class="up-item"><span class="up-main"><span class="up-when">No exams listed yet.</span></span></li>';
+        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${several ? esc(x.course) + ' · ' : ''}<span class="nw">${esc(when)}</span></span>${progress(x.page, false)}</span><span class="up-left">${left}</span>`;
+        return href ? `<li><a class="up-item ${x.subject}${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item ${x.subject}${cls}">${inner}</li>`;
+      };
+      const coming = rows.filter((r) => r.days !== null && r.days >= 0);
+      // the soonest exam: its countdown in large, Practice progress, and its page, Practice and night-before sheet
+      const hero = coming[0];
+      if (hero) {
+        const { x, days, when } = hero;
+        const go = x.page || COURSE_PAGE[x.subject];
+        const left = days === 0 ? '<b>Today</b>' : days === 1 ? '<b>Tomorrow</b>' : `<b>${days}</b><small>days to go</small>`;
+        $('#next').innerHTML = `<article class="next ${x.subject}${days <= 7 ? ' soon' : ''}" id="next-exam">
+          <div class="nx-top">${BADGE[x.subject] || ''}<div class="nx-head"><span class="nx-kicker">${esc(x.course)}</span><h3 class="nx-title">${esc(x.name)}</h3></div><div class="nx-left">${left}</div></div>
+          <p class="nx-when">${esc(when)}</p>
+          ${progress(x.page, true)}
+          <div class="nx-btns"><a class="go" href="${go}">Open${ARROW}</a>${x.page ? `<a class="alt" href="${x.page}#practice">Practice</a><a class="alt" href="${x.page}#night">Night-before sheet</a>` : ''}</div>
+        </article>`;
+      } else $('#next').innerHTML = '<p class="up-when">No exam dates yet.</p>';
+      $('#up-list').innerHTML = coming.slice(1).map(row).join('');
+      $('#later-list').innerHTML = rows.filter((r) => !coming.includes(r)).map(row).join('');
     }
+
+    // the page and spot this device was on last (study-pages, page.js), if it was in the last 30 days
+    const TAB_NAME = { summary: 'Summary', practice: 'Practice', formulas: 'Formulas', quizzes: 'Quizzes', exams: 'Exams', night: 'Night-before sheet' };
+    const ago = (t) => {
+      const m = Math.round((Date.now() - t) / 60000);
+      return m < 2 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : m < 2880 ? 'yesterday' : `${Math.round(m / 1440)} days ago`;
+    };
+    (() => {
+      const last = Object.entries(pages).filter(([, p]) => p && p.name && p.t && Date.now() - p.t < 30 * DAY).sort((a, b) => b[1].t - a[1].t)[0];
+      if (!last) return;
+      const [path, p] = last;
+      const link = $('#resume');
+      link.href = path + (TAB_NAME[p.tab] ? '#' + p.tab : '');
+      $('#resume-where').textContent = [p.name, TAB_NAME[p.tab], p.label].filter(Boolean).join(' · ') + ' · ' + ago(p.t);
+      link.addEventListener('click', () => { try { sessionStorage.setItem('study-resume', JSON.stringify({ path, at: p.at || '' })); } catch (e) { /* ignore */ } });
+      link.hidden = false;
+    })();
+    $('#today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Tokyo' });
     // "New" only for what this device hasn't seen yet, like the Math page (same keys, see page.js): What's new
     // marks a day's entries until the home page has shown them once (they stay for the rest of that visit), and
     // a subject's card until that subject's page has been opened since its newest update.
@@ -264,10 +352,7 @@
       latest.forEach((n) => { const g = days[days.length - 1]; if (g && g.date === n.date) g.items.push(n); else days.push({ date: n.date, items: [n] }); });
       $('#news').innerHTML = days.map((g) => {
         const d = new Date(g.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
-        const items = g.items.map((n) => {
-          const text = `<span class="n-text">${esc(n.text)}</span>`;
-          return `<li>${n.link ? `<a href="${esc(n.link)}">${text}</a>` : text}</li>`;
-        }).join('');
+        const items = g.items.map((n) => `<li><details><summary><span class="n-t">${esc(n.title || n.text)}</span>${CHEV}</summary><p class="n-text">${esc(n.text)}</p>${n.link ? `<a class="n-open" href="${esc(n.link)}">Open →</a>` : ''}</details></li>`).join('');
         return `<li class="n-day"><p class="n-date"><time class="nw" datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
       }).join('');
       const newest = latest.length ? latest[0].date : '';
@@ -291,7 +376,7 @@
       }
     }
     fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })
-      .catch(() => { $('#up-list').innerHTML = '<li class="up-item"><span class="up-main"><span class="up-when">Couldn\'t load the exam list. Check your connection.</span></span></li>'; });
+      .catch(() => { $('#next').innerHTML = '<p class="up-when">Couldn\'t load the exam list. Check your connection.</p>'; });
 
     // offline and install
     const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;

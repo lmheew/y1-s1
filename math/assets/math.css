@@ -97,6 +97,15 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; color: var(--ink); }
 .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
 .band-lede { margin-top: 8px; font-size: 15px; color: var(--ink-soft); max-width: 60ch; }
+/* phones: a slimmer band, so the tab's content starts higher; the intro shows one line until it is tapped (page.js) */
+@media (max-width: 639px) {
+  .band .wrap { padding-block: 14px 12px; }
+  .band-title .en { font-size: 30px; }
+  .band-title .jp { font-size: 14px; }
+  .band-title .jp::before { height: 22px; }
+  .band-lede { margin-top: 4px; font-size: 14px; line-height: 1.6; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; cursor: pointer; }
+  .band-lede.open { display: block; cursor: auto; }
+}
 .content { padding-block: 22px 24px; }
 .kicker { margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green-text); }
 
@@ -502,6 +511,67 @@ details[open] .when-open { display: inline; }
 .lazy-wait { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ink-soft); }
 .new-pill.lead { margin: 0 4px 0 0; }
 
+/* ---------- Practice session: its setup (opened from the overview), the bar that counts through it, the end ---------- */
+.ov-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ov-btns .linkbtn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; }
+.ov-btns .linkbtn .ic { width: 16px; height: 16px; }
+.ssetup { margin: -4px 0 16px; padding: 14px 16px 16px; border: 1.5px solid var(--green); border-radius: 4px; background: var(--tint); display: grid; gap: 10px; }
+.ss-h { margin: 0; font-size: 17px; font-weight: 700; }
+.ss-note { margin: -6px 0 2px; font-size: 13.5px; color: var(--ink-soft); }
+.ss-row { display: grid; gap: 5px; }
+.ss-l { margin: 0; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green-text); }
+.ss-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ss-chips .chip { min-width: 40px; padding: 6px 12px; }
+#ss-go { margin-top: 4px; }
+#ss-go:disabled { opacity: .5; cursor: default; }
+.sbar { position: sticky; top: var(--anchor-top); z-index: 5; margin: 0 0 14px; padding: 10px 0 0; background: var(--bg); }
+.sbar-row { display: flex; align-items: center; gap: 10px; }
+.s-count { flex: 1; font-size: 14px; color: var(--ink-soft); }
+.s-count b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.s-where { display: block; font-size: 12.5px; line-height: 1.3; }
+.sbar .pill { padding: 8px 18px; }
+.s-track { height: 4px; margin-top: 10px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.s-track i { display: block; height: 100%; width: 0; background: var(--lime-deep); transition: width .3s ease; }
+.sdone { padding: 18px 16px; border: 1.5px solid var(--green); border-radius: 4px; background: var(--surface); }
+.sdone h3 { margin: 0 0 6px; font-size: 19px; }
+.sdone p { margin: 0 0 14px; }
+.sdone-btns { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+/* in a session the Practice tab shows only the bar and the problem at hand */
+.in-session > .band, .in-session .overview, .in-session .tier-legend, .in-session .filters, .in-session .ssetup, .in-session .empty-note,
+.in-session .reset-row, .in-session .punit-head, .in-session .ptier-h, .in-session .toc,
+.in-session .punit:not(.s-unit), .in-session .prob:not(.s-cur), .in-session .ptier:not(:has(.s-cur)) { display: none !important; }
+.in-session .punit { margin-top: 0; }
+.in-session .content.has-toc { padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+.in-session .prob.s-cur { outline: none; }
+
+/* ---------- the night-before sheet (#night) and the link to it in Exams and Formulas ---------- */
+.night-link { display: flex; align-items: center; gap: 12px; margin: 14px 0 4px; padding: 12px 14px; border: 1.5px solid var(--green); border-radius: 4px;
+  background: var(--tint); color: var(--ink); text-decoration: none; }
+.night-link > .ic { width: 26px; height: 26px; flex: none; color: var(--green-text); }
+.night-link > .ic:last-child { width: 18px; height: 18px; }
+.nl-t { flex: 1; display: grid; line-height: 1.35; min-width: 0; }
+.nl-t b { font-size: 15.5px; }
+.nl-t small { font-size: 13px; color: var(--ink-soft); }
+@media (hover: hover) { .night-link:hover { border-color: var(--bar-active); } }
+.testbar + .night-link { margin: -6px 0 18px; }
+.night-tools { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 6px; }
+.night-tools .linkbtn { padding: 9px 16px; }
+.nsec { padding-top: 22px; scroll-margin-top: var(--anchor-top); }
+.nsec h2 { margin: 0 0 6px; padding-bottom: 8px; border-bottom: 2px solid var(--green); display: grid; font-size: 19px; font-weight: 700; line-height: 1.3; }
+.nsec .fmod { margin: 14px 0 2px; font-size: 14px; }
+.nsec h2 + .fmod { margin-top: 10px; }
+.nhabits { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.nrows { display: grid; }
+.nrow { display: grid; gap: 0; min-width: 0; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.nname { font-size: 12px; font-weight: 700; color: var(--green-text); }
+.nmath { min-width: 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+.nsec .watch { margin-top: 12px; }
+.nsec .table-wrap { margin: 8px 0 4px; }
+@media (min-width: 640px) {
+  .nrows { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .nrow { grid-template-rows: auto 1fr; }
+}
+
 /* ---------- speed: a long tab shows before all of it is drawn ----------
    Practice cards, quiz and exam questions and formula rows away from the screen skip layout and painting at first
    (content-visibility), so a tab with a hundred of them shows at once; the size here is only a first guess (a phone's
@@ -527,6 +597,10 @@ details[open] .when-open { display: inline; }
   body { background: #FFFFFF; color: var(--ink); padding: 0; }
   body::before, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
   .prob, .rq, .frow, .smod { content-visibility: visible !important; } /* printing draws them all */
+  .night-tools, .night-link, .ov-btns, .ssetup, .sbar, .sdone { display: none !important; }
+  .nrows { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
+  .nrow, .nsec .watch li, .nhabits li { break-inside: avoid; }
+  .nsec h2 { break-after: avoid; }
   .band { border-bottom-width: 2px; }
   .sheet { border: 0; padding: 0; }
   /* pages break between parts and steps, never inside one, and a question's head stays with what follows it */
@@ -608,6 +682,9 @@ details[open] .when-open { display: inline; }
 .calc-fab.off { opacity: .26; }
 .calc-fab.off::after { content: ""; position: absolute; width: 28px; height: 2px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); }
 .calc-fab:focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; opacity: 1; }
+/* at rest it sits half inside its edge, so it covers less of the page; woken, open, dragged or focused, it comes out */
+.calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: -22px 0; }
+.calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: 22px 0; }
 /* tucked into its edge while the page scrolls down, back on the way up (totop.js sets .fab-away on the root);
    it stays put while it is woken, open, being dragged or focused */
 .fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { opacity: 0; translate: calc(-100% - 16px) 0; pointer-events: none; }

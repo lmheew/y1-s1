@@ -86,7 +86,11 @@ with sync_playwright() as p:
         # ---- home page ----
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
-        check(f'{label}: home lists 7 upcoming exams, dates to be announced', pg.locator('#up-list .up-item').count() == 7 and 'Date to be announced' in pg.locator('#up-list').inner_text())
+        # Next up: the soonest exam with a date, then the others with a date; the rest under Other exams
+        exams_all = json.load(open(os.path.join(REPO, 'site.json')))['exams']
+        check(f'{label}: home shows all 7 exams: the next one, the others coming, then the rest, dates to be announced',
+              pg.locator('#next-exam').count() == 1 and 1 + pg.locator('#up-list .up-item').count() + pg.locator('#later-list .up-item').count() == len(exams_all) == 7
+              and 'Date to be announced' in pg.locator('#later-list').inner_text())
         days = sorted({n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'][:6]})
         check(f'{label}: home shows What\'s new grouped by day, one New label per day', pg.locator('#news .n-items li').count() == 6
               and pg.locator('#news .n-day').count() == len(days) and pg.locator('#news .new-pill').count() == len(days), days)
@@ -94,10 +98,18 @@ with sync_playwright() as p:
         check(f'{label}: home footer says when the site was last updated', pg.locator('#updated').is_visible()
               and pg.locator('#updated time').get_attribute('datetime') == newest)
         check(f'{label}: Math and Physics cards have a New label', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#card-physics .new-pill').count() == 1)
-        check(f'{label}: home exams name their course now that there are two, and dates and the links stay whole',
-              'Linear Algebra 1 ·' in pg.locator('#up-list').inner_text() and 'Engineering Physics 1 ·' in pg.locator('#up-list').inner_text()
-              and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, .up-more a')].every((e) => e.getClientRects().length === 1)"))
-        check(f'{label}: the Physics midterm links to its page', pg.locator('#up-list a[href="physics/midterm/#exams"]').count() == 1)
+        lists = pg.locator('#up-list').inner_text() + pg.locator('#later-list').inner_text()
+        check(f'{label}: home exams name their course now that there are two, and dates stay whole',
+              'Linear Algebra 1 ·' in lists and 'Engineering Physics 1' in lists + pg.locator('#next-exam').inner_text()
+              and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, #later-list .up-when .nw')].every((e) => e.getClientRects().length === 1)"))
+        check(f'{label}: the Physics midterm links to its page', pg.locator('#next-exam a[href="physics/midterm/"], #up-list a[href="physics/midterm/#exams"]').count() == 1)
+        check(f'{label}: the next exam links to its page, its Practice and its night-before sheet, and Practice has not started here yet',
+              pg.locator('#next-exam .nx-btns a').count() == 3 and pg.locator('#next-exam a[href$="#night"]').count() == 1
+              and 'not started yet' in pg.locator('#next-exam').inner_text() and pg.locator('#resume').is_hidden())
+        check(f'{label}: What\'s new shows a headline per entry, its text a tap away', pg.locator('#news details').count() == 6
+              and pg.locator('#news details[open]').count() == 0 and not pg.locator('#news .n-text').first.is_visible())
+        pg.locator('#news details summary').first.click()
+        check(f'{label}: a tapped headline opens its note and link', pg.locator('#news .n-text').first.is_visible() and pg.locator('#news .n-open').first.is_visible())
         if label == 'phone':
             # link previews: both pages name a 1200 x 630 image that is in the repository, by its address on the live site
             for url in ['/', '/math/', '/math/derivatives/', '/physics/', '/physics/midterm/']:
@@ -551,6 +563,146 @@ with sync_playwright() as p:
     check('speed: the side menu jumps to the last Practice chapter', abs(top) <= 8, top)
     ctx.close()
 
+    # ---- practice sessions: one problem at a time, picked by chapter or lesson (and level on Physics) ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    errors = []
+    pg.on('pageerror', lambda e: errors.append(str(e)))
+    pg.goto(BASE + '/physics/midterm/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    check('session: the setup is closed until asked for', pg.locator('#ssetup').is_hidden() and pg.locator('#ss-open').get_attribute('aria-expanded') == 'false')
+    pg.click('#ss-open')
+    check('session: the setup opens with every chapter and level on, 10 of the problems not marked yet',
+          pg.locator('#ssetup').is_visible() and pg.locator('#ssetup .ss-chips[data-k="units"] .chip[aria-pressed="true"]').count() == 8
+          and pg.locator('#ssetup .ss-chips[data-k="tiers"] .chip[aria-pressed="true"]').count() == 3 and pg.locator('#ss-go').inner_text() == 'Start · 10 problems')
+    for v in ['1', '2', '3', '5', '6', '7', '8']:
+        pg.click(f'#ssetup .ss-chips[data-k="units"] .chip[data-v="pc{v}"]')
+    pg.click('#ssetup .ss-chips[data-k="tiers"] .chip[data-v="f"]')
+    pg.click('#ssetup .ss-chips[data-k="n"] .chip[data-v="all"]')
+    check('session: Chapter 4 without Foundation is its 9 Application and Advanced problems', pg.locator('#ss-go').inner_text() == 'Start · 9 problems', pg.locator('#ss-go').inner_text())
+    pg.click('#ss-go')
+    shown = lambda: pg.evaluate("[...document.querySelectorAll('#view-practice .prob')].filter((c) => c.offsetParent).map((c) => c.id)")
+    cur = shown()
+    check('session: one problem at a time, from Chapter 4, not Foundation, with the band and the list out of the way',
+          len(cur) == 1 and cur[0].startswith('prob-4-') and not pg.locator('#view-practice .overview').is_visible()
+          and not pg.locator('#view-practice .band').is_visible() and not pg.evaluate(f"document.getElementById('{cur[0]}').closest('.ptier').classList.contains('ptier-f')"), cur)
+    check('session: the bar counts the problems and says where this one is from', 'Problem 1 of 9' in pg.locator('#sbar .s-count').inner_text()
+          and 'Chapter 4' in pg.locator('#sbar .s-where').inner_text() and pg.locator('#sbar .s-next').inner_text() == 'Skip')
+    card = pg.locator('.prob.s-cur')
+    card.locator('details.sol > summary').click()
+    card.locator('.mbtn[data-mark="review"]').click()
+    pg.wait_for_timeout(100)
+    check('session: once marked, Skip becomes Next', pg.locator('#sbar .s-next').inner_text() == 'Next')
+    pg.click('#sbar .s-next')
+    check('session: Next shows the next problem, its answer closed', 'Problem 2 of 9' in pg.locator('#sbar .s-count').inner_text()
+          and shown() != cur and pg.locator('.prob.s-cur details.sol[open]').count() == 0)
+    card = pg.locator('.prob.s-cur')
+    card.locator('details.sol > summary').click()
+    card.locator('.mbtn[data-mark="got"]').click()
+    pg.click('#sbar .s-end')
+    check('session: End shows how it went', pg.locator('#sdone').is_visible() and '2 problems' in pg.locator('#sdone').inner_text()
+          and '1 got it' in pg.locator('#sdone').inner_text().replace('\n', ' ') and pg.locator('#sbar').count() == 0, pg.locator('#sdone').inner_text())
+    pg.click('#sdone .s-again')
+    check('session: the ones to review can go again', 'Problem 1 of 1' in pg.locator('#sbar .s-count').inner_text() and shown() == cur, shown())
+    check('session: no sideways scroll in a session', overflow(pg) <= 0, overflow(pg))
+    pg.click('#sbar .s-end')
+    pg.click('#sdone .s-exit')
+    check('session: back to all problems, marks kept', pg.locator('#view-practice.in-session').count() == 0 and len(shown()) == 103
+          and pg.locator('#ring-all-text').inner_text() == '1/103' and pg.locator('#ov-rev').inner_text() == '1')
+    pg.goto(BASE + '/math/derivatives/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    pg.click('#ss-open')
+    check('session: Math picks by lesson, without levels', pg.locator('#ssetup .ss-chips[data-k="units"] .chip').count() == pg.locator('#view-practice .punit').count()
+          and pg.locator('#ssetup .ss-chips[data-k="tiers"]').count() == 0 and pg.locator('#ss-go').inner_text() == 'Start · 10 problems')
+    pg.click('#ss-go')
+    check('session: a Math session runs the same way', len(shown()) == 1 and 'Problem 1 of 10' in pg.locator('#sbar .s-count').inner_text()
+          and pg.locator('#sbar .s-where').inner_text().startswith('Day '))
+    check('session: no page errors', not errors, errors[:3])
+    ctx.close()
+
+    # ---- the night-before sheet: from Exams, Formulas and the home page; prints without its buttons ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#exams')
+    pg.wait_for_selector('#view-exams .night-link')
+    pg.click('#view-exams .night-link')
+    pg.wait_for_selector('#view-night .nsec')
+    check('night: the Physics sheet has the habits, Chapters 1–8 and the values to know, with no tab of its own',
+          pg.locator('#view-night').is_visible() and pg.locator('#view-night .nsec').count() == 10 and pg.locator('.tab').count() == 5
+          and pg.locator('.tab[aria-selected="true"]').count() == 0 and pg.url.endswith('#night'))
+    phys_core = pg.locator('#view-night .nrow').count()
+    check('night: only the core (★★★) formulas, with each chapter\'s Watch out list', 40 <= phys_core <= 90 and pg.locator('#view-night .watch').count() == 8, phys_core)
+    pg.click('#view-night [data-night-back]')
+    check('night: Back goes to the tab it came from', pg.locator('#view-exams').is_visible() and pg.locator('#tab-exams[aria-selected="true"]').count() == 1)
+    pg.goto(BASE + '/physics/midterm/#night')
+    pg.wait_for_selector('#view-night .nsec')
+    pg.emulate_media(media='print')
+    check('night: it prints without its buttons and the bars', pg.locator('#view-night .night-tools').is_hidden() and pg.locator('.tabbar').is_hidden())
+    pg.emulate_media(media='screen')
+    pg.reload()
+    pg.wait_for_selector('#view-night .nsec')
+    pg.goto(BASE + '/physics/midterm/')
+    pg.wait_for_selector('#view-exams .up-item')
+    check('night: it is never the tab a page opens on next time: the last tab (Exams) opens', pg.locator('#view-night').is_hidden() and pg.locator('#view-exams').is_visible())
+    for page, n in [('math/derivatives', 8), ('math/integrals', 4)]:
+        pg.goto(BASE + f'/{page}/#formulas')
+        pg.wait_for_selector('#view-formulas .night-link')
+        pg.click('#view-formulas .night-link')
+        pg.wait_for_selector('#view-night .nsec')
+        check(f'night: {page}: the habits, each lesson on the midterm and the values to know', pg.locator('#view-night .nsec').count() == n
+              and pg.locator('#view-night .nrow').count() > 20 and overflow(pg) <= 0, (pg.locator('#view-night .nsec').count(), pg.locator('#view-night .nrow').count()))
+    ctx.close()
+
+    # ---- phones: a slimmer band, its intro one line until tapped; the calculator half inside its edge at rest ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#summary')
+    pg.wait_for_selector('.calc-fab')
+    pg.wait_for_timeout(500)
+    band_h = pg.evaluate("Math.round(document.querySelector('#view-summary .band').getBoundingClientRect().height)")
+    lede = pg.locator('#view-summary .band-lede')
+    line = pg.evaluate("parseFloat(getComputedStyle(document.querySelector('#view-summary .band-lede')).lineHeight)")
+    check('phone: the band is slim and its intro one line', band_h <= 130 and lede.bounding_box()['height'] <= line + 1, (band_h, lede.bounding_box()['height'], line))
+    lede.click()
+    check('phone: a tap shows the whole intro', lede.bounding_box()['height'] > line * 1.5)
+    fab = pg.evaluate("(() => { const r = document.querySelector('.calc-fab').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; })()")
+    check('phone: the calculator rests half inside the left edge', fab[0] < 0 and fab[0] + fab[1] <= 34, fab)
+    ctx.close()
+
+    # ---- the home page: progress and "Pick up where you left off" from the exam pages ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    for pid, mark in [('1-1', 'got'), ('1-2', 'got'), ('2-1', 'review')]:
+        c = pg.locator(f'#prob-{pid}')
+        c.locator('details.sol > summary').click()
+        c.locator(f'.mbtn[data-mark="{mark}"]').click()
+    pg.evaluate("document.getElementById('prob-4-7').scrollIntoView()")
+    pg.wait_for_timeout(1000)
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news li')
+    phys = pg.locator('#next-exam.physics, #up-list .up-item.physics')
+    check('home: the Physics midterm shows its Practice progress', '2 of 103 got it' in phys.inner_text() and '1 to review' in phys.inner_text(), phys.inner_text())
+    check('home: "Pick up where you left off" names the page, tab and problem', pg.locator('#resume').is_visible()
+          and pg.locator('#resume-where').inner_text().startswith('Physics midterm · Practice · Chapter 4 · Q.7'), pg.locator('#resume-where').inner_text())
+    pg.click('#resume')
+    pg.wait_for_timeout(1800)
+    top = pg.evaluate("Math.round(document.getElementById('prob-4-7').getBoundingClientRect().top - parseFloat(getComputedStyle(document.getElementById('prob-4-7')).scrollMarginTop))")
+    check('home: it opens that page at that problem', pg.url.endswith('/physics/midterm/#practice') and abs(top) <= 8, (pg.url, top))
+    ctx.close()
+
+    # ---- search results write formulas the way they look: Δx, v₀, x², lim(h → 0) ----
+    idx = lambda page: json.loads(re.search(r'<script type="application/json" id="search-index">(.*?)</script>', open(os.path.join(REPO, page), encoding='utf-8').read(), re.S).group(1))
+    phys_p = ' '.join(e['p'] for e in idx('physics/midterm/index.html'))
+    math_p = ' '.join(e['p'] for e in idx('math/derivatives/index.html'))
+    check('search: Physics results show Δx, v₀ and x², not TeX', all(t in phys_p for t in ['Δx', 'v₀', 'x²', 'μ']) and '\\' not in phys_p and '^(2)' not in phys_p)
+    check('search: Math results show lim(h → 0) and xⁿ⁻¹', 'lim(h → 0)' in math_p and 'xⁿ⁻¹' in math_p and '\\' not in math_p)
+
     # ---- printing a mock: the paper (questions only, room to write) or with answers; the marks go after printing ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='dark')
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -640,11 +792,13 @@ with sync_playwright() as p:
     pg = ctx.new_page()
     pg.goto(BASE2 + '/')
     pg.wait_for_selector('#up-list a.up-item')
+    hero = pg.locator('#next-exam').inner_text()
     texts = pg.locator('#up-list .up-item').all_inner_texts()
-    check('countdown: sorted soonest first: Tomorrow, then in 3 days', 'Tomorrow' in texts[0] and 'in 3 days' in texts[1], texts)
-    check('countdown: time shown with the date', '10:40' in texts[1], texts[1])
-    check('countdown: past exam says Done', any('Done' in t for t in texts))
-    check('countdown: an exam within a week is highlighted', pg.locator('#up-list .up-item.soon').count() == 2)
+    check('countdown: the next exam is the soonest (Tomorrow), then in 3 days and in 10 days', 'Tomorrow' in hero and 'Calculus midterm 2' in hero
+          and 'in 3 days' in texts[0] and 'in 10 days' in texts[1], (hero, texts))
+    check('countdown: time shown with the date', '10:40' in texts[0], texts[0])
+    check('countdown: past exam says Done, under Other exams', 'Done' in pg.locator('#later-list').inner_text())
+    check('countdown: exams within a week are highlighted', pg.locator('#next-exam.soon').count() == 1 and pg.locator('#up-list .up-item.soon').count() == 1)
     pg.screenshot(path=f'{SHOTS}/home-countdowns.png', full_page=True)
     pg.goto(BASE2 + '/math/')
     pg.wait_for_selector('.exams')
@@ -736,7 +890,8 @@ with sync_playwright() as p:
     check('offline: the Physics picker opens with no network', pg.locator('.exam').count() == 2)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
-    check('offline: the home page opens with its exam list and news', pg.locator('#up-list .up-item').count() == 7)
+    check('offline: the home page opens with its exam list and news', pg.locator('#next-exam').count() == 1
+          and 1 + pg.locator('#up-list .up-item').count() + pg.locator('#later-list .up-item').count() == 7)
     check('offline: the home page keeps its back-to-top button', pg.evaluate("(() => { const b = document.querySelector('.totop'); return Boolean(b) && getComputedStyle(b).position === 'fixed'; })()"))
     ctx.set_offline(False)
     ctx.close()

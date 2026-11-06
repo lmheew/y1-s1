@@ -110,7 +110,7 @@ with sync_playwright() as p:
         # one button style: the main actions share one green, and the two app bar buttons look the same
         looks = page.evaluate("""(() => {
           const bg = (s) => { const e = document.querySelector(s); return e && getComputedStyle(e).backgroundColor; };
-          const main = ['#random-btn', '#view-quizzes .t-go', '#view-quizzes .u-go'].map(bg);
+          const main = ['#ss-open', '#view-quizzes .t-go', '#view-quizzes .u-go'].map(bg);
           const bar = ['#theme-btn', '#search-btn'].map((s) => { const c = getComputedStyle(document.querySelector(s)); return [c.backgroundColor, c.borderTopWidth, c.width].join(' '); });
           return { main, bar };
         })()""")
@@ -178,7 +178,8 @@ with sync_playwright() as p:
         page.mouse.up()
         page.wait_for_timeout(500)
         box = fab.bounding_box()
-        check(f'{label}: dragged past the middle, it sticks to the right side', abs(box['x'] + box['width'] - (vw - 10)) <= 2, box)
+        # at rest it sits half inside the edge (22 px of its 44)
+        check(f'{label}: dragged past the middle, it sticks to the right side, half inside the edge', abs(box['x'] + box['width'] - (vw - 10 + 22)) <= 2, box)
 
         # back-to-top: hidden at the top, shown after scrolling down, a tap goes smoothly back up; the calculator
         # parked in the bottom-right corner stays above it

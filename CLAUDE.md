@@ -2,7 +2,7 @@
 
 A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmheew.github.io/y1-s1/.
 
-- `/` is `index.html`, the home page: subject cards, upcoming exams, what's new, and offline install help. It is hand-written; update its cards when a subject is added or changes. It reads `site.json`.
+- `/` is `index.html`, the home page, a "today" screen: under **Next up**, the soonest exam with a date as a card (its countdown, its Practice progress, and links to its page, its Practice tab and its night-before sheet), the other exams with a date, and **Pick up where you left off** (the page, tab and card last read on this device, opened at that spot); then the subject cards, **Other exams** (undated and done), **What's new** as one-line headlines that open to their text, and offline install help. It is hand-written; update its cards when a subject is added or changes. It reads `site.json`, and `study-pages` in localStorage, which the exam pages write (`remember` in `page.js`: each page's name, the view and card or section at the top of the screen, and its Practice got/review/total). The resume link puts the spot in sessionStorage (`study-resume`), and the page jumps there when it opens.
 - The CLA1 review (Calculus & Linear Algebra 1) has one page per exam, all built by `src/math/build.mjs`; never edit anything in `math/` by hand.
   - `/math/` (`math/index.html`) is the exam picker: a card per exam in course order (`EXAMS` in `build.mjs`). An exam without notes yet shows "Coming soon" until its first class. Old addresses of the one Math page (`math/#exams` and so on) go on to the Calculus midterm 1 page, with `location.replace`, so Back doesn't loop.
   - `/math/derivatives/` is Calculus midterm 1 (the derivative part, Days 1–12): the content modules in `src/math`.
@@ -15,7 +15,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `src/shared/build-lib.mjs` holds what both builds share (markup, KaTeX, the lock's encryption, the picker's style and script); `src/shared/icons.mjs` the tab bar and button icons.
 - The floating calculator (`src/shared/calculator.js` and `calculator.css`) is shared by every subject page. Exam pages get it from `math/assets/`; the private copy (`artifact`) has it inline.
 - The back-to-top button (`src/shared/totop.js` and `totop.css`) is on every page. Exam pages get it from `math/assets/` like the calculator. The home page and the exam picker link the two files instead, so they are in `CORE` in `sw.js`.
-- `site.json` holds exam dates (and each exam's `page`, once it has one, which the home page links to) and the "What's new" list, for the home page, the picker and the Exams tab.
+- `site.json` holds exam dates (and each exam's `page`, once it has one, which the home page links to) and the "What's new" list, for the home page, the picker and the Exams tab. Each news entry has a short `title` (the headline the home page shows) as well as its `text`.
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 - The app icon is a picture, and each subject's pages keep their badge in the browser tab. `python3 src/app_icon.py` makes all the icon files; see "App icon" below.
 - `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
@@ -46,7 +46,7 @@ These modules are the Calculus midterm 1 page (`math/derivatives/`).
 - `graphs.js`: the interactive graphs. Which unit shows which graph is set by `GRAPHS` in `build.mjs`.
 - `private/inclass.mjs`: the in-class sheets, retyped. It exists only after `open`, like everything in `private/`.
 - `build.mjs` (with `EXAMS`, the picker's cards), `page.css`, `page.js`.
-- Buttons follow one rule (top of the buttons part of `page.css`): the main action of a place is a filled green pill (`.pill`, `.t-go`, `.u-go`), other actions are outlined grey pills (`.linkbtn`, `.t-reset`), a toggle or choice is outlined green and fills green when on (`.chip`, Test me, the switchers), and the app bar has plain outlined icon buttons (`.icon-btn`). `check_site.py` checks the main ones share one colour.
+- Buttons follow one rule (top of the buttons part of `page.css`): the main action of a place is a filled green pill (`.pill`, `.t-go`, `.u-go`; in the Practice overview, Practice session), other actions are outlined grey pills (`.linkbtn`, `.t-reset`, Random problem), a toggle or choice is outlined green and fills green when on (`.chip`, Test me, the switchers, the session setup), and the app bar has plain outlined icon buttons (`.icon-btn`). `check_site.py` checks the main ones share one colour.
 
 Markup inside the strings:
 
@@ -147,6 +147,13 @@ A few details about the password:
 - Case, spaces and hyphens are ignored, in the build and on the page.
 - To change it, run `SITE_PASSWORD='old' NEW_SITE_PASSWORD='new' node src/math/build.mjs rekey`. Devices that chose "Remember on this device" then ask for the new password once.
 
+## Practice sessions, the night-before sheet, and phones
+
+- **Practice sessions** (every exam page, `ssSetup` and friends in `page.js`; the setup's markup is `sessionSetup` in `build-lib.mjs`, opened by the overview's **Practice session** button, `practiceButtons`). The setup picks which problems (not marked yet, to review, all), from which lessons or chapters (chips by `punit` id, Math labelled like the rings, Physics by chapter number) and, on Physics, which levels (`TIERS`), and how many (5, 10, 20, all); the choices are kept in the page's store (`st.ss`). A session shuffles them and shows one at a time: the Practice tab gets `.in-session`, which hides everything but the bar (`#sbar`: the count, where the problem is from, End, and Skip, which reads Next once the problem is marked) and the current card (`.s-cur`). The cards are the tab's own, so marks, answers and steps work as everywhere. The end (`#sdone`) counts got / to review / skipped and offers the ones to review again. A search hit into Practice leaves the session.
+- **The night-before sheet** (`#night`): a sixth view with no tab, opened from a link card (`nightLink`) in Exams (under the upcoming exams) and Formulas (under Test me), and from the home page. It is lazy like the tabs and has no search entries. Math: the exam-day habits, then each lesson on the midterm (taught, without a `note`) with its formula groups (matched by the group's day label, the first part of `quiz`, to the unit's `days`) and its Watch out list, then the values to know (the exact-values table and the groups of no single lesson, such as Trig without a calculator). Physics: the habits, then each chapter's ★★★ formulas by module with its Watch out list, then the special angles and the ★★★ constants. Print and Back buttons (`nightTools`; Back returns to the tab it was opened from); it is never the tab a page opens on next time (`st.tab` keeps the last real tab, `current` is the view on screen).
+- **Phones** (under 640 px): the band is slimmer and its intro shows one line until it is tapped (`page.js` and `PICKER_JS`).
+- **Search text** (`texPlain` in `build-lib.mjs`): formulas are written the way they look, for the results and their keys: Greek letters and symbols as characters, x², x₀, 10⁻²⁷ and aₙ₊₁ where every character can be raised or lowered (digits, signs, the usual index letters), else ^(…) and _…, fractions as a/b, and limits, sums and integrals with their bounds in brackets (lim(h → 0), ∫(0 to π)). `check_features.py` checks a few.
+
 ## Exam dates, What's new, and speed
 
 - **Exam dates.** Fill in `date` (`YYYY-MM-DD`) and `time` (`HH:MM`, Japan time) in `site.json`, then rebuild that subject's pages (the pickers write each date in at build time). Countdowns, sorting and "Done" are worked out in the browser.
@@ -159,7 +166,7 @@ A few details about the password:
 
 ## The floating calculator
 
-- It's a ghost button parked on the left or right edge, bottom left by default. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across. On the right edge it stays above the back-to-top button.
+- It's a ghost button parked on the left or right edge, bottom left by default. At rest it sits half inside its edge (22 of its 44 px), so it covers less of the page; it comes out when it is woken, open, dragged or focused. Drag it anywhere and it glides back to the nearest side; a quick flick throws it across. On the right edge it stays above the back-to-top button.
 - The first tap makes it opaque and shows "Tap again to open". A second tap on it opens the calculator. A tap anywhere else, or 4 seconds without one, cancels. Enter on the focused button opens it at once.
 - The calculator follows the Windows standard layout, with memory (MC MR M+ M− MS and the M▾ list) and no history. It works with exact fractions, so 1 ÷ 3 × 3 = 1 and 0.1 + 0.2 = 0.3. It shows results the way Windows does: 16 digits, and "1.e+16" style above that. `calculator_test.js` holds the Windows cases; keep them passing.
 - The window doesn't block the page. It moves by its title bar and closes with ×, Esc (once it's cleared), or one tap on the button.

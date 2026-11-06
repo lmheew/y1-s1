@@ -18,7 +18,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { fmtDate, esc, tex, inline, items, blocks, plain, entry, solToggle, lazyTab, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
+import { fmtDate, esc, tex, inline, items, blocks, plain, entry, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
   indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged, THEME_EARLY, HEAD_COMMON, ogTags, unb64, normalize, readJSON, deriveKey,
   sealBox, openBox, PICKER_CSS, PICKER_JS, ring, MARU } from '../shared/build-lib.mjs';
 import { TAB_ICONS, UI_ICONS, subjectSwitch } from '../shared/icons.mjs';
@@ -48,15 +48,12 @@ const LAST_UPDATED = [...SITE.news.filter((n) => n.subject === 'physics' || n.su
   SUMMARY_ADDED, FORMULAS_ADDED, PRACTICE_ADDED, MOCKS_ADDED]
   .filter(Boolean).sort().pop() || '2026-11-01';
 // the page's settings for page.js (see the top of src/math/page.js)
-const PAGE_CONF = { store: 'ep1-midterm-review', seen: 'physics', home: 'summary', scores: 'ep1-mock-scores',
+const PAGE_CONF = { name: 'Physics midterm', store: 'ep1-midterm-review', seen: 'physics', home: 'summary', scores: 'ep1-mock-scores',
   suggest: ['projectile', 'friction', 'cross product', 'work', 'potential energy', 'mock'], tryWords: '"friction" or "vector"' };
 
 // ---------- markup ----------
-// plain text for search: Greek letters and vector marks the shared texPlain doesn't know
-const GREEK = { mu: 'μ', varphi: 'φ', phi: 'φ', Delta: 'Δ', omega: 'ω', tau: 'τ', alpha: 'α', beta: 'β', lambda: 'λ' };
-const greek = (s) => s.replace(/\\(mu|varphi|phi|Delta|omega|tau|alpha|beta|lambda)(?![a-zA-Z])/g, (_, g) => GREEK[g])
-  .replace(/\\hat\s*\{?([ijk])\}?/g, '$1̂').replace(/\\vec\s*\{([^{}]*)\}/g, '$1').replace(/\\vec\s*([A-Za-z])/g, '$1');
-const plainP = (s) => plain(greek(s));
+// plain text for search (the shared texPlain knows Greek letters, unit vectors and vector arrows)
+const plainP = plain;
 // The blocks of a stem or a solution. A paragraph followed by "- " lines in the same block is split there, so the
 // lines become a list under it (and, in a solution, one step each); a block that is only [[fig:id]] is that figure.
 const splitLists = (src) => src.trim().split(/\n\s*\n/).flatMap((b) => {
@@ -288,11 +285,12 @@ function render({ exercises, locked, exList }) {
     <div class="ring-big-wrap">${ring(38, 'ring-all', 'ring-lg')}<span class="ring-center"><b id="ring-all-text">0/${nPractice}</b><small>got it</small></span></div>
     <div class="ov-side">
       <ul class="legend"><li><i class="k-got"></i><b id="ov-got">0</b> got it</li><li><i class="k-rev"></i><b id="ov-rev">0</b> to review</li><li><i class="k-un"></i><b id="ov-un">${nPractice}</b> not marked</li></ul>
-      <button type="button" class="pill" id="random-btn">${UI_ICONS.shuffle}<span>Random problem</span>${UI_ICONS.arrow}</button>
+      ${practiceButtons}
     </div>
   </div>
   <div class="urings" aria-label="Jump to a chapter">${unitRings}</div>
 </div>
+${sessionSetup(chapters.map((c) => [`p${c.id}`, String(c.no), `Chapter ${c.no}: ${c.title}`]), 'Chapters', TIERS.map(([t, name]) => [t, name]))}
 <p class="tier-legend">${TIERS.map(([t, name, note]) => `<span class="nw"><span class="tier-tag tier-${t}">${esc(name)}</span> ${esc(note.toLowerCase())}</span>`).join(' · ')}</p>
 <div class="filters" role="group" aria-label="Show">
   <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
@@ -381,6 +379,7 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
       <ul class="up-list">${upcomingHTML}</ul>
+      ${nightLink('The core formulas, the common mistakes and the exam-day habits on one page')}
     </section>
     <section class="qgroup mockgroup" id="mocks">
       <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
@@ -399,9 +398,28 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
   <p class="test-hint">Hides every formula and value. Say it to yourself, then tap to check.</p>
   <button type="button" class="linkbtn" id="test-reset" hidden>Hide all again</button>
 </div>
+${nightLink('Only the ★★★ formulas, with each chapter’s common mistakes, to read the night before')}
 <p class="flegend"><span class="nw"><span class="stars" aria-hidden="true">★★★</span> core, used all the time</span> · <span class="nw"><span class="stars" aria-hidden="true">★★</span> key result</span> · <span class="nw"><span class="stars" aria-hidden="true">★</span> supporting</span> · <span class="nw"><span class="xtag">Extra</span> not printed in the book</span></p>
 ${formulasHTML}`;
-  const LAZY = { practice: practiceTab, formulas: formulasTab, quizzes: quizzesHTML, exams: examsHTML };
+  // The night before: the exam-day habits, then for each chapter its core (★★★) formulas and its "Watch out" list,
+  // then the values to know. A view without a tab (#night); it prints as it is. No search entries: it repeats
+  // what Summary and Formulas hold.
+  const nrow = ([name, t]) => `<div class="nrow"><span class="nname">${esc(name)}</span><div class="nmath">${tex('\\displaystyle ' + t, false)}</div></div>`;
+  const nlist = (src) => items(src).map((it) => `<li>${inline(it, false)}</li>`).join('');
+  const nightHTML = `
+${nightTools}
+<section class="nsec" id="nt-habits"><h2><span class="kicker">On the day</span>Exam-day habits</h2><ul class="nhabits">${nlist(habits)}</ul></section>
+${chapters.map((c) => {
+    const g = fgroups.find((x) => x.id === c.id);
+    const mods = c.modules.map(([no, title]) => [no, title, g.mods.find((m) => m.no === no).rows.filter((r) => r[2] === 3)]).filter(([, , rows]) => rows.length);
+    return `<section class="nsec" id="nt-${c.id}"><h2><span class="kicker">Chapter ${c.no}</span>${esc(c.title)}</h2>
+  ${mods.map(([no, title, rows]) => `<h3 class="fmod"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3><div class="nrows">${rows.map(nrow).join('')}</div>`).join('')}
+  <div class="watch"><h3>Watch out</h3><ul>${nlist(summary[c.id].watch)}</ul></div></section>`;
+  }).join('\n')}
+<section class="nsec" id="nt-values"><h2><span class="kicker">No calculator</span>Values to know</h2>
+  <div class="table-wrap">${trigWide}${trigTall}</div>
+  <div class="nrows">${constants.filter((r) => r[2] === 3).map(nrow).join('')}</div></section>`;
+  const LAZY = { practice: practiceTab, formulas: formulasTab, quizzes: quizzesHTML, exams: examsHTML, night: nightHTML };
   const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
   const lazyScripts = Object.entries(LAZY).map(([v, html]) => lazyTab(v, html)).join('\n');
   const nSets = sets.length, nEx = list.length;
@@ -446,6 +464,11 @@ ${formulasHTML}`;
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
     ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length === 3 ? 'three' : mocks.length} mock midterms in the exam’s format: <span class="nw">six problems</span> in <span class="nw">60 minutes</span>. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
+  </section>
+
+  <section id="view-night" class="view night" aria-label="Night-before sheet" hidden>
+    ${band('Night before', '直前チェック', 'One page for the night before the midterm: the exam-day habits, then each chapter’s core formulas (★★★) and common mistakes, and the values to know without a calculator. Read it once more, or print it.')}
+    ${lazyBox('night')}
   </section>
 </main>
 ${lazyScripts}

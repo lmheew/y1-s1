@@ -22,6 +22,8 @@ export const UI_ICONS = {
   eye: ic('<path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'),
   calendar: ic('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>'),
   print: ic('<path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/>'),
+  night: ic('<path d="M18.5 14.8A7.5 7.5 0 0 1 9.2 5.5a7.5 7.5 0 1 0 9.3 9.3z"/><path d="M17.5 3v3.5M15.75 4.75h3.5"/>'),
+  cards: ic('<rect x="7" y="3.5" width="12.5" height="16" rx="2"/><path d="M4.5 7.5v11a2 2 0 0 0 2 2h9"/><path d="M10.5 8.5h5.5M10.5 12h5.5"/>'),
 };
 
 // Each subject's badge in its own colours (the home page's cards use the same drawings), for the button in the app bar

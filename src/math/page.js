@@ -8,7 +8,8 @@
   // the theme is site-wide: it lives in the Math page's store, which the home page and every page's head read
   const THEME_KEY = 'cla1-midterm-review';
   const SUBJ = CONF.seen || 'math';
-  const VIEWS = ['summary', 'practice', 'formulas', 'quizzes', 'exams'];
+  // the five tabs, and the night-before sheet: a view without a tab, opened from Exams, Formulas and the home page
+  const VIEWS = ['summary', 'practice', 'formulas', 'quizzes', 'exams', 'night'].filter((v) => document.getElementById('view-' + v));
   const HOME = VIEWS.includes(CONF.home) ? CONF.home : 'summary';
   const FILTERS = ['all', 'review', 'unmarked'];
   const THEMES = ['system', 'light', 'dark'];
@@ -16,7 +17,7 @@
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
-      if (VIEWS.includes(saved.tab)) st.tab = saved.tab;
+      if (VIEWS.includes(saved.tab) && saved.tab !== 'night') st.tab = saved.tab;
       if (saved.marks && typeof saved.marks === 'object') st.marks = saved.marks;
       if (FILTERS.includes(saved.filter)) st.filter = saved.filter;
       if (THEMES.includes(saved.theme)) st.theme = saved.theme;
@@ -39,6 +40,13 @@
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  // this page's address from the site's root (where the manifest is), such as "physics/midterm/"
+  const PATH = (() => {
+    const m = document.querySelector('link[rel="manifest"]');
+    if (!m) return '';
+    const base = new URL('./', m.href).pathname;
+    return location.pathname.startsWith(base) ? decodeURI(location.pathname.slice(base.length)).replace(/index\.html$/, '') : '';
+  })();
   const root = document.documentElement;
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY = 86400000;
@@ -58,6 +66,12 @@
   }
   themeBtn.addEventListener('click', () => { st.theme = THEMES[(THEMES.indexOf(st.theme) + 1) % THEMES.length]; save(); saveTheme(); applyTheme(); });
   applyTheme();
+
+  // ----- phones: a band's intro shows one line (page.css) until it is tapped -----
+  document.addEventListener('click', (e) => {
+    const p = e.target.closest && e.target.closest('.band-lede');
+    if (p && window.matchMedia('(max-width: 639px)').matches) p.classList.add('open');
+  });
 
   // ----- views. Every tab but Summary arrives as text (<script id="lazy-<view>">) and is built the first time it opens;
   // VIEW_INIT then switches on that tab's features. -----
@@ -84,7 +98,7 @@
 
   // ----- side menu on wide screens (page.css shows it from 1100 px): the sections of the open tab, the one being
   // read highlighted. Built from the page itself when the tab is built; narrower screens never show it. -----
-  const TOC_SECTIONS = { summary: '.unit, .habits', practice: '.punit', formulas: '.fgroup', quizzes: '.qgroup', exams: '#ex-upcoming, .mockgroup' };
+  const TOC_SECTIONS = { summary: '.unit, .habits', practice: '.punit', formulas: '.fgroup', quizzes: '.qgroup', exams: '#ex-upcoming, .mockgroup', night: '.nsec' };
   const tocOf = {};
   function buildToc(view) {
     const box = $('.content', panels[view]);
@@ -133,7 +147,7 @@
   }
   const wide = window.matchMedia('(min-width: 1100px)');
   function paintToc() {
-    const t = tocOf[st.tab];
+    const t = tocOf[current];
     if (!t || !wide.matches) return;
     const line = (parseFloat(getComputedStyle(root).getPropertyValue('--anchor-top')) || 72) + 12;
     let on = -1;
@@ -152,15 +166,20 @@
   let tocQueued = false;
   window.addEventListener('scroll', () => { if (!tocQueued) { tocQueued = true; requestAnimationFrame(() => { tocQueued = false; paintToc(); }); } }, { passive: true });
   window.addEventListener('resize', paintToc);
+  // current: the view on screen; st.tab: the tab to open next time (never the night-before sheet)
+  let current = '', before = '';
   function show(view) {
     if (!VIEWS.includes(view)) view = HOME;
+    if (current && current !== view && current !== 'night') before = current; // where the night-before sheet's Back goes
+    current = view;
     materialize(view);
     markSeen(view);
-    st.tab = view; save();
-    tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    if (view !== 'night') { st.tab = view; save(); }
+    tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on || (view === 'night' && t.dataset.view === HOME) ? 0 : -1; });
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
     paintToc();
     drawAll(view);
+    remember({ tab: view, at: '', label: '' });
   }
 
   // ----- long tabs: Practice cards, questions, formula rows and Physics Summary modules away from the screen skip
@@ -192,8 +211,8 @@
   }
   // a scroll past cards not drawn yet (a fling, or the browser putting back a scroll position) draws them at once
   window.addEventListener('scroll', () => {
-    const panel = panels[st.tab];
-    if (!panel || !drawing[st.tab]) return;
+    const panel = panels[current];
+    if (!panel || !drawing[current]) return;
     const todo = [];
     for (const c of $$(CV, panel)) { if (c.getBoundingClientRect().top >= innerHeight) break; todo.push(c); }
     todo.forEach((c) => c.classList.add('drawn'));
@@ -216,7 +235,7 @@
   $('.brand').addEventListener('click', (e) => { e.preventDefault(); show(HOME); window.scrollTo({ top: 0 }); setHash(HOME); });
   window.addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
-    if (VIEWS.includes(h) && h !== st.tab) { show(h); window.scrollTo({ top: 0 }); }
+    if (VIEWS.includes(h) && h !== current) { show(h); window.scrollTo({ top: 0 }); }
   });
 
   // Scroll so an element's top meets the anchor line under the bars. Graphs are drawn as they come near, which can
@@ -246,6 +265,7 @@
     show(view);
     const el = document.getElementById(id);
     if (!el) return;
+    if (panels.practice && panels.practice.classList.contains('in-session') && panels.practice.contains(el)) ssExit(); // a search hit leaves the session
     const sh = el.closest('.sheet[data-seg]');
     if (sh && sh.hidden) selectSeg(sh.closest('.qgroup'), sh.dataset.seg);
     const pu = el.closest('.punit');
@@ -348,6 +368,7 @@
     $('#ov-got').textContent = got;
     $('#ov-rev').textContent = rev;
     $('#ov-un').textContent = total - got - rev;
+    remember({ got, rev, total });
   }
   function applyFilter() {
     if (!probs.length) return;
@@ -375,6 +396,7 @@
   VIEW_INIT.practice = (scope) => {
     probs = $$('.prob', scope);
     if (!probs.length) return; // a page whose problems are still to come
+    ssSetup(scope);
     probs.forEach(paint);
     counts();
     applyFilter();
@@ -638,7 +660,7 @@
       });
       const row = $('#lockrow');
       if (row) row.hidden = false;
-      drawAll(st.tab);
+      drawAll(current);
     }
     function apply(data) {
       if (unlocked) return;
@@ -803,6 +825,193 @@
     unlockQuizzes(scope); // the past midterms are locked like the in-class sheets
   };
 
+  // ----- for the home page: where this page was left (the view, and the card or section at the top of the screen)
+  // and its Practice progress, in study-pages (localStorage), keyed by the page's address from the site's root.
+  // The home page's "Pick up where you left off" opens the page with study-resume (sessionStorage) set to that spot. -----
+  function remember(extra) {
+    if (!PATH || !CONF.name) return;
+    try {
+      const all = JSON.parse(localStorage.getItem('study-pages') || 'null') || {};
+      all[PATH] = Object.assign(all[PATH] || {}, { name: CONF.name, t: Date.now() }, extra);
+      localStorage.setItem('study-pages', JSON.stringify(all));
+    } catch (e) { /* ignore */ }
+  }
+  const PLACES = '.prob, .rq, .wex, .smod, .unit, .habits, .fgroup, .nsec, .sheet, .punit, .qgroup, .mockgroup, #ex-upcoming';
+  const clean = (el) => {
+    if (!el) return '';
+    const c = el.cloneNode(true);
+    $$('.new-pill, .sr, .kicker, .state-tag, .seg-score, svg', c).forEach((n) => n.remove());
+    return c.textContent.replace(/\s+/g, ' ').trim();
+  };
+  const dayOf = (sec) => { const k = sec && $('.kicker', sec); return k ? ($('.nw', k) || k).textContent.split(' · ')[0].trim() : ''; };
+  function placeLabel(el) {
+    if (el.matches('.prob')) return [dayOf(el.closest('.punit')), clean($('.qno', el))].filter(Boolean).join(' · ');
+    if (el.matches('.rq')) return [clean($('.sheet-title', el.closest('.sheet') || el)), clean($('.ql', el))].filter(Boolean).join(' · ');
+    if (el.matches('.wex, .smod')) return clean($('.smod-h', el.closest('.smod') || el)) || 'Worked example';
+    if (el.matches('.sheet')) return clean($('.sheet-title', el));
+    if (el.matches('.habits')) return 'Exam-day habits';
+    return [dayOf(el), clean($('h2', el))].filter(Boolean).join(' · ');
+  }
+  let placeTimer = 0;
+  window.addEventListener('scroll', () => {
+    clearTimeout(placeTimer);
+    placeTimer = setTimeout(() => {
+      const line = (parseFloat(getComputedStyle(root).getPropertyValue('--anchor-top')) || 72) + 24;
+      const hit = document.elementFromPoint(Math.min(innerWidth / 2, 420), line);
+      const spot = hit && hit.closest(PLACES);
+      const ok = spot && spot.id && panels[current] && panels[current].contains(spot);
+      remember({ tab: current, at: ok ? spot.id : '', label: ok ? placeLabel(spot) : '' });
+    }, 600);
+  }, { passive: true });
+
+  // ----- the night-before sheet: Print, and Back to the tab it was opened from -----
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-night-print]')) { window.print(); return; }
+    if (e.target.closest('[data-night-back]')) { const v = before || HOME; show(v); window.scrollTo({ top: 0 }); setHash(v); }
+  });
+
+  // ----- Practice session: one problem at a time. Its setup picks which problems (not marked yet, to review, all), from
+  // which chapters or lessons and, on Physics, which levels, and how many, in a shuffled order. The bar on top counts
+  // through them (Skip, or Next once the problem is marked); the end shows how it went, with the ones to review ready
+  // to go again. The cards are the Practice tab's own, so marks, answers and steps work as everywhere. -----
+  const ss = { on: false, queue: [], i: 0 };
+  const ssPrefs = Object.assign({ pool: 'unmarked', n: '10', off: [] }, st.ss || {});
+  function ssChoice(k) { const b = $(`.ss-chips[data-k="${k}"] .chip[aria-pressed="true"]`); return b ? b.dataset.v : ''; }
+  function ssPool() {
+    const pool = ssChoice('pool');
+    const on = (k) => $$(`.ss-chips[data-k="${k}"] .chip[aria-pressed="true"]`).map((b) => b.dataset.v);
+    const units = on('units'), tiers = on('tiers'), byTier = Boolean($('.ss-chips[data-k="tiers"]'));
+    return probs.filter((c) => {
+      const m = st.marks[c.dataset.id];
+      if ((pool === 'unmarked' && m) || (pool === 'review' && m !== 'review')) return false;
+      if (!units.includes(c.closest('.punit').id)) return false;
+      const tier = c.closest('.ptier');
+      return !byTier || Boolean(tier && tiers.some((t) => tier.classList.contains('ptier-' + t)));
+    });
+  }
+  function ssCount() {
+    const go = $('#ss-go');
+    if (!go) return;
+    const n = ssPool().length, want = ssChoice('n');
+    const take = want === 'all' ? n : Math.min(n, Number(want));
+    go.disabled = !take;
+    $('span', go).textContent = take ? `Start · ${take} problem${take === 1 ? '' : 's'}` : 'No problems match';
+  }
+  function ssBar() {
+    let bar = $('#sbar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'sbar';
+      bar.className = 'sbar';
+      bar.innerHTML = '<div class="sbar-row"><span class="s-count" aria-live="polite"></span><button type="button" class="linkbtn s-end">End</button><button type="button" class="pill s-next">Skip</button></div><div class="s-track"><i></i></div>';
+      $('[data-lazy="practice"]').prepend(bar);
+    }
+    return bar;
+  }
+  function ssShow() {
+    const card = ss.queue[ss.i];
+    $$('.prob.s-cur, .punit.s-unit').forEach((x) => x.classList.remove('s-cur', 's-unit'));
+    card.hidden = false;
+    card.classList.add('s-cur');
+    card.closest('.punit').classList.add('s-unit');
+    const det = $('details.sol', card);
+    if (det && det.open) det.open = false;
+    const bar = ssBar();
+    // where the problem is from: its chapter or lesson, and its level on Physics
+    const tier = card.closest('.ptier');
+    const where = [dayOf(card.closest('.punit')), tier ? clean($('.tier-tag', tier)) : ''].filter(Boolean).join(' · ');
+    $('.s-count', bar).innerHTML = `Problem <b>${ss.i + 1}</b> of ${ss.queue.length}<small class="s-where">${where.replace(/</g, '&lt;')}</small>`;
+    $('.s-track i', bar).style.width = `${(100 * ss.i) / ss.queue.length}%`;
+    ssNextLabel();
+    window.scrollTo({ top: 0 });
+    card.tabIndex = -1;
+    card.focus({ preventScroll: true });
+  }
+  function ssNextLabel() {
+    const card = ss.queue[ss.i], b = $('#sbar .s-next');
+    if (!card || !b) return;
+    b.textContent = st.marks[card.dataset.id] ? (ss.i === ss.queue.length - 1 ? 'Finish' : 'Next') : 'Skip';
+  }
+  function ssStart(list) {
+    if (!list.length) return;
+    ss.on = true;
+    ss.queue = list;
+    ss.i = 0;
+    ss.done = new Set();
+    $('#sdone') && $('#sdone').remove();
+    panels.practice.classList.add('in-session');
+    ssShow();
+  }
+  function ssFinish() {
+    const seen = ss.queue.slice(0, Math.min(ss.i + 1, ss.queue.length));
+    const got = seen.filter((c) => st.marks[c.dataset.id] === 'got').length;
+    const again = seen.filter((c) => st.marks[c.dataset.id] === 'review');
+    const skipped = seen.length - got - again.length;
+    $$('.prob.s-cur, .punit.s-unit').forEach((x) => x.classList.remove('s-cur', 's-unit'));
+    $('#sbar') && $('#sbar').remove();
+    const box = document.createElement('div');
+    box.id = 'sdone';
+    box.className = 'sdone';
+    box.innerHTML = `<h3>Session done</h3><p>${seen.length} problem${seen.length === 1 ? '' : 's'}: <b>${got}</b> got it, <b>${again.length}</b> to review again${skipped ? `, <b>${skipped}</b> skipped` : ''}.</p>
+      <div class="sdone-btns">${again.length ? `<button type="button" class="pill s-again">Go again with the ${again.length} to review</button>` : ''}<button type="button" class="linkbtn s-new">New session</button><button type="button" class="linkbtn s-exit">Back to all problems</button></div>`;
+    $('[data-lazy="practice"]').prepend(box);
+    ss.again = again;
+    ss.on = false;
+    window.scrollTo({ top: 0 });
+  }
+  function ssExit() {
+    ss.on = false;
+    panels.practice.classList.remove('in-session');
+    $$('.prob.s-cur, .punit.s-unit').forEach((x) => x.classList.remove('s-cur', 's-unit'));
+    $('#sdone') && $('#sdone').remove();
+    $('#sbar') && $('#sbar').remove();
+    applyFilter();
+    counts();
+  }
+  function ssSetup(scope) {
+    const box = $('#ssetup', scope);
+    if (!box) return;
+    // the last choices come back (st.ss); a chapter or level switched off stays off
+    $$('.ss-chips', box).forEach((g) => {
+      const k = g.dataset.k, multi = g.hasAttribute('data-multi');
+      $$('.chip', g).forEach((b) => b.setAttribute('aria-pressed', String(multi ? !ssPrefs.off.includes(b.dataset.v) : b.dataset.v === ssPrefs[k])));
+      if (!multi && !$('.chip[aria-pressed="true"]', g)) $('.chip', g).setAttribute('aria-pressed', 'true');
+      g.addEventListener('click', (e) => {
+        const b = e.target.closest('.chip');
+        if (!b) return;
+        if (multi) b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+        else $$('.chip', g).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        ssPrefs.pool = ssChoice('pool');
+        ssPrefs.n = ssChoice('n');
+        ssPrefs.off = $$('.ss-chips[data-multi] .chip[aria-pressed="false"]', box).map((x) => x.dataset.v);
+        st.ss = ssPrefs; save();
+        ssCount();
+      });
+    });
+    $('#ss-open', scope).addEventListener('click', () => {
+      box.hidden = !box.hidden;
+      $('#ss-open', scope).setAttribute('aria-expanded', String(!box.hidden));
+      if (!box.hidden) { ssCount(); box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }
+    });
+    $('#ss-go', box).addEventListener('click', () => {
+      const list = ssPool();
+      for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+      const want = ssChoice('n');
+      box.hidden = true;
+      $('#ss-open', scope).setAttribute('aria-expanded', 'false');
+      ssStart(want === 'all' ? list : list.slice(0, Number(want)));
+    });
+    scope.addEventListener('click', (e) => {
+      if (e.target.closest('#sbar .s-next')) { if (ss.i >= ss.queue.length - 1) ssFinish(); else { ss.i++; ssShow(); } return; }
+      if (e.target.closest('#sbar .s-end')) { ssFinish(); return; }
+      if (e.target.closest('.s-again')) { ssStart(ss.again.slice()); return; }
+      if (e.target.closest('.s-new')) { ssExit(); box.hidden = false; $('#ss-open', scope).setAttribute('aria-expanded', 'true'); ssCount(); box.scrollIntoView({ block: 'nearest' }); return; }
+      if (e.target.closest('.s-exit')) { ssExit(); window.scrollTo({ top: 0 }); return; }
+      if (ss.on && e.target.closest('.prob.s-cur .mbtn')) setTimeout(ssNextLabel); // after the mark itself is saved
+    });
+    ssCount();
+  }
+
   // ----- offline: a service worker keeps a copy of the site (on GitHub Pages; not inside claude.ai). It sits at the
   // site's root, next to the manifest, however deep this page is. -----
   const manifest = $('link[rel="manifest"]');
@@ -815,4 +1024,9 @@
   // first view: from the address (#exams…) or where this browser left off
   const fromHash = location.hash.slice(1);
   show(VIEWS.includes(fromHash) ? fromHash : st.tab);
+  try {
+    const r = JSON.parse(sessionStorage.getItem('study-resume') || 'null');
+    sessionStorage.removeItem('study-resume');
+    if (r && r.path === PATH && r.at && document.getElementById(r.at)) goTo(current, r.at);
+  } catch (e) { /* ignore */ }
 })();

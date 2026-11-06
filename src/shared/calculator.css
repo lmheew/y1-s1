@@ -25,6 +25,9 @@
 .calc-fab.off { opacity: .26; }
 .calc-fab.off::after { content: ""; position: absolute; width: 28px; height: 2px; border-radius: 2px; background: currentColor; transform: rotate(-45deg); }
 .calc-fab:focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; opacity: 1; }
+/* at rest it sits half inside its edge, so it covers less of the page; woken, open, dragged or focused, it comes out */
+.calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: -22px 0; }
+.calc-fab[data-side="right"]:not(.armed):not(.open):not(.dragging):not(:focus-visible) { translate: 22px 0; }
 /* tucked into its edge while the page scrolls down, back on the way up (totop.js sets .fab-away on the root);
    it stays put while it is woken, open, being dragged or focused */
 .fab-away .calc-fab:not(.armed):not(.open):not(.dragging):not(:focus-visible) { opacity: 0; translate: calc(-100% - 16px) 0; pointer-events: none; }

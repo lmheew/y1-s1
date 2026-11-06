@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="assets/physics.css?v=68106f0d6a">
+<link rel="stylesheet" href="assets/physics.css?v=d2fc6a02bb">
 <style>
 /* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
@@ -66,7 +66,7 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
   <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Exams</span><span class="jp" lang="ja">試験</span></h1><p class="band-lede">One page of notes for each exam. The midterm page has a summary of every module with worked examples, practice problems in three tiers, the formulas, quiz sheets with worked answers and mock midterms.</p></div></div>
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
-    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-03" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
+    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-06" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
       <p class="e-text">Measurement, motion in one and two dimensions, vectors, Newton’s laws, friction and circular motion, work and energy.</p><p class="e-stats"><span class="nw">8 chapters</span> · <span class="nw">103 practice problems</span> · <span class="nw">186 formulas</span> · <span class="nw">2 exercise days</span> · <span class="nw">3 practice sets</span> · <span class="nw">3 mocks</span></p>
       <span class="e-foot"><span class="e-when" data-date="2026-11-13"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span class="nw">Fri 13 Nov</span><span class="e-left" aria-live="off"></span></span><span class="pill">Open<svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span></span></a>
     <div class="exam soon" id="exam-final"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M4 40C13 40 15 11 24 11S35 40 44 40"/><circle cx="14.5" cy="22" r="3.2" class="lime-fill"/></svg><span class="e-head"><span class="kicker">Final</span><span class="e-title">Final exam</span></span>
@@ -78,10 +78,15 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 <footer class="site-foot"><div class="wrap">
   <p class="foot-links"><a href="../">← All subjects</a></p>
   <p class="fine">Study notes for Engineering Physics 1. Not an official Kyoto University of Advanced Science page.</p>
-  <p class="fine">Last updated <time datetime="2026-11-03">3 Nov 2026</time>.</p>
+  <p class="fine">Last updated <time datetime="2026-11-06">6 Nov 2026</time>.</p>
 </div></footer>
 <script>(() => {
   const DAY = 86400000;
+  // phones: the band's intro shows one line (page.css) until it is tapped
+  document.addEventListener('click', (e) => {
+    const p = e.target.closest && e.target.closest('.band-lede');
+    if (p && window.matchMedia('(max-width: 639px)').matches) p.classList.add('open');
+  });
   // countdowns in Japan time, like the Exams tab
   const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
   document.querySelectorAll('.e-when[data-date]').forEach((el) => {

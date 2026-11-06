@@ -62,21 +62,54 @@ export const withPts = (stem, pts) => {
 };
 
 // ---------- plain text for search ----------
-const SYM = [['\\mathbb{R}', 'ℝ'], ['\\not\\to', '↛'], ['\\cdots', '⋯'], ['\\ldots', '…'], ['\\cdot', '·'], ['\\times', '×'], ['\\pi', 'π'],
-  ['\\theta', 'θ'], ['\\infty', '∞'], ['\\Rightarrow', '⇒'], ['\\iff', '⇔'], ['\\to', '→'], ['\\le', '≤'], ['\\ge', '≥'], ['\\ne', '≠'],
-  ['\\pm', '±'], ['\\cup', '∪'], ['\\cap', '∩'], ['\\approx', '≈'], ['\\sum', 'Σ']];
-const par = (a) => (/^[\w.√π]+$/.test(a.trim()) ? a.trim() : '(' + a.trim() + ')');
+// Maths as it would be typed, for search results and their keys: Greek letters and symbols as characters, x², x₀,
+// 10⁻²⁷, aₙ₊₁ where every character can be raised or lowered (digits, signs, the usual index letters), else ^(…) and _…;
+// fractions as a/b, limits, sums and integrals with their bounds in brackets.
+const GREEK = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε', zeta: 'ζ', eta: 'η', theta: 'θ', vartheta: 'θ',
+  iota: 'ι', kappa: 'κ', lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π', rho: 'ρ', sigma: 'σ', tau: 'τ', upsilon: 'υ', phi: 'φ', varphi: 'φ',
+  chi: 'χ', psi: 'ψ', omega: 'ω', Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π', Sigma: 'Σ', Phi: 'Φ', Psi: 'Ψ', Omega: 'Ω',
+  ell: 'ℓ', hbar: 'ħ', infty: '∞', partial: '∂', nabla: '∇', emptyset: '∅' };
+const SYMBOL = { cdots: '⋯', ldots: '…', dots: '…', cdot: '·', times: '×', div: '÷', Rightarrow: '⇒', implies: '⇒', iff: '⇔',
+  Leftrightarrow: '⇔', to: '→', rightarrow: '→', leftarrow: '←', le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠', pm: '±', mp: '∓',
+  cup: '∪', cap: '∩', approx: '≈', sim: '∼', propto: '∝', sum: 'Σ', prod: 'Π', int: '∫', circ: '°', degree: '°', in: '∈', notin: '∉',
+  subset: '⊂', forall: '∀', exists: '∃', angle: '∠', perp: '⊥', parallel: '∥', equiv: '≡', lt: '<', gt: '>', setminus: '∖', prime: '′',
+  vert: '|', mid: '|', lvert: '|', rvert: '|', Vert: '‖' };
+const FN = new Set(['sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'arcsin', 'arccos', 'arctan', 'sinh', 'cosh', 'tanh', 'ln', 'log', 'exp', 'lim', 'max', 'min', 'det']);
+// raised and lowered characters, only for what reads well that way: digits, signs and the usual index letters
+const SUP = Object.fromEntries([...'0123456789+-=()nxki'].map((c, i) => [c, '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿˣᵏⁱ'[i]]));
+Object.assign(SUP, { '−': '⁻', '°': '°', '′': '′' });
+const SUB = Object.fromEntries([...'0123456789+-=()nkijm'].map((c, i) => [c, '₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₙₖᵢⱼₘ'[i]]));
+const script = (s, map) => { const t = s.replace(/\s+/g, ''); return t && [...t].every((c) => map[c]) ? [...t].map((c) => map[c]).join('') : null; };
+const SIMPLE = /^[\w.!√′⁰-₟ᴬ-ᶿ²³¹α-ωΑ-Ωℓ°∞\uE000\uE001]+$/u;
+const par = (a) => (SIMPLE.test(a.trim()) ? a.trim() : '(' + a.trim() + ')');
+const UP = '\uE000', DOWN = '\uE001'; // ^ and _ that stay as they are, so they aren't read again
 export function texPlain(t) {
-  let s = t.replace(/\\\\(\[[^\]]*\])?/g, '; ').replace(/\\(left|right|bigg|Bigg|big|Big|displaystyle|limits)(?![a-zA-Z])/g, '')
-    .replace(/\\[!,;:]/g, ' ').replace(/\\ /g, ' ').replace(/\\q?quad/g, ' ').replace(/\\text\{([^{}]*)\}/g, '$1')
-    .replace(/\\begin\{[a-z]*\}|\\end\{[a-z]*\}/g, ' ').replace(/&/g, ' ')
-    .replace(/\\sum_\{([^{}]*)\}\^\{([^{}]*)\}/g, 'Σ($1 to $2) ');
-  for (let i = 0; i < 5; i++) s = s.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a, b) => `${par(a)}/${par(b)}`);
+  let s = t.replace(/\\\\(\[[^\]]*\])?/g, '; ').replace(/\\(left|right|bigg|Bigg|big|Big|displaystyle|textstyle|limits)(?![a-zA-Z])/g, '')
+    .replace(/\\[!,;:>]/g, ' ').replace(/\\ /g, ' ').replace(/~/g, ' ').replace(/\\q?quad(?![a-zA-Z])/g, ' ')
+    .replace(/(\\[a-zA-Z]+)(?=\\)/g, '$1 ') // \cdot\vec{b}: keep the two commands apart once \vec{b} becomes b
+    .replace(/\\(?:text|mathrm|mathbf|boldsymbol|operatorname|mathit|textbf|textit|vec|overrightarrow)\s*\{([^{}]*)\}/g, '$1')
+    .replace(/\\vec\s*([A-Za-z])/g, '$1').replace(/\\hat\s*\{?([ijk])\}?/g, '$1\u0302')
+    .replace(/\\begin\{[a-z]*\*?\}(\{[^{}]*\})?|\\end\{[a-z]*\*?\}/g, ' ').replace(/&/g, ' ')
+    .replace(/\\mathbb\{R\}/g, 'ℝ').replace(/\\not\s*\\to/g, '↛')
+    .replace(/\\(sum|int)_(\{[^{}]*\}|\\[a-zA-Z]+|\w)\^(\{[^{}]*\}|\\[a-zA-Z]+|\w)/g, (_, op, a, b) => `${op === 'sum' ? 'Σ' : '∫'}(${a.replace(/^\{|\}$/g, '')} to ${b.replace(/^\{|\}$/g, '')}) `)
+    .replace(/\\lim_\{([^{}]*)\}/g, 'lim($1) ')
+    .replace(/\\([a-zA-Z]+)( ?)/g, (m, name, sp, off, str) => {
+      if (GREEK[name]) return GREEK[name];
+      if (SYMBOL[name]) return ` ${SYMBOL[name]} `;
+      if (FN.has(name)) return (/[\w)]/.test(str[off - 1] || '') ? ' ' : '') + name + sp;
+      return m;
+    });
+  // scripts, innermost first: raised or lowered when every character can be (x², x₀, 10⁻²⁷, aₙ₊₁), else ^(…) and _…
+  for (let i = 0; i < 4; i++) {
+    s = s.replace(/\^\{([^{}]*)\}/g, (_, a) => script(a, SUP) ?? `${UP}(${a.trim()})`).replace(/_\{([^{}]*)\}/g, (_, a) => script(a, SUB) ?? `${DOWN}${a.trim()}`);
+  }
+  s = s.replace(/\^(\S)/g, (m, c) => SUP[c] || UP + c).replace(/_(\S)/g, (m, c) => SUB[c] || DOWN + c);
+  // a fraction ends with a space when a letter or a bracket follows: 1/2 mv², 1/a e^(ax)
+  for (let i = 0; i < 5; i++) s = s.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a, b) => `${par(a)}/${par(b)}\uE002`);
+  s = s.replace(/\uE002(?=[\w(√α-ωΑ-Ω])/gu, ' ').replace(/\uE002/g, '');
   s = s.replace(/\\sqrt\{([^{}]*)\}/g, (_, a) => '√' + par(a)).replace(/\\sqrt(\w)/g, '√$1');
-  for (const [k, v] of SYM) s = s.split(k).join(v);
-  s = s.replace(/\\(arcsin|arccos|arctan|sin|cos|tan|cot|sec|csc|ln|log|lim|max|min)/g, '$1');
-  s = s.replace(/\^\{([^{}]*)\}/g, '^($1)').replace(/_\{([^{}]*)\}/g, '_$1').replace(/\^2(?!\d)/g, '²').replace(/\^3(?!\d)/g, '³');
-  return s.replace(/\\[a-zA-Z]+/g, '').replace(/[{}]/g, '').replace(/\s*([→≤≥≠±·×=])\s*/g, ' $1 ').replace(/\s+/g, ' ').trim();
+  return s.replace(/\\[a-zA-Z]+/g, '').replace(/[{}]/g, '').replace(/\s*([→≤≥≠±·×=⇒⇔∓≈])\s*/g, ' $1 ').replace(/\s+/g, ' ')
+    .replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').replaceAll(UP, '^').replaceAll(DOWN, '_').trim();
 }
 export const plain = (src) => src.replace(/\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g, (_, a, b) => ' ' + texPlain(a || b) + ' ').replace(/\*\*/g, '').replace(/^- /gm, '')
   .replace(/\s+/g, ' ').replace(/\s+([.,;:)])/g, '$1').replace(/\(\s+/g, '(').trim();
@@ -105,6 +138,27 @@ export const solToggle = (open, close, body, after = '') =>
 // their end tags travel as <\/script> and page.js turns them back.
 export const lazyTab = (view, html) =>
   textScript(`id="lazy-${view}"`, noEscapedEnd(html.trim(), `the ${view} tab`).replace(/<\/script>/g, '<\\/script>'), `the ${view} tab`);
+// ---------- Practice session (page.js runs it): its setup, opened from the Practice overview ----------
+// units: [punit id, chip label, full name] for each chapter or lesson; tiers: [t, name] (Physics) or null.
+const ssChips = (k, label, chips, multi) => `<div class="ss-row"><p class="ss-l" id="ss-l-${k}">${label}</p><div class="ss-chips" data-k="${k}"${multi ? ' data-multi' : ''} role="group" aria-labelledby="ss-l-${k}">${chips}</div></div>`;
+const ssChip = (v, text, on, name) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${on}"${name ? ` title="${esc(name)}" aria-label="${esc(name)}"` : ''}>${esc(text)}</button>`;
+export const sessionSetup = (units, unitWord, tiers) => `
+<div class="ssetup" id="ssetup" hidden>
+  <h3 class="ss-h">Practice session</h3>
+  <p class="ss-note">One problem at a time: work it out on paper, open the answer, mark how it went, then go on.</p>
+  ${ssChips('pool', 'Problems', ssChip('unmarked', 'Not marked yet', true) + ssChip('review', 'To review', false) + ssChip('all', 'All', false))}
+  ${ssChips('units', unitWord, units.map(([id, label, name]) => ssChip(id, label, true, name)).join(''), true)}
+  ${tiers ? ssChips('tiers', 'Level', tiers.map(([t, name]) => ssChip(t, name, true)).join(''), true) : ''}
+  ${ssChips('n', 'How many', ['5', '10', '20'].map((n) => ssChip(n, n, n === '10')).join('') + ssChip('all', 'All', false))}
+  <button type="button" class="pill" id="ss-go"><span>Start</span>${UI_ICONS.arrow}</button>
+</div>`;
+// the Practice overview's two buttons: a session (the main one) and a random problem
+export const practiceButtons = `<div class="ov-btns"><button type="button" class="pill" id="ss-open" aria-expanded="false" aria-controls="ssetup">${UI_ICONS.cards}<span>Practice session</span></button><button type="button" class="linkbtn" id="random-btn">${UI_ICONS.shuffle}<span>Random problem</span></button></div>`;
+
+// ---------- the night-before sheet (a view without a tab, #night): its buttons, and the link to it ----------
+export const nightTools = `<div class="night-tools"><button type="button" class="pill" data-night-print>${UI_ICONS.print}<span>Print</span></button><button type="button" class="linkbtn" data-night-back>Back</button></div>`;
+export const nightLink = (what) => `<a class="night-link" href="#night">${UI_ICONS.night}<span class="nl-t"><b>Night-before sheet</b><small>${what}</small></span>${UI_ICONS.arrow}</a>`;
+
 export const partsList = (parts, labels) => parts.length
   ? `<ol class="parts">${parts.map((p, i) => `<li><span class="pn">(${labels ? labels[i] : i + 1})</span><span class="pt">${inline(p)}</span></li>`).join('')}</ol>` : '';
 export const answerBox = (answer) => `<div class="answer"><span class="lbl">Answer</span><ul>${answer.map((a) => `<li>${inline(a)}</li>`).join('')}</ul></div>`;
@@ -239,6 +293,11 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 @media (min-width: 640px) { .exam { padding: 18px 20px; } }`;
 export const PICKER_JS = `(() => {
   const DAY = 86400000;
+  // phones: the band's intro shows one line (page.css) until it is tapped
+  document.addEventListener('click', (e) => {
+    const p = e.target.closest && e.target.closest('.band-lede');
+    if (p && window.matchMedia('(max-width: 639px)').matches) p.classList.add('open');
+  });
   // countdowns in Japan time, like the Exams tab
   const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
   document.querySelectorAll('.e-when[data-date]').forEach((el) => {

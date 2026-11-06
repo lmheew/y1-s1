@@ -31,7 +31,7 @@ import { mocks } from './exams.mjs';
 import * as INT from './integrals/content.mjs';
 import * as INTX from './integrals/extras.mjs';
 import * as INTF from './integrals/followups.mjs';
-import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, partsList, answerBox, MARU,
+import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
   THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, KATEX_DIR } from '../shared/build-lib.mjs';
 
@@ -408,6 +408,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
       <ul class="up-list">${upcomingHTML}</ul>
+      ${nightLink('Every formula, the common mistakes and the exam-day habits on one page')}
     </section>
     <section class="qgroup mockgroup" id="mocks">
       <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
@@ -433,18 +434,37 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   };
   // Summary is built with the page. The other tabs travel as JSON text and are built the first time they open
   // (page.js), so the browser only lays out what is being read; that keeps the first load fast as content grows.
+  // The night before: the exam-day habits, then for each lesson on the midterm its formulas (matched by the group's
+  // day label) and its "Watch out" list, then the values to know (the exact trig values, and the formula groups of no
+  // single lesson). A view without a tab (#night); it prints as it is. No search entries: it repeats Summary and Formulas.
+  const onExam = ready.filter((u) => !u.note);
+  const lessonOf = (g) => onExam.find((u) => u.days && g.quiz.split(' · ')[0] === u.days);
+  const nrow = ([name, t]) => `<div class="nrow"><span class="nname">${esc(name)}</span><div class="nmath">${tex('\\displaystyle ' + t, false)}</div></div>`;
+  const nlist = (src) => items(src).map((it) => `<li>${inline(it, false)}</li>`).join('');
+  const loose = formulas.filter((g) => !lessonOf(g) && !/not on the midterm/i.test(g.quiz));
+  const nightHTML = `
+${nightTools}
+<section class="nsec" id="nt-habits"><h2><span class="kicker">On the day</span>Exam-day habits</h2><ul class="nhabits">${nlist(habits)}</ul></section>
+${onExam.map((u) => `<section class="nsec" id="nt-${u.id}"><h2><span class="kicker">${esc(dayOf(u))}</span>${esc(u.title)}</h2>
+  <div class="nrows">${formulas.filter((g) => lessonOf(g) === u).flatMap((g) => g.rows).map(nrow).join('')}</div>
+  <div class="watch"><h3>Watch out</h3><ul>${nlist(u.watch)}</ul></div></section>`).join('\n')}
+<section class="nsec" id="nt-values"><h2><span class="kicker">No calculator</span>Values to know</h2>
+  <div class="table-wrap">${exactWide}${exactTall}</div>
+  ${loose.map((g) => `<h3 class="fmod">${esc(g.title)}</h3><div class="nrows">${g.rows.map(nrow).join('')}</div>`).join('')}</section>`;
   const LAZY = {
+    night: nightHTML,
     practice: `
       <div class="overview">
         <div class="ov-main">
           <div class="ring-big-wrap">${ring(38, 'ring-all', 'ring-lg')}<span class="ring-center"><b id="ring-all-text">0/${total}</b><small>got it</small></span></div>
           <div class="ov-side">
             <ul class="legend"><li><i class="k-got"></i><b id="ov-got">0</b> got it</li><li><i class="k-rev"></i><b id="ov-rev">0</b> to review</li><li><i class="k-un"></i><b id="ov-un">${total}</b> not marked</li></ul>
-            <button type="button" class="pill" id="random-btn">${UI_ICONS.shuffle}<span>Random problem</span>${UI_ICONS.arrow}</button>
+            ${practiceButtons}
           </div>
         </div>
         <div class="urings" aria-label="Jump to a unit">${unitRings}</div>
       </div>
+      ${sessionSetup(ready.filter((u) => (practice[u.id] || []).length).map((u) => [`p${u.id}`, dayShort(u), `${dayOf(u)}: ${u.title}`]), 'Lessons', null)}
       <div class="filters" role="group" aria-label="Show">
         <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
         <button type="button" class="chip" data-filter="review" aria-pressed="false">To review</button>
@@ -459,6 +479,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
         <p class="test-hint">Hides every formula and exact value. Say it to yourself, then tap to check.</p>
         <button type="button" class="linkbtn" id="test-reset" hidden>Hide all again</button>
       </div>
+      ${nightLink('The formulas with each lesson’s common mistakes, to read the night before')}
       ${exactHTML}${formulasHTML}`,
     quizzes: quizzesTab,
     exams: examsHTML,
@@ -509,6 +530,11 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
     ${band('Exams', '試験', !mocks.length ? P.lede.exams : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
+  </section>
+
+  <section id="view-night" class="view night" aria-label="Night-before sheet" hidden>
+    ${band('Night before', '直前チェック', `One page for the night before ${P.name}: the exam-day habits, then each lesson’s formulas and common mistakes, and the values to know without a calculator. Read it once more, or print it.`)}
+    ${lazyBox('night')}
   </section>
 </main>
 ${lazyScripts}
@@ -681,7 +707,7 @@ ${PRELOAD.map((f) => `<link rel="preload" href="../assets/fonts/${f}.woff2" as="
 <link rel="preload" href="../assets/${a.js}" as="script">
 <link rel="stylesheet" href="../assets/${a.css}">
 </head>
-<body${P.conf ? ` data-page="${esc(JSON.stringify(P.conf))}"` : ''}>
+<body data-page="${esc(JSON.stringify({ name: P.name, ...(P.conf || {}) }))}">
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
 ${foot(true, P.updated)}
 ${indexScript(r.INDEX)}

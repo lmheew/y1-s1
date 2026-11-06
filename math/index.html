@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="assets/math.css?v=7e1ba404f2">
+<link rel="stylesheet" href="assets/math.css?v=becf34ad47">
 <style>
 /* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
@@ -86,6 +86,11 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 </div></footer>
 <script>(() => {
   const DAY = 86400000;
+  // phones: the band's intro shows one line (page.css) until it is tapped
+  document.addEventListener('click', (e) => {
+    const p = e.target.closest && e.target.closest('.band-lede');
+    if (p && window.matchMedia('(max-width: 639px)').matches) p.classList.add('open');
+  });
   // countdowns in Japan time, like the Exams tab
   const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
   document.querySelectorAll('.e-when[data-date]').forEach((el) => {
