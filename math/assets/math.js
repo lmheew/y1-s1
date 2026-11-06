@@ -72,7 +72,9 @@
     const box = $('[data-lazy]', panels[view]);
     const src = document.getElementById('lazy-' + view);
     if (box && src) {
-      box.innerHTML = src.textContent;
+      // the solutions inside travel as scripts of their own, with their end tags written <\/script> (build-lib lazyTab);
+      // '<\/script>' is written so too, since this file is also inlined in a <script> (the private copy)
+      box.innerHTML = src.textContent.replace(/<\\\/script>/g, '<\/script>');
       src.remove();
     }
     const scope = box || panels[view];
@@ -159,6 +161,50 @@
     tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
     paintToc();
+    drawAll(view);
+  }
+
+  // ----- long tabs: Practice cards, questions, formula rows and Physics Summary modules away from the screen skip
+  // layout at first (content-visibility: auto in page.css), so a tab with a hundred of them shows at once. Right after,
+  // they are drawn for good (.drawn), from the top, while the page is idle (about 10 ms at a time, so scrolling and
+  // taps stay smooth), and the page is whole a moment later. A card the browser draws itself as it comes near takes
+  // its real height then, and scroll anchoring doesn't make up for that, so scrolling back up past such cards would
+  // jump: a jump draws everything above its target first (drawAbove), and a scroll past cards not drawn yet draws
+  // them at once. -----
+  const CV = ['.prob', '.rq', '.frow', '.smod'].map((s) => s + ':not(.drawn)').join(', ');
+  const drawing = {};
+  const whenIdle = window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 400 }) : (f) => setTimeout(() => f(null), 40);
+  function drawAll(view) {
+    const panel = panels[view];
+    if (drawing[view] || !$(CV, panel)) return;
+    drawing[view] = true;
+    const step = (idle) => {
+      if (panel.hidden) { drawing[view] = false; return; } // carries on when the tab is shown again
+      const t0 = performance.now(), budget = idle && !idle.didTimeout ? Math.min(10, idle.timeRemaining()) : 8;
+      let el;
+      while ((el = $(CV, panel))) {
+        el.classList.add('drawn');
+        void el.offsetHeight; // lay it out now, so the time it takes counts
+        if (performance.now() - t0 >= budget) break;
+      }
+      if ($(CV, panel)) whenIdle(step); else drawing[view] = false;
+    };
+    requestAnimationFrame(() => whenIdle(step)); // after the tab's first paint
+  }
+  // a scroll past cards not drawn yet (a fling, or the browser putting back a scroll position) draws them at once
+  window.addEventListener('scroll', () => {
+    const panel = panels[st.tab];
+    if (!panel || !drawing[st.tab]) return;
+    const todo = [];
+    for (const c of $$(CV, panel)) { if (c.getBoundingClientRect().top >= innerHeight) break; todo.push(c); }
+    todo.forEach((c) => c.classList.add('drawn'));
+  }, { passive: true });
+  function drawAbove(el) {
+    const panel = VIEWS.map((v) => panels[v]).find((p) => p.contains(el));
+    if (!panel) return;
+    $$(CV, panel).forEach((c) => {
+      if (c === el || c.compareDocumentPosition(el) & (Node.DOCUMENT_POSITION_FOLLOWING | Node.DOCUMENT_POSITION_CONTAINED_BY)) c.classList.add('drawn');
+    });
   }
   function setHash(view) { try { if (location.hash !== '#' + view) location.hash = view; } catch (e) { /* ignore */ } }
   tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); window.scrollTo({ top: 0 }); setHash(t.dataset.view); }));
@@ -182,6 +228,7 @@
     const stop = () => { cancelled = true; };
     ['wheel', 'touchstart', 'keydown'].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
     document.dispatchEvent(new CustomEvent('buildgraphs', { detail: el })); // graphs.js draws the ones above it first
+    drawAbove(el); // and so do the long tabs' cards, so their heights are real
     el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     const settle = () => {
       if (cancelled) return;
@@ -422,6 +469,7 @@
     sheet.classList.add('printing');
     root.dataset.print = kind;
     const opened = kind === 'key' ? $$('details', sheet).filter((d) => !d.open) : [];
+    if (kind === 'key') $$('details.sol', sheet).forEach(fillSol); // before print(), which doesn't wait for 'toggle'
     opened.forEach((d) => { d.open = true; });
     const cleanup = () => {
       path.forEach((el) => el.classList.remove('print-path'));
@@ -436,6 +484,21 @@
     }, { once: true });
     window.print();
   }
+
+  // ----- a solution's answer and steps travel as text (<script class="lazy-sol">, build-lib solToggle) and are built
+  // the first time it opens: on the click that opens it, so they are there in the frame it opens, else on 'toggle'
+  // (opened from code). Mark buttons sit after the text and are built with the tab. -----
+  function fillSol(det) {
+    const src = $('.sol-body > script.lazy-sol', det);
+    if (!src || src.parentElement.parentElement !== det) return;
+    const t = document.createElement('template');
+    t.innerHTML = src.textContent;
+    src.replaceWith(t.content);
+  }
+  document.addEventListener('click', (e) => {
+    const s = e.target.closest && e.target.closest('summary');
+    if (s && s.parentElement.matches('details.sol') && !s.parentElement.open) fillSol(s.parentElement);
+  }, true);
 
   // ----- solutions open one step at a time (the answer itself shows at once) -----
   function stepper(det) {
@@ -462,7 +525,7 @@
   }
   document.addEventListener('toggle', (e) => {
     const d = e.target;
-    if (d && d.matches && d.matches('details.sol') && d.open) stepper(d);
+    if (d && d.matches && d.matches('details.sol') && d.open) { fillSol(d); stepper(d); }
   }, true);
 
   // ----- search -----
@@ -576,6 +639,7 @@
       });
       const row = $('#lockrow');
       if (row) row.hidden = false;
+      drawAll(st.tab);
     }
     function apply(data) {
       if (unlocked) return;

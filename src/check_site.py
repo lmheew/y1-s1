@@ -39,7 +39,13 @@ BASE = f'http://localhost:{server.server_address[1]}'
 
 
 def overflow(page):
-    return page.evaluate('document.documentElement.scrollWidth - document.documentElement.clientWidth')
+    # cards, questions, formula rows and Summary modules skip drawing while away from the screen and clip what
+    # overflows them (content-visibility in page.css): measure with that off, so too-wide content anywhere shows
+    return page.evaluate("""() => { const s = document.createElement('style');
+      s.textContent = '.prob, .rq, .frow, .smod { content-visibility: visible !important; }';
+      document.head.append(s);
+      const w = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+      s.remove(); return w; }""")
 
 
 def shot(page, name):

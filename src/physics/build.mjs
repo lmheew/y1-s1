@@ -18,7 +18,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { fmtDate, esc, tex, inline, items, blocks, plain, entry, toggle, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
+import { fmtDate, esc, tex, inline, items, blocks, plain, entry, solToggle, lazyTab, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
   indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged, THEME_EARLY, HEAD_COMMON, ogTags, unb64, normalize, readJSON, deriveKey,
   sealBox, openBox, PICKER_CSS, PICKER_JS, ring, MARU } from '../shared/build-lib.mjs';
 import { TAB_ICONS, UI_ICONS, subjectSwitch } from '../shared/icons.mjs';
@@ -98,7 +98,7 @@ function problemHTML(sh, p, index, searchExtra) {
     <div class="rq prq" id="${id}">
       <div class="rq-head"><b class="ql">Problem ${esc(no)}</b><span class="qtopic-wrap"><span class="qtopic">${esc(p.topic)}</span></span></div>
       ${p.stem ? `<div class="stem">${blocksF(p.stem)}</div>` : ''}${figsHTML(p.fig)}${parts}
-      <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(p.sol)}</div>`)}</div>
+      <div class="reveal">${solToggle('Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(p.sol)}</div>`)}</div>
     </div>`;
 }
 function sheetHTML(sh, seg, visible, index, searchExtra) {
@@ -129,7 +129,7 @@ function exampleHTML(c, no, title, ex, index) {
     <article class="wex prq" id="${id}">
       <div class="rq-head"><b class="ql">Worked example</b><span class="qtopic-wrap"><span class="qtopic">${esc(no)}</span></span></div>
       ${ex.stem ? `<div class="stem">${blocksF(ex.stem)}</div>` : ''}${figsHTML(ex.fig)}${parts}
-      <div class="reveal">${toggle('sol', 'Show solution', 'Hide solution', ans + `<div class="steps">${blocksF(ex.sol)}</div>`)}</div>
+      <div class="reveal">${solToggle('Show solution', 'Hide solution', ans + `<div class="steps">${blocksF(ex.sol)}</div>`)}</div>
     </article>`;
 }
 // a bold label at the start of a point, as plain text for search
@@ -177,7 +177,7 @@ function mockQuestion(m, q, qi, index) {
     <div class="rq prq" id="${id}">
       <div class="rq-head"><b class="ql">Problem ${esc(q.no)}</b><span class="qtopic-wrap"><span class="qtopic">${esc(q.topic)}</span></span><span class="pts">${sumPts(q)} pt</span></div>
       ${q.stem ? `<div class="stem">${blocksF(q.stem)}</div>` : ''}${figsHTML(q.fig)}${parts}
-      <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(q.sol)}</div>
+      <div class="reveal">${solToggle('Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(q.sol)}</div>`, `
       <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>
     </div>`;
 }
@@ -257,7 +257,7 @@ function render({ exercises, locked, exList }) {
         ? `<ol class="parts">${p.parts.map((t, i) => `<li><span class="pn">${labels[i]}</span><span class="pt">${inline(t)}</span></li>`).join('')}</ol>` : '';
       const ans = `<div class="answer"><span class="lbl">Answer</span><ul>${p.answer.map((a, i) => (p.parts.length
         ? `<li><b class="al">${labels[i]}</b><span>${inline(a)}</span></li>` : `<li class="solo">${inline(a)}</li>`)).join('')}</ul></div>`;
-      const sol = toggle('sol', 'Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(p.sol)}</div>
+      const sol = solToggle('Show answer', 'Hide answer', ans + `<div class="steps">${blocksF(p.sol)}</div>`, `
       <div class="markrow"><span>How did it go?</span>
         <button type="button" class="mbtn" data-mark="got" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/></svg>Got it</button>
         <button type="button" class="mbtn" data-mark="review" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12M4 3h8l-2 3 2 3H4"/></svg>Review again</button>
@@ -403,10 +403,7 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
 ${formulasHTML}`;
   const LAZY = { practice: practiceTab, formulas: formulasTab, quizzes: quizzesHTML, exams: examsHTML };
   const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
-  const lazyScripts = Object.entries(LAZY).map(([v, html]) => {
-    if (/<\/script|<!--/i.test(html)) throw new Error(`the ${v} tab contains "</script" or "<!--", which can't travel inside a script element`);
-    return `<script type="text/x-lazy-html" id="lazy-${v}">${html.trim()}</script>`;
-  }).join('\n');
+  const lazyScripts = Object.entries(LAZY).map(([v, html]) => lazyTab(v, html)).join('\n');
   const nSets = sets.length, nEx = list.length;
   const body = `
 <header class="appbar"><div class="wrap appbar-row">

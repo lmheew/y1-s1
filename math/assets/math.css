@@ -502,6 +502,15 @@ details[open] .when-open { display: inline; }
 .lazy-wait { padding: 48px 0; text-align: center; font-size: 14px; color: var(--ink-soft); }
 .new-pill.lead { margin: 0 4px 0 0; }
 
+/* ---------- speed: a long tab shows before all of it is drawn ----------
+   Practice cards, quiz and exam questions and formula rows away from the screen skip layout and painting at first
+   (content-visibility), so a tab with a hundred of them shows at once; the size here is only a first guess (a phone's
+   typical height). page.js then draws them for good (.drawn) while the page is idle, and draws everything above a
+   jump's target, or above where a fling ends, at once, so scrolling never meets a card that changes height. */
+.prob, .rq { content-visibility: auto; contain-intrinsic-size: auto 320px; }
+.frow { content-visibility: auto; contain-intrinsic-size: auto 90px; }
+.prob.drawn, .rq.drawn, .frow.drawn, .smod.drawn { content-visibility: visible; }
+
 /* ---------- printing ---------- */
 /* A mock or past midterm prints on its own from its Print buttons: "paper" is the questions with room to write
    and a score line, "key" is the questions with their answers and every solution step. page.js marks the sheet
@@ -517,6 +526,7 @@ details[open] .when-open { display: inline; }
     --tint: #F1F5EE; --green: #2F6F3D; --green-text: #2F6F3D; --lime: #7BA831; --warn: #9E3B22; --warn-tint: #FFFFFF; color-scheme: light; }
   body { background: #FFFFFF; color: var(--ink); padding: 0; }
   body::before, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
+  .prob, .rq, .frow, .smod { content-visibility: visible !important; } /* printing draws them all */
   .band { border-bottom-width: 2px; }
   .sheet { border: 0; padding: 0; }
   /* pages break between parts and steps, never inside one, and a question's head stays with what follows it */

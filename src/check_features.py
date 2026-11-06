@@ -62,7 +62,14 @@ def serve(directory):
 srv, BASE = serve(REPO)
 srv2, BASE2 = serve(SITE)
 STUB = re.compile(r'^https?://(?!localhost[:/])')
-overflow = lambda pg: pg.evaluate('document.documentElement.scrollWidth - document.documentElement.clientWidth')
+# Cards, questions, formula rows and Summary modules skip drawing while away from the screen, and clip what overflows
+# them (content-visibility in page.css). Sideways scroll is measured with that off, so too-wide content anywhere shows.
+WIDE_JS = """() => { const s = document.createElement('style');
+  s.textContent = '.prob, .rq, .frow, .smod { content-visibility: visible !important; }';
+  document.head.append(s);
+  const w = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+  s.remove(); return w; }"""
+overflow = lambda pg: pg.evaluate(WIDE_JS)
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -231,11 +238,21 @@ with sync_playwright() as p:
         if label == 'phone':
             shot('graph-second')
 
-        # ---- steps ----
+        # ---- answers are built when they open; steps ----
         pg.click('#tab-practice')
+        n_probs = pg.locator('#view-practice .prob').count()
+        check(f'{label}: answers wait as text until opened (one per problem), with their mark buttons built',
+              pg.locator('#view-practice .answer, #view-practice .steps').count() == 0
+              and pg.locator('#view-practice details.sol > .sol-body > script.lazy-sol').count() == n_probs
+              and pg.locator('#view-practice .sol-body > .markrow .mbtn').count() == 2 * n_probs,
+              (n_probs, pg.locator('#view-practice script.lazy-sol').count(), pg.locator('#view-practice .answer').count()))
         card = pg.locator('#prob-4-1')
         card.locator('details.sol > summary').click()
         pg.wait_for_timeout(150)
+        check(f'{label}: opening an answer builds that one only, above its mark buttons',
+              card.locator('script.lazy-sol').count() == 0 and pg.locator('#view-practice .answer').count() == 1
+              and pg.evaluate("[...document.querySelector('#prob-4-1 .sol-body').children].map((c) => c.className).join(' ')") == 'answer steps stepbar markrow',
+              pg.evaluate("[...document.querySelector('#prob-4-1 .sol-body').children].map((c) => c.className).join(' ')"))
         vis = lambda: card.locator('.steps > *:not(.step-hidden), .steps li:not(.step-hidden)').count()
         steps_total = card.locator('.steps > p, .steps li').count()
         check(f'{label}: solution starts with one step and a Next step button', card.locator('.stepbar').count() == 1 and card.locator('.steps .step-hidden').count() == steps_total - 1, (steps_total, card.locator('.steps .step-hidden').count()))
@@ -457,6 +474,83 @@ with sync_playwright() as p:
         pg.evaluate("localStorage.clear()")
         ctx.close()
 
+    # ---- long tabs show before all of it is drawn (content-visibility in page.css, drawAll in page.js) ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#summary')
+    pg.wait_for_selector('#view-summary .smod')
+    UNDRAWN = "document.querySelectorAll('#view-{0} :is(.prob, .rq, .frow, .smod):not(.drawn)').length"
+    pg.wait_for_function(UNDRAWN.format('summary') + ' === 0', timeout=15000)  # the Summary is drawn after the page loads
+    first = pg.evaluate("""() => { document.getElementById('tab-practice').click();
+      const c = document.querySelector('#prob-8-14');
+      return [document.querySelectorAll('#view-practice .prob:not(.drawn)').length, getComputedStyle(c).contentVisibility]; }""")
+    check('speed: a long tab shows before its cards are drawn (they skip layout at first)', first == [103, 'auto'], first)
+    pg.wait_for_function(UNDRAWN.format('practice') + ' === 0', timeout=15000)
+    check('speed: a moment later every card is drawn for good',
+          pg.evaluate("getComputedStyle(document.querySelector('#prob-8-14')).contentVisibility") == 'visible')
+    for v in ['formulas', 'quizzes', 'exams']:
+        pg.click(f'#tab-{v}')
+        pg.wait_for_function(UNDRAWN.format(v) + ' === 0', timeout=15000)
+    check('speed: formula rows, quiz and exam questions and Summary modules are drawn too',
+          all(pg.evaluate(UNDRAWN.format(v)) == 0 for v in ['summary', 'formulas', 'quizzes', 'exams']))
+    pg.evaluate("document.querySelector('#prob-8-14').classList.remove('drawn')")
+    pg.emulate_media(media='print')
+    check('speed: printing draws a card that is not drawn yet', pg.evaluate("getComputedStyle(document.querySelector('#prob-8-14')).contentVisibility") == 'visible')
+    pg.emulate_media(media='screen')
+    ctx.close()
+    # jumps far down land on their target; a fling to the end right after a tab opens, then back up, never jumps
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#summary')
+    pg.wait_for_selector('#view-summary .smod')
+    landed = lambda sel: pg.evaluate(f"""() => {{ const e = document.querySelector('{sel}');
+      return Math.round(e.getBoundingClientRect().top - parseFloat(getComputedStyle(e).scrollMarginTop)); }}""")
+    pg.click('#search-btn')
+    pg.fill('#search-input', 'roller coaster friction')
+    pg.locator('#search-results .s-hit', has_text='Chapter 8 · Q.12').first.click()
+    pg.wait_for_timeout(1800)
+    check('speed: a search hit far down Practice lands on its card', abs(landed('#prob-8-12')) <= 8, landed('#prob-8-12'))
+    li, label, no = pg.evaluate("""() => { const m = [...document.querySelectorAll('#view-summary .smod')].at(-1);
+      const li = m.querySelector('.ideas li'), b = li.querySelector('b, strong');
+      return [li.id, b ? b.textContent.replace(/[:.,]+$/, '') : '', m.querySelector('.mod-no').textContent]; }""")
+    pg.click('#search-btn')
+    pg.fill('#search-input', f'{label} {no}')
+    pg.locator('#search-results .s-hit', has_text=f'— {no}').first.click()
+    pg.wait_for_timeout(1800)
+    check('speed: a search hit in the last Summary module lands on its key idea', abs(landed('#' + li)) <= 8, (li, label, landed('#' + li)))
+    FLING = """async (tab) => {
+      const frame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+      document.getElementById('tab-' + tab).click(); await frame();
+      scrollTo(0, document.documentElement.scrollHeight); await frame(); await frame();
+      const jumps = []; let n = 0;
+      while (scrollY > 0 && n++ < 500) {
+        const probe = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+        const before = probe.getBoundingClientRect().top, y0 = scrollY;
+        scrollBy(0, -250); await frame(); await frame();
+        const off = Math.round((probe.getBoundingClientRect().top - before) - (y0 - scrollY));
+        if (Math.abs(off) > 2) jumps.push(off);
+      }
+      return jumps;
+    }"""
+    for v in ['formulas', 'practice']:
+        pg.goto(BASE + '/physics/midterm/#summary')
+        pg.wait_for_selector('#view-summary .smod')
+        jumps = pg.evaluate(FLING, v)
+        check(f'speed: {v}: a fling to the end right after it opens, then back up, never jumps', not jumps, jumps[:5])
+    ctx.close()
+    ctx = b.new_context(viewport={'width': 1280, 'height': 900})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#practice')
+    pg.wait_for_selector('#view-practice .toc')
+    pg.locator('#view-practice .toc a', has_text='Potential energy').click()
+    pg.wait_for_timeout(1800)
+    top = pg.evaluate("document.getElementById('pc8').getBoundingClientRect().top - parseFloat(getComputedStyle(document.getElementById('pc8')).scrollMarginTop)")
+    check('speed: the side menu jumps to the last Practice chapter', abs(top) <= 8, top)
+    ctx.close()
+
     # ---- printing a mock: the paper (questions only, room to write) or with answers; the marks go after printing ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='dark')
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -526,11 +620,15 @@ with sync_playwright() as p:
     for v in ['summary', 'practice', 'formulas', 'quizzes', 'exams']:
         pg.click(f'#tab-{v}')
         pg.wait_for_timeout(200)
-        wide[v] = pg.evaluate("""() => {
-          document.querySelectorAll('details').forEach((d) => { d.open = true; });
+        pg.evaluate("document.querySelectorAll('details').forEach((d) => { d.open = true; })")
+        pg.wait_for_timeout(300)  # answers opened from code are built on 'toggle'
+        pg.evaluate("""() => {
           document.querySelectorAll('.sheet[hidden], .steps [hidden]').forEach((e) => { e.hidden = false; });
-          return document.documentElement.scrollWidth - document.documentElement.clientWidth;
+          document.querySelectorAll('.step-hidden').forEach((e) => e.classList.remove('step-hidden'));
         }""")
+        wide[v] = overflow(pg)
+    check('narrow phone: every answer is built once opened', pg.locator('script.lazy-sol').count() == 0
+          and pg.locator('details.sol').count() == pg.locator('details.sol .answer').count(), pg.locator('script.lazy-sol').count())
     check('narrow phone: no sideways scroll with every answer open', all(x <= 0 for x in wide.values()), wide)
     check('summary: key formulas sit full size on their own line', pg.locator('#su-u2 .ideas .katex-display').count() >= 6
           and pg.locator('#su-u5 .ideas .katex-display').count() >= 3)

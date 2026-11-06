@@ -31,7 +31,7 @@ import { mocks } from './exams.mjs';
 import * as INT from './integrals/content.mjs';
 import * as INTX from './integrals/extras.mjs';
 import * as INTF from './integrals/followups.mjs';
-import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, partsList, answerBox, MARU,
+import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
   THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, KATEX_DIR } from '../shared/build-lib.mjs';
 
@@ -223,7 +223,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
       INDEX.push(entry('Practice', 'practice', elId, `Practice · ${dayOf(u)} · Q.${pi + 1} — ${p.src}`, plain([p.stem, ...p.parts].join(' ')),
         [tags[id] || '', plain(p.hint || ''), plain(p.answer.join(' ')), u.title].join(' ')));
       const hint = p.hint ? toggle('hint', 'Hint', 'Hide hint', blocks(p.hint)) : '';
-      const sol = toggle('sol', 'Show answer', 'Hide answer', answerBox(p.answer) + `<div class="steps">${blocks(p.sol)}</div>
+      const sol = solToggle('Show answer', 'Hide answer', answerBox(p.answer) + `<div class="steps">${blocks(p.sol)}</div>`, `
       <div class="markrow"><span>How did it go?</span>
         <button type="button" class="mbtn" data-mark="got" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/></svg>Got it</button>
         <button type="button" class="mbtn" data-mark="review" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12M4 3h8l-2 3 2 3H4"/></svg>Review again</button>
@@ -288,7 +288,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     <div class="rq" id="${id}">
       <div class="stem">${blocks(withPts(x.stem, x.pts)).replace(/^<p>/, `<p><b class="ql">${x.label}</b> `)}</div>
       ${partsList(x.parts)}
-      <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>`)}</div>
+      <div class="reveal">${solToggle('Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>`)}</div>
     </div>`;
     }).join('')}
   </article>`;
@@ -358,7 +358,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
       <div class="rq-head"><b class="ql">${x.label}</b><span class="qtopic-wrap"><span class="qtopic">${esc(x.topic)}</span></span><span class="pts">${qpts} pt</span></div>
       ${x.stem ? `<div class="stem"><p>${inline(x.stem)}</p></div>` : ''}
       ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`), x.labels)}
-      <div class="reveal">${toggle('sol', 'Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>
+      <div class="reveal">${solToggle('Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>`, `
       <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>
     </div>`;
     }).join('');
@@ -464,11 +464,8 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     exams: examsHTML,
   };
   const lazyBox = (v) => `<div class="wrap content" data-lazy="${v}"><p class="lazy-wait">Loading…</p></div>`;
-  // raw HTML inside a non-JS <script> is kept as plain text by the browser: no parsing, no escaping needed
-  const lazyScripts = Object.entries(LAZY).map(([v, html]) => {
-    if (/<\/script|<!--/i.test(html)) throw new Error(`the ${v} tab contains "</script" or "<!--", which can't travel inside a script element`);
-    return `<script type="text/x-lazy-html" id="lazy-${v}">${html.trim()}</script>`;
-  }).join('\n');
+  // raw HTML inside a non-JS <script> is kept as plain text by the browser and built when the tab first opens
+  const lazyScripts = Object.entries(LAZY).map(([v, html]) => lazyTab(v, html)).join('\n');
   const body = `
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="#summary" aria-label="CLA1 Review, ${P.name}, go to Summary">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>${P.short}</small></span></a>
@@ -787,6 +784,7 @@ async function buildArtifact(out) {
   const past = await loadPast(ring);
   const r = render(DERIVATIVES, { quizzes, past, locked: false, lockedNos: [] });
   const { css, js, kcss } = inlineAssets();
+  if (/<\/script|<!--/i.test(js)) fail('a script contains "</script" or "<!--", which would end the inline <script> early; write it "<\\/script".');
   // claude.ai artifact: the host supplies the document skeleton, so the page starts at <title>
   const html = `<title>CLA1 Midterm Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">

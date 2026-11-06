@@ -86,6 +86,25 @@ export const entry = (s, v, id, t, p, extra = '') => ({ s, v, id, t, p: clip(p),
 // ---------- pieces ----------
 export const toggle = (cls, open, close, body) =>
   `<details class="${cls}"><summary><span class="when-closed">${open}</span><span class="when-open">${close}</span>${UI_ICONS.chevron}</summary><div class="${cls}-body">${body}</div></details>`;
+// HTML that travels as text inside a non-JS <script>: the browser keeps it as one string, without parsing it, and
+// page.js builds it only when it's needed. (An escaped end tag, <\/script>, passes the check: see lazyTab.)
+const textScript = (attrs, html, what) => {
+  if (/<\/script|<!--/i.test(html)) throw new Error(`${what} contains "</script" or "<!--", which can't travel inside a script element`);
+  return `<script type="text/x-lazy-html" ${attrs}>${html}</script>`;
+};
+const noEscapedEnd = (html, what) => {
+  if (/<\\\/script/i.test(html)) throw new Error(`${what} contains "<\\/script", which page.js would read as an end tag`);
+  return html;
+};
+// A worked answer: its answer box and steps (`body`) are built the first time it opens (page.js fillSol), so a tab
+// with a hundred solutions builds only the ones that are read. `after` (the mark buttons) is built with the tab,
+// since marks and scores are painted on it while the answer is closed.
+export const solToggle = (open, close, body, after = '') =>
+  toggle('sol', open, close, textScript('class="lazy-sol"', noEscapedEnd(body, 'a solution'), 'a solution') + after);
+// A tab built the first time it opens (page.js materialize). The solutions inside it are scripts of their own, so
+// their end tags travel as <\/script> and page.js turns them back.
+export const lazyTab = (view, html) =>
+  textScript(`id="lazy-${view}"`, noEscapedEnd(html.trim(), `the ${view} tab`).replace(/<\/script>/g, '<\\/script>'), `the ${view} tab`);
 export const partsList = (parts, labels) => parts.length
   ? `<ol class="parts">${parts.map((p, i) => `<li><span class="pn">(${labels ? labels[i] : i + 1})</span><span class="pt">${inline(p)}</span></li>`).join('')}</ol>` : '';
 export const answerBox = (answer) => `<div class="answer"><span class="lbl">Answer</span><ul>${answer.map((a) => `<li>${inline(a)}</li>`).join('')}</ul></div>`;
