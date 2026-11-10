@@ -1,7 +1,9 @@
 // Content for the Calculus midterm 2 page (math/integrals/, the integral part of CLA1). Units follow the course
 // schedule (integral part): one unit per lesson pair, in schedule order. The schedule slide gives dates, not day
 // numbers, so every unit carries `dates` ("2 & 3 Nov"); a lesson gets `days` and `quiz` once a quiz sheet shows them
-// (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15).
+// (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15;
+// Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19). The 9 Nov class finished the primitive-functions
+// lesson (inverse trigonometric functions) before substitution, so that part sits in u2.
 // A lesson still to come has `upcoming: true` and shows as a greyed-out Summary tile; `starred` marks the lessons with
 // an in-class quiz (the schedule's *).
 // Markup: $inline$, $$display$$, **bold**, "- " list items (continuation lines join the item),
@@ -10,6 +12,8 @@ const R = String.raw;
 const NOV2 = '2026-11-02';
 const NOV3 = '2026-11-03';
 const NOV6 = '2026-11-06';
+const NOV9 = '2026-11-09';
+const NOV10 = '2026-11-10';
 
 export const units = [
   {
@@ -45,7 +49,7 @@ The integral $\frac{2}{3}$ is $\frac{11}{6}$ above the axis minus $\frac{7}{6}$ 
 - An integral is a signed area: $\mathord{\int_0^2(x-1)\,dx}=0$, yet the region between the line and the axis has area $1$.`,
   },
   {
-    id: 'u2', quiz: 'Quiz 06', days: 'Day 16 & 17', dates: '5 & 6 Nov', starred: true, added: NOV6,
+    id: 'u2', quiz: 'Quiz 06', days: 'Day 16 & 17', dates: '5 & 6 Nov', starred: true, added: NOV9,
     title: 'Primitive functions (indefinite integrals)',
     ideas: R`
 - **The limit of the Riemann sum:** on an interval $[a,b]$ with $N$ strips and right ends, the general form is
@@ -74,6 +78,11 @@ $$\int\frac{1}{ax+b}\,dx=\frac{1}{a}\ln|ax+b|+C$$
 - **arctan:** $\arctan x$, also written $\tan^{-1}x$, is the angle between $-\frac{\pi}{2}$ and $\frac{\pi}{2}$ whose tan is $x$. The $-1$ means the inverse function, not $\frac{1}{\tan x}$. From the exact values,
 $$\begin{gathered}\arctan0=0,\quad\arctan\tfrac{1}{\sqrt3}=\tfrac{\pi}{6}\\[2pt]\arctan1=\tfrac{\pi}{4},\quad\arctan\sqrt3=\tfrac{\pi}{3}\end{gathered}$$
 and $\arctan(-x)=-\arctan x$.
+- **Inverse trigonometric functions** (from the 9 Nov class): $\arcsin x$ $(=\sin^{-1}x)$ is the angle between $-\frac{\pi}{2}$ and $\frac{\pi}{2}$ whose sine is $x$, and $\arccos x$ $(=\cos^{-1}x)$ the angle between $0$ and $\pi$ whose cosine is $x$; both need $-1\le x\le1$. Their derivatives, with arctan's:
+$$\begin{aligned}(\arcsin x)'&=\frac{1}{\sqrt{1-x^2}}\\[2pt](\arccos x)'&=-\frac{1}{\sqrt{1-x^2}}\\[2pt](\arctan x)'&=\frac{1}{1+x^2}\end{aligned}$$
+For arcsin: $y=\arcsin x$ means $\sin y=x$, so $\cos y\cdot y'=1$ and $y'=\frac{1}{\cos y}=\frac{1}{\sqrt{1-x^2}}$, since $\cos y\ge0$ there. Read backwards:
+$$\int\frac{1}{\sqrt{1-x^2}}\,dx=\arcsin x+C$$
+From the exact values, $\arcsin\frac{1}{2}=\frac{\pi}{6}$, $\arcsin\frac{\sqrt2}{2}=\frac{\pi}{4}$, $\arcsin\frac{\sqrt3}{2}=\frac{\pi}{3}$ and $\arcsin1=\frac{\pi}{2}$, and $\arcsin(-x)=-\arcsin x$.
 - **Area with a primitive:** find the zeros of $f$ inside $[a,b]$, work out each piece with $F$, and add the pieces as positive numbers. Without the split, the parts below the axis are subtracted.`,
     watch: R`
 - The minus sign belongs to sine: $\int\sin x\,dx=-\cos x+C$, because $(\cos x)'=-\sin x$.
@@ -81,11 +90,58 @@ and $\arctan(-x)=-\arctan x$.
 - $\int\frac{1}{x}\,dx=\ln|x|+C$, since the power rule would divide by $0$. And $\int\frac{1}{2x+1}\,dx=\frac{1}{2}\ln|2x+1|+C$, not $\ln|2x+1|+C$.
 - With the variable in the exponent, $\int2^x\,dx=\frac{2^x}{\ln2}+C$, not $\frac{2^{x+1}}{x+1}$. And $\int\frac{1}{3^x}\,dx$ is not $\ln|3^x|$: rewrite it as $3^{-x}$ first.
 - $\tan^{-1}x$ is $\arctan x$, an angle: $\tan^{-1}1=\frac{\pi}{4}$, while $\frac{1}{\tan1}$ is a different number.
+- A root in the denominator means arcsin, no root means arctan: $\int\frac{dx}{\sqrt{1-x^2}}=\arcsin x+C$, but $\int\frac{dx}{1+x^2}=\arctan x+C$. And $\arcsin x$ exists only for $-1\le x\le1$.
 - In $F(b)-F(a)$, work out $F(a)$ on its own line, then subtract all of it: $\mathord{\Big[-\cos x\Big]_0^{\pi}}=-\cos\pi-(-\cos0)=2$. With a negative limit, $-(-2)=+2$.
 - An area question needs the zeros of $f$ first: $\mathord{\int_{-1}^{1}x\,dx}=0$, but the area between $y=x$ and the axis on $[-1,1]$ is $1$.
 - Check every primitive by differentiating it back to $f$.`,
   },
-  { id: 'u3', dates: '9 & 10 Nov', title: 'Integral by parts and integral by substitution', starred: true, upcoming: true },
+  {
+    id: 'u3', quiz: 'Quiz 07', days: 'Day 18 & 19', dates: '9 & 10 Nov', starred: true, added: NOV10,
+    title: 'Integral by parts and integral by substitution',
+    ideas: R`
+- **Integration by substitution:** the chain rule read backwards. If $F'=f$, then $\big(F(g(x))\big)'=f(g(x))\,g'(x)$, so
+$$\int f(g(x))\,g'(x)\,dx=F(g(x))+C$$
+Look for an inner function $g(x)$ whose derivative also stands in the integral; a missing constant factor is fine.
+- **Four steps:** let $u=g(x)$; find $du=g'(x)\,dx$; rewrite the whole integral in $u$, with no $x$ left; integrate in $u$ and put $u=g(x)$ back. For $\int xe^{x^2}dx$: $u=x^2$ and $du=2x\,dx$, so $x\,dx=\frac{du}{2}$ and the result is $\frac{1}{2}e^{x^2}+C$.
+- **The log rule:** with $u=f(x)$, a numerator that is the derivative of the denominator gives a log:
+$$\int\frac{f'(x)}{f(x)}\,dx=\ln|f(x)|+C$$
+For example $\int\frac{2x}{x^2+1}\,dx=\ln(x^2+1)+C$. And with $u=\ln x$, $du=\frac{dx}{x}$: $\int\frac{\ln x}{x}\,dx=\int u\,du=\frac{(\ln x)^2}{2}+C$.
+- **Calculation of definite integral:** after the substitution the primitive is a function of $u$, so the range of integration moves to the $u$-axis as well: $a\le x\le b$ becomes $h(a)\le u\le h(b)$.
+$$\int_a^b f(h(x))\,h'(x)\,dx=\int_{h(a)}^{h(b)}f(u)\,du$$
+The class example uses $u=h(x)=e^{2x}$, so $e^{2x}\,dx=\frac{du}{2}$, and $x:0\to1$ becomes $u:1\to e^2$:
+$$\begin{aligned}\int_0^1e^{2x}\sqrt{1+e^{2x}}\,dx&=\left[\frac{(1+u)^{3/2}}{3}\right]_1^{e^2}\\[4pt]&=\frac{(1+e^2)^{3/2}-(\sqrt2)^3}{3}\end{aligned}$$
+Either change the limits, or put $x$ back and use the old ones; never mix the two.
+- **Rational forms whose denominator factors:** split into partial fractions, and each piece gives a log:
+$$\begin{aligned}\frac{1}{x^2+3x+2}&=\frac{1}{(x+1)(x+2)}\\[4pt]&=\frac{1}{x+1}-\frac{1}{x+2}\end{aligned}$$
+so $\int\frac{dx}{x^2+3x+2}=\ln\left|\frac{x+1}{x+2}\right|+C$. To find $A$ and $B$ in $\frac{A}{x+1}+\frac{B}{x+2}$, write $1=A(x+2)+B(x+1)$ and put in the roots $x=-1$ and $x=-2$.
+- **A denominator that does not factor:** first make a quadratic term, then factor out the constant, then substitute:
+$$\begin{aligned}\frac{1}{x^2+2x+5}&=\frac{1}{(x+1)^2+4}\\[4pt]&=\frac{1}{4}\cdot\frac{1}{\left(\frac{x+1}{2}\right)^2+1}\end{aligned}$$
+With $u=\frac{x+1}{2}$ and $dx=2\,du$, $\int\frac{dx}{x^2+2x+5}=\frac{1}{2}\arctan\frac{x+1}{2}+C$. The same steps give
+$$\int\frac{dx}{(x+p)^2+a^2}=\frac{1}{a}\arctan\frac{x+p}{a}+C$$
+- **Which case:** for $x^2+bx+c$, the sign of $\Delta=b^2-4c$ decides. $\Delta>0$: it factors, so partial fractions and logs. $\Delta<0$: make a square, so arctan. $\Delta=0$: it is already a square $\left(x+\frac{b}{2}\right)^2$, and $\int\frac{dx}{(x+p)^2}=-\frac{1}{x+p}+C$. A numerator with $x$ is first written as a multiple of the denominator's derivative plus a constant: $\frac{2x}{x^2+2x+2}=\frac{2x+2}{x^2+2x+2}-\frac{2}{(x+1)^2+1}$, a log plus an arctan.
+- **Rational forms of $x$ and $\sqrt{ax+b}$:** put $t=\sqrt{ax+b}$, so $x=\frac{t^2-b}{a}$ and $dx=\frac{2t}{a}\,dt$, and the integrand becomes a rational function of $t$. In the class example $t=\sqrt{x-1}$ gives $x=t^2+1$, $dx=2t\,dt$ and $x+2\sqrt{x-1}=(t+1)^2$:
+$$\begin{aligned}\int\frac{dx}{x+2\sqrt{x-1}}&=\int\frac{2t}{(t+1)^2}\,dt\\[4pt]&=2\ln(t+1)+\frac{2}{t+1}+C\end{aligned}$$
+- **Rational forms of trigonometric functions:** $u=\tan\frac{x}{2}$ works in general. From $u^2=\frac{\sin^2(x/2)}{\cos^2(x/2)}=\frac{1-\cos x}{1+\cos x}$,
+$$\begin{gathered}\cos x=\frac{1-u^2}{1+u^2},\qquad\sin x=\frac{2u}{1+u^2}\\[4pt]dx=\frac{2}{1+u^2}\,du\end{gathered}$$
+since $\left(\frac{du}{dx}\right)^{-1}=2\cos^2\frac{x}{2}=1+\cos x=\frac{2}{1+u^2}$. The class example:
+$$\begin{aligned}&\int\frac{1+\sin x}{1+\cos x}\,dx=\int\left(1+\frac{2u}{1+u^2}\right)du\\[4pt]&=\tan\frac{x}{2}+\ln\left(1+\tan^2\frac{x}{2}\right)+C\end{aligned}$$
+For the limits, $\tan\frac{x}{2}=\frac{\sin x}{1+\cos x}$ also works for angles that are not in the table.
+- **Integration by parts (product of functions):** from $(fg)'=f'g+fg'$,
+$$\int f\,g'\,dx=f\,g-\int f'\,g\,dx$$
+Differentiate the factor that gets simpler ($f$: a polynomial or a logarithm) and integrate the one you can ($g'$: $e^{ax}$, $\sin x$, $\cos x$, or $1$). The class examples: $\int x\sin x\,dx=-x\cos x+\sin x+C$, and with $g'=1$, $\int\ln x\,dx=x\ln x-x+C$.
+- **Definite integrals by parts:**
+$$\int_a^b f\,g'\,dx=\Big[f\,g\Big]_a^b-\int_a^b f'\,g\,dx$$
+A square of $x$ needs two rounds: the class exercise $\int_0^2x^2e^{2x}\,dx=\frac{5e^4-1}{4}$. A log on its own takes $g'=1$: in $\int_0^1\ln(x^2+1)\,dx$ the leftover $\frac{2x^2}{x^2+1}=2-\frac{2}{x^2+1}$ brings in arctan, and the value is $\ln2-2+\frac{\pi}{2}$.`,
+    watch: R`
+- $du$ comes from differentiating, and it always carries $dx$: $u=1+e^{2x}$ gives $du=2e^{2x}\,dx$ (the $1$ becomes $0$, not $x$), and $u=\ln x$ gives $du=\frac{1}{x}\,dx$.
+- A $u$ in the denominator becomes $\frac{1}{u}$, and the constant from $du$ stays: with $u=x^2+1$, $\frac{x}{x^2+1}\,dx=\frac{1}{2}\cdot\frac{du}{u}$, not $u\,du$.
+- New variable, new limits: $\int_1^2\frac{\ln x}{x}\,dx=\int_0^{\ln2}u\,du$. If an $x$ is left after substituting, choose another $u$.
+- Check $\Delta$ before you reach for arctan: $x^2-4x+4=(x-2)^2$, so $\int\frac{dx}{x^2-4x+4}=-\frac{1}{x-2}+C$, with no arctan.
+- When you factor out the constant, $dx$ changes too: in $\frac{1}{4}\cdot\frac{1}{u^2+1}$ with $dx=2\,du$ the factor in front becomes $\frac{1}{2}$, not $\frac{1}{4}$.
+- With $u=\tan\frac{x}{2}$, change $dx$ as well: $dx=\frac{2\,du}{1+u^2}$.
+- By parts, keep the minus sign before $\int f'g\,dx$, and integrate $g'$ with care: $g'=\sin x$ gives $g=-\cos x$, and $g'=e^{2x}$ gives $g=\frac{e^{2x}}{2}$.
+- Choose the factors the right way round: in $\int xe^x\,dx$ differentiate $x$. Taking $g'=x$ instead leaves $\int\frac{x^2}{2}e^x\,dx$, which is harder.`,
+  },
   { id: 'u4', dates: '12 & 13 Nov', title: 'Application of integration: area, average, etc.', starred: true, upcoming: true },
   { id: 'u5', dates: '16 & 17 Nov', title: 'Parametric and polar curves', starred: true, upcoming: true },
   { id: 'u6', dates: '19 & 20 Nov', title: 'Improper integrals and orthogonal functions', starred: true, upcoming: true },
@@ -98,6 +154,8 @@ export const habits = R`
 - Check a primitive by differentiating it: $(-\cos x)'=\sin x$.
 - In a definite integral, leave out the $C$, and work out $F(b)$ and $F(a)$ on separate lines before you subtract.
 - When $f$ changes sign, find its zeros first: the integral and the area of the region are different answers.
+- Before integrating a fraction, ask two things: is the top the derivative of the bottom, and does the bottom factor ($\Delta$)?
+- After a substitution, write the new limits at once, on the line with $du$.
 - Keep answers exact: $\frac{16}{3}$, $\frac{\pi}{4}$ or $\frac{e^2-1}{2}$, not decimals.`;
 
 // ---------------- Practice ----------------
@@ -339,5 +397,193 @@ $$\begin{aligned}F(0)&=0\\F(2)&=\frac{8}{3}-2-4=-\frac{10}{3}\\F(3)&=9-\frac{9}{
 **(2)** $f<0$ on $[0,2)$ and $f>0$ on $(2,3]$. Below the axis: $F(2)-F(0)=-\frac{10}{3}$, an area of $\frac{10}{3}$. Above it: $F(3)-F(2)=-\frac{3}{2}+\frac{10}{3}=\frac{11}{6}$.
 
 The area is $\frac{10}{3}+\frac{11}{6}=\frac{31}{6}$, while the integral is $\frac{11}{6}-\frac{10}{3}=-\frac{3}{2}$.` },
+    { src: 'Inverse trigonometric functions', added: NOV9,
+      stem: R`Find the values and the definite integrals.`,
+      parts: [R`$\arcsin\frac{\sqrt2}{2}$ and $\arcsin\left(-\frac{1}{2}\right)$`, R`$\displaystyle\int_0^{1/2}\frac{1}{\sqrt{1-x^2}}\,dx$`, R`$\displaystyle\int_{-1/2}^{\sqrt3/2}\frac{1}{\sqrt{1-x^2}}\,dx$`],
+      hint: R`$\arcsin x$ is the angle between $-\frac{\pi}{2}$ and $\frac{\pi}{2}$ whose sine is $x$, and $\int\frac{dx}{\sqrt{1-x^2}}=\arcsin x+C$.`,
+      answer: [R`(1) $\frac{\pi}{4}$ and $-\frac{\pi}{6}$`, R`(2) $\frac{\pi}{6}$`, R`(3) $\frac{\pi}{2}$`],
+      sol: R`
+**(1)** $\sin\frac{\pi}{4}=\frac{\sqrt2}{2}$, so $\arcsin\frac{\sqrt2}{2}=\frac{\pi}{4}$. And $\sin\left(-\frac{\pi}{6}\right)=-\frac{1}{2}$, so $\arcsin\left(-\frac{1}{2}\right)=-\frac{\pi}{6}$: arcsin of a negative number is a negative angle.
+
+**(2)** $\Big[\arcsin x\Big]_0^{1/2}=\arcsin\frac{1}{2}-\arcsin0=\frac{\pi}{6}$.
+
+**(3)** $\arcsin\frac{\sqrt3}{2}-\arcsin\left(-\frac{1}{2}\right)=\frac{\pi}{3}+\frac{\pi}{6}=\frac{\pi}{2}$.` },
+  ],
+  u3: [
+    { src: 'Class example: limits on the u-axis', added: NOV9,
+      stem: R`Compute $\displaystyle\int_0^1e^{2x}\sqrt{1+e^{2x}}\,dx$ by substitution.`,
+      parts: [],
+      hint: R`Take $u=e^{2x}$, as in class: then $e^{2x}\,dx=\frac{du}{2}$, and the limits move to the $u$-axis.`,
+      answer: [R`$\frac{(1+e^2)^{3/2}-2\sqrt2}{3}$`],
+      sol: R`
+$u=e^{2x}$ gives $du=2e^{2x}\,dx$, so $e^{2x}\,dx=\frac{du}{2}$. The limits: $x=0$ gives $u=1$, and $x=1$ gives $u=e^2$.
+$$\int_0^1e^{2x}\sqrt{1+e^{2x}}\,dx=\frac{1}{2}\int_1^{e^2}\sqrt{1+u}\,du$$
+
+A primitive of $\sqrt{1+u}=(1+u)^{1/2}$ is $\frac{2}{3}(1+u)^{3/2}$, so the integral is
+$$\left[\frac{(1+u)^{3/2}}{3}\right]_1^{e^2}=\frac{(1+e^2)^{3/2}-2^{3/2}}{3}$$
+and $2^{3/2}=(\sqrt2)^3=2\sqrt2$.
+
+Taking $u=1+e^{2x}$ instead gives the limits $2$ and $1+e^2$, and the same value.` },
+    { src: 'Exercise (1): two substitutions', added: NOV9,
+      stem: R`Compute the definite integrals.`,
+      parts: [R`$\displaystyle\int_1^2\frac{\ln x}{x}\,dx$`, R`$\displaystyle\int_0^1\frac{x+1}{x^2+1}\,dx$`],
+      hint: R`(1) $u=\ln x$. (2) Split the fraction into $\frac{x}{x^2+1}+\frac{1}{x^2+1}$.`,
+      answer: [R`(1) $\frac{(\ln2)^2}{2}$`, R`(2) $\frac{\ln2}{2}+\frac{\pi}{4}$`],
+      sol: R`
+**(1)** $u=\ln x$ gives $du=\frac{1}{x}\,dx$, and the limits become $\ln1=0$ and $\ln2$:
+$$\begin{aligned}\int_1^2\frac{\ln x}{x}\,dx&=\int_0^{\ln2}u\,du\\[4pt]&=\left[\frac{u^2}{2}\right]_0^{\ln2}=\frac{(\ln2)^2}{2}\end{aligned}$$
+Here $(\ln2)^2$ is the square of $\ln2$, not $\ln(2^2)$.
+
+**(2)** Split: $\frac{x+1}{x^2+1}=\frac{x}{x^2+1}+\frac{1}{x^2+1}$.
+
+For the first part, $u=x^2+1$ gives $x\,dx=\frac{du}{2}$ and the limits $1$ and $2$: $\frac{1}{2}\int_1^2\frac{du}{u}=\frac{1}{2}\Big[\ln u\Big]_1^2=\frac{\ln2}{2}$.
+
+The second part is $\Big[\arctan x\Big]_0^1=\frac{\pi}{4}$, so the integral is $\frac{\ln2}{2}+\frac{\pi}{4}$.` },
+    { src: 'Class example: a denominator that factors', added: NOV9,
+      stem: R`Let $f(x)=\dfrac{1}{x^2+3x+2}$.`,
+      parts: [R`Split $f(x)$ into partial fractions.`, R`Find $\displaystyle\int f(x)\,dx$.`, R`Compute $\displaystyle\int_0^1 f(x)\,dx$.`],
+      hint: R`$x^2+3x+2=(x+1)(x+2)$. Write $1=A(x+2)+B(x+1)$ and put in $x=-1$ and $x=-2$.`,
+      answer: [R`(1) $\frac{1}{x+1}-\frac{1}{x+2}$`, R`(2) $\ln\left|\frac{x+1}{x+2}\right|+C$`, R`(3) $\ln\frac{4}{3}$`],
+      sol: R`
+**(1)** $\frac{1}{(x+1)(x+2)}=\frac{A}{x+1}+\frac{B}{x+2}$ means $1=A(x+2)+B(x+1)$. At $x=-1$: $1=A$. At $x=-2$: $1=-B$, so $B=-1$.
+
+**(2)** $\ln|x+1|-\ln|x+2|+C=\ln\left|\frac{x+1}{x+2}\right|+C$. Check: $\frac{1}{x+1}-\frac{1}{x+2}=\frac{(x+2)-(x+1)}{(x+1)(x+2)}=f(x)$.
+
+**(3)** $\Big[\ln\frac{x+1}{x+2}\Big]_0^1=\ln\frac{2}{3}-\ln\frac{1}{2}=\ln\frac{4}{3}$.` },
+    { src: 'Class example: a denominator that does not factor', added: NOV9,
+      stem: R`Let $f(x)=\dfrac{1}{x^2+2x+5}$.`,
+      parts: [R`Find $\displaystyle\int f(x)\,dx$.`, R`Compute $\displaystyle\int_{-1}^{1} f(x)\,dx$.`],
+      hint: R`Make a quadratic term, $(x+1)^2+4$, factor out the $4$, and put $u=\frac{x+1}{2}$.`,
+      answer: [R`(1) $\frac{1}{2}\arctan\frac{x+1}{2}+C$`, R`(2) $\frac{\pi}{8}$`],
+      sol: R`
+**(1)** $x^2+2x+5=(x+1)^2+4$. Factor out the $4$:
+$$f(x)=\frac{1}{4}\cdot\frac{1}{\left(\frac{x+1}{2}\right)^2+1}$$
+
+With $u=\frac{x+1}{2}$, $\frac{du}{dx}=\frac{1}{2}$, so $dx=2\,du$:
+$$\begin{aligned}\int f(x)\,dx&=\frac{1}{4}\int\frac{2\,du}{u^2+1}=\frac{1}{2}\arctan u+C\\[4pt]&=\frac{1}{2}\arctan\frac{x+1}{2}+C\end{aligned}$$
+
+**(2)** $x=-1$ gives $u=0$ and $x=1$ gives $u=1$: $\frac{1}{2}\left(\arctan1-\arctan0\right)=\frac{1}{2}\cdot\frac{\pi}{4}=\frac{\pi}{8}$.` },
+    { src: 'Class example: x and √(x − 1)', added: NOV9,
+      stem: R`Find $\displaystyle\int\frac{1}{x+2\sqrt{x-1}}\,dx$.`,
+      parts: [],
+      hint: R`Put $t=\sqrt{x-1}$. Then $x=t^2+1$, $dx=2t\,dt$, and the denominator is a perfect square.`,
+      answer: [R`$2\ln\left(\sqrt{x-1}+1\right)+\frac{2}{\sqrt{x-1}+1}+C$`],
+      sol: R`
+$t=\sqrt{x-1}$ gives $t^2=x-1$, so $x=t^2+1$ and $dx=2t\,dt$.
+
+The denominator is $x+2\sqrt{x-1}=t^2+1+2t=(t+1)^2$, so the integral is $\displaystyle\int\frac{2t}{(t+1)^2}\,dt$.
+
+Write $t=(t+1)-1$: $\frac{2t}{(t+1)^2}=\frac{2}{t+1}-\frac{2}{(t+1)^2}$, whose primitive is $2\ln(t+1)+\frac{2}{t+1}$ (here $t+1>0$).
+
+Put $t=\sqrt{x-1}$ back: $2\ln\left(\sqrt{x-1}+1\right)+\frac{2}{\sqrt{x-1}+1}+C$.` },
+    { src: 'Class example: u = tan(x/2)', added: NOV9,
+      stem: R`Find $\displaystyle\int\frac{1+\sin x}{1+\cos x}\,dx$ with $u=\tan\frac{x}{2}$.`,
+      parts: [],
+      hint: R`$\sin x=\frac{2u}{1+u^2}$, $\cos x=\frac{1-u^2}{1+u^2}$ and $dx=\frac{2\,du}{1+u^2}$.`,
+      answer: [R`$\tan\frac{x}{2}+\ln\left(1+\tan^2\frac{x}{2}\right)+C$`],
+      sol: R`
+$1+\sin x=\frac{1+2u+u^2}{1+u^2}$ and $1+\cos x=\frac{2}{1+u^2}$, so $\frac{1+\sin x}{1+\cos x}=\frac{1+2u+u^2}{2}$.
+
+With $dx=\frac{2\,du}{1+u^2}$:
+$$\int\frac{1+2u+u^2}{2}\cdot\frac{2\,du}{1+u^2}=\int\left(1+\frac{2u}{1+u^2}\right)du$$
+
+$2u$ is the derivative of $1+u^2$, so the primitive is $u+\ln(1+u^2)+C$.
+
+With $u=\tan\frac{x}{2}$: $\tan\frac{x}{2}+\ln\left(1+\tan^2\frac{x}{2}\right)+C$.` },
+    { src: 'Exercise (2)(1): a log and an arctan', added: NOV9,
+      stem: R`Let $f(x)=\dfrac{2x}{x^2+2x+2}$ and $D=[-1,0]$.`,
+      parts: [R`Find the primitive function of $f$.`, R`Compute $\displaystyle\int_D f(x)\,dx$.`],
+      hint: R`Make a square, $(x+1)^2+1$, and put $u=x+1$, so the top $2x$ becomes $2u-2$.`,
+      answer: [R`(1) $\ln(x^2+2x+2)-2\arctan(x+1)+C$`, R`(2) $\ln2-\frac{\pi}{2}$`],
+      sol: R`
+**(1)** $x^2+2x+2=(x+1)^2+1$. With $u=x+1$: $x=u-1$ and $dx=du$, so
+$$\begin{aligned}\int f(x)\,dx&=\int\frac{2u-2}{u^2+1}\,du\\[4pt]&=\int\frac{2u}{u^2+1}\,du-2\int\frac{du}{u^2+1}\end{aligned}$$
+
+$2u$ is the derivative of $u^2+1$, so this is $\ln(u^2+1)-2\arctan u+C$, that is $F(x)=\ln(x^2+2x+2)-2\arctan(x+1)+C$. No absolute value is needed, because $x^2+2x+2>0$.
+
+**(2)** $F(0)=\ln2-2\arctan1=\ln2-\frac{\pi}{2}$ and $F(-1)=\ln1-2\arctan0=0$, so the integral is $\ln2-\frac{\pi}{2}$. It is negative because $f<0$ on $[-1,0)$.` },
+    { src: 'Exercise (2)(2): x and √(x + 1)', added: NOV9,
+      stem: R`Let $f(x)=\dfrac{1}{x\sqrt{x+1}}$ and $D=[1,3]$.`,
+      parts: [R`Find the primitive function of $f$.`, R`Compute $\displaystyle\int_D f(x)\,dx$.`],
+      hint: R`Put $t=\sqrt{x+1}$, so $x=t^2-1$ and $dx=2t\,dt$. Then split $\frac{2}{t^2-1}$ into partial fractions.`,
+      answer: [R`(1) $\ln\left|\frac{\sqrt{x+1}-1}{\sqrt{x+1}+1}\right|+C$`, R`(2) $\ln\frac{3+2\sqrt2}{3}$`],
+      sol: R`
+**(1)** $t=\sqrt{x+1}$ gives $x=t^2-1$ and $dx=2t\,dt$, so
+$$\frac{dx}{x\sqrt{x+1}}=\frac{2t\,dt}{(t^2-1)\,t}=\frac{2\,dt}{t^2-1}$$
+
+Partial fractions: $\frac{2}{(t-1)(t+1)}=\frac{1}{t-1}-\frac{1}{t+1}$, so the primitive is $\ln|t-1|-\ln|t+1|=\ln\left|\frac{t-1}{t+1}\right|$, with $t=\sqrt{x+1}$.
+
+**(2)** The limits: $x=1$ gives $t=\sqrt2$, and $x=3$ gives $t=2$.
+$$\left[\ln\frac{t-1}{t+1}\right]_{\sqrt2}^{2}=\ln\frac{1}{3}-\ln\frac{\sqrt2-1}{\sqrt2+1}$$
+
+Since $\frac{\sqrt2+1}{\sqrt2-1}=(\sqrt2+1)^2=3+2\sqrt2$, the integral is $\ln\frac{3+2\sqrt2}{3}$, which is also $2\ln(\sqrt2+1)-\ln3$.` },
+    { src: 'Exercise (2)(3): u = tan(x/2) with limits', added: NOV9,
+      stem: R`Let $f(x)=\dfrac{1}{1+\cos x}$ and $D=\left[0,\frac{\pi}{2}\right]$.`,
+      parts: [R`Find the primitive function of $f$.`, R`Compute $\displaystyle\int_D f(x)\,dx$.`],
+      hint: R`With $u=\tan\frac{x}{2}$, $1+\cos x=\frac{2}{1+u^2}$ and $dx=\frac{2\,du}{1+u^2}$.`,
+      answer: [R`(1) $\tan\frac{x}{2}+C$`, R`(2) $1$`],
+      sol: R`
+**(1)** $\frac{dx}{1+\cos x}=\frac{1+u^2}{2}\cdot\frac{2\,du}{1+u^2}=du$, so the primitive is $u+C=\tan\frac{x}{2}+C$.
+
+**(2)** The limits: $x=0$ gives $u=0$, and $x=\frac{\pi}{2}$ gives $u=\tan\frac{\pi}{4}=1$. The integral is $\int_0^1du=1$.` },
+    { src: 'Class examples: integration by parts', added: NOV10,
+      stem: R`Find the indefinite integrals by parts.`,
+      parts: [R`$\displaystyle\int x\sin x\,dx$`, R`$\displaystyle\int\ln x\,dx$`],
+      hint: R`(1) Differentiate $x$ and integrate $\sin x$. (2) Write $\ln x=1\cdot\ln x$: differentiate $\ln x$ and integrate $1$.`,
+      answer: [R`(1) $-x\cos x+\sin x+C$`, R`(2) $x\ln x-x+C$`],
+      sol: R`
+**(1)** $f=x$ and $g'=\sin x$, so $f'=1$ and $g=-\cos x$:
+$$\begin{aligned}\int x\sin x\,dx&=-x\cos x-\int(-\cos x)\,dx\\[4pt]&=-x\cos x+\sin x+C\end{aligned}$$
+
+**(2)** $f=\ln x$ and $g'=1$, so $f'=\frac{1}{x}$ and $g=x$:
+$$\begin{aligned}\int\ln x\,dx&=x\ln x-\int x\cdot\frac{1}{x}\,dx\\[4pt]&=x\ln x-x+C\end{aligned}$$
+
+Check: $(x\ln x-x)'=\ln x+1-1=\ln x$.` },
+    { src: 'Exercise: ln(x² + 1) by parts', added: NOV10,
+      stem: R`Let $f(x)=\ln(x^2+1)$ and $D=[0,1]$.`,
+      parts: [R`Find the primitive function of $f$.`, R`Compute $\displaystyle\int_D f(x)\,dx$.`],
+      hint: R`Take $g'=1$ and differentiate $\ln(x^2+1)$. The fraction left over has the same degree on top and bottom: divide first.`,
+      answer: [R`(1) $x\ln(x^2+1)-2x+2\arctan x+C$`, R`(2) $\ln2-2+\frac{\pi}{2}$`],
+      sol: R`
+**(1)** $f=\ln(x^2+1)$ and $g'=1$, so $f'=\frac{2x}{x^2+1}$ and $g=x$:
+$$\begin{aligned}\int\ln(x^2+1)\,dx&=x\ln(x^2+1)\\[4pt]&\quad-\int\frac{2x^2}{x^2+1}\,dx\end{aligned}$$
+
+Divide: $\frac{2x^2}{x^2+1}=2-\frac{2}{x^2+1}$, whose primitive is $2x-2\arctan x$. So $F(x)=x\ln(x^2+1)-2x+2\arctan x+C$.
+
+**(2)** $F(1)=\ln2-2+2\cdot\frac{\pi}{4}=\ln2-2+\frac{\pi}{2}$ and $F(0)=0$, so the integral is $\ln2-2+\frac{\pi}{2}$.` },
+    { src: 'Exercise: x²e^(2x), by parts twice', added: NOV10,
+      stem: R`Let $f(x)=x^2e^{2x}$ and $D=[0,2]$.`,
+      parts: [R`Find the primitive function of $f$.`, R`Compute $\displaystyle\int_D f(x)\,dx$.`],
+      hint: R`Differentiate $x^2$ and integrate $e^{2x}$, whose primitive is $\frac{e^{2x}}{2}$. The leftover $\int xe^{2x}\,dx$ needs a second round.`,
+      answer: [R`(1) $\frac{e^{2x}}{4}(2x^2-2x+1)+C$`, R`(2) $\frac{5e^4-1}{4}$`],
+      sol: R`
+**(1)** $f=x^2$ and $g'=e^{2x}$, so $f'=2x$ and $g=\frac{e^{2x}}{2}$:
+$$\int x^2e^{2x}\,dx=\frac{x^2}{2}e^{2x}-\int xe^{2x}\,dx$$
+
+Second round, with $f=x$ and $g'=e^{2x}$:
+$$\int xe^{2x}\,dx=\frac{x}{2}e^{2x}-\int\frac{e^{2x}}{2}\,dx=\frac{x}{2}e^{2x}-\frac{e^{2x}}{4}$$
+
+So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{4}(2x^2-2x+1)+C$.
+
+**(2)** $F(2)=\frac{e^4}{4}(8-4+1)=\frac{5e^4}{4}$ and $F(0)=\frac{1}{4}$, so the integral is $\frac{5e^4-1}{4}$.` },
+    { src: 'Which method?', added: NOV10,
+      stem: R`Name the method for each integral, then find it.`,
+      parts: [R`$\displaystyle\int xe^{x^2}\,dx$`, R`$\displaystyle\int xe^{x}\,dx$`, R`$\displaystyle\int\frac{1}{x^2-1}\,dx$`, R`$\displaystyle\int\frac{1}{x^2+4x+5}\,dx$`,
+              R`$\displaystyle\int\frac{\cos x}{1+\sin x}\,dx$`, R`$\displaystyle\int x\sqrt{x+1}\,dx$`],
+      hint: R`Is the derivative of an inner function there? Is it a polynomial times $e^x$? For a fraction, look at the top and at $\Delta$ of the bottom.`,
+      answer: [R`(1) substitution $u=x^2$: $\frac{1}{2}e^{x^2}+C$`, R`(2) by parts: $(x-1)e^x+C$`, R`(3) partial fractions: $\frac{1}{2}\ln\left|\frac{x-1}{x+1}\right|+C$`,
+               R`(4) a square, then arctan: $\mathord{\arctan(x+2)+C}$`, R`(5) the log rule: $\ln(1+\sin x)+C$`, R`(6) $t=\sqrt{x+1}$: $\mathord{\frac{2}{5}(x+1)^{5/2}-\frac{2}{3}(x+1)^{3/2}+C}$`],
+      sol: R`
+**(1)** $u=x^2$ and $du=2x\,dx$: $\frac{1}{2}\int e^u\,du=\frac{1}{2}e^{x^2}+C$.
+
+**(2)** No inner derivative here, but a polynomial times $e^x$. By parts with $f=x$ and $g'=e^x$: $xe^x-\int e^x\,dx=(x-1)e^x+C$.
+
+**(3)** $\Delta=4>0$, so it factors: $x^2-1=(x-1)(x+1)$ and $\frac{1}{x^2-1}=\frac{1}{2}\left(\frac{1}{x-1}-\frac{1}{x+1}\right)$. The result is $\frac{1}{2}\ln\left|\frac{x-1}{x+1}\right|+C$.
+
+**(4)** $\Delta=16-20<0$, so make a square: $x^2+4x+5=(x+2)^2+1$, and $u=x+2$ gives $\arctan(x+2)+C$.
+
+**(5)** The top is the derivative of the bottom: $\ln(1+\sin x)+C$, with no absolute value since $1+\sin x\ge0$.
+
+**(6)** $t=\sqrt{x+1}$: $x=t^2-1$ and $dx=2t\,dt$, so $\int(t^2-1)\,t\cdot2t\,dt=\int(2t^4-2t^2)\,dt=\frac{2}{5}t^5-\frac{2}{3}t^3+C$, with $t=\sqrt{x+1}$.` },
   ],
 };

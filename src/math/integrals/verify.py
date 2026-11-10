@@ -361,6 +361,168 @@ check("06B Q3 pieces 4/3 and -2/3", (F(-1) - F(-2)) * 10 + (F(0) - F(-1)), Fr(40
 check("06B Q3 area 2", integral(lambda x: abs(f(x)), -2, -1) + integral(lambda x: abs(f(x)), -1, 0), 2)
 check("06B Q3 the integral alone 2/3", integral(f, -2, 0), 2 / 3)
 
+# ================= 9 Nov: inverse trigonometric functions (u2, g2c, P2.10) =================
+from math import asin, acos
+XI = (-0.9, -0.5, 0.0, 0.3, 0.8)             # inside (-1, 1)
+primitive("arcsin' = 1/sqrt(1-x^2)", asin, lambda x: 1 / sqrt(1 - x * x), XI)
+primitive("arccos' = -1/sqrt(1-x^2)", acos, lambda x: -1 / sqrt(1 - x * x), XI)
+primitive("arctan' = 1/(1+x^2)", atan, lambda x: 1 / (1 + x * x), XS)
+check("int_0^0.6 1/sqrt(1-x^2) = arcsin 0.6", integral(lambda x: 1 / sqrt(1 - x * x), 0, 0.6), asin(0.6))
+for (v, ang) in ((0.5, pi / 6), (sqrt(2) / 2, pi / 4), (sqrt(3) / 2, pi / 3), (1.0, pi / 2), (0.0, 0.0)):
+    check(f"arcsin {v:.4f} = {ang:.4f}", asin(v), ang)
+for x in XI:
+    check(f"arcsin(-x) = -arcsin x at {x}", asin(-x), -asin(x))
+    check_true(f"ranges at {x}", -pi / 2 <= asin(x) <= pi / 2 and 0 <= acos(x) <= pi)
+    check_true(f"cos(arcsin x) = sqrt(1-x^2) >= 0 at {x}", abs(cos(asin(x)) - sqrt(1 - x * x)) < 1e-12)
+check("P2.10a arcsin(sqrt2/2) = pi/4", asin(sqrt(2) / 2), pi / 4)
+check("P2.10a arcsin(-1/2) = -pi/6", asin(-0.5), -pi / 6)
+check("P2.10b int_0^(1/2) = pi/6", integral(lambda x: 1 / sqrt(1 - x * x), 0, 0.5), pi / 6)
+check("P2.10c int_(-1/2)^(sqrt3/2) = pi/2", integral(lambda x: 1 / sqrt(1 - x * x), -0.5, sqrt(3) / 2), pi / 2, 1e-8)
+
+# ================= 9 & 10 Nov: substitution and parts (u3) =================
+# Summary
+primitive("summary: x e^(x^2) -> e^(x^2)/2", lambda x: exp(x * x) / 2, lambda x: x * exp(x * x), XS)
+primitive("summary: 2x/(x^2+1) -> ln(x^2+1)", lambda x: log(x * x + 1), lambda x: 2 * x / (x * x + 1), XS)
+primitive("summary: ln x / x -> (ln x)^2/2", lambda x: log(x) ** 2 / 2, lambda x: log(x) / x, XP)
+check("summary: substitution for a definite integral (cos(x^2) 2x on [0.3, 1.2])", integral(lambda x: cos(x * x) * 2 * x, 0.3, 1.2), integral(cos, 0.09, 1.44))
+slide = ((1 + exp(2)) ** 1.5 - sqrt(2) ** 3) / 3
+check("summary/P3.1: int_0^1 e^(2x) sqrt(1+e^(2x)) = ((1+e^2)^(3/2) - (sqrt2)^3)/3", integral(lambda x: exp(2 * x) * sqrt(1 + exp(2 * x)), 0, 1), slide)
+check("P3.1 with u = e^(2x): (1/2) int_1^(e^2) sqrt(1+u)", 0.5 * integral(lambda u: sqrt(1 + u), 1, exp(2)), slide)
+check("P3.1 with u = 1 + e^(2x): (1/2) int_2^(1+e^2) sqrt(u)", 0.5 * integral(sqrt, 2, 1 + exp(2)), slide)
+check("P3.1 2^(3/2) = 2 sqrt2", 2 ** 1.5, 2 * sqrt(2))
+for x in XS:
+    check(f"summary/P3.3: 1/(x^2+3x+2) = 1/(x+1) - 1/(x+2) at {x}", 1 / (x * x + 3 * x + 2), 1 / (x + 1) - 1 / (x + 2))
+primitive("summary/P3.3: ln|(x+1)/(x+2)|", lambda x: log(abs((x + 1) / (x + 2))), lambda x: 1 / (x * x + 3 * x + 2), (-3.1, -1.5, 0.3, 2.4))
+check("P3.3 int_0^1 = ln(4/3)", integral(lambda x: 1 / (x * x + 3 * x + 2), 0, 1), log(4 / 3))
+check("P3.3 A = 1 from x = -1, B = -1 from x = -2", 1 / (-1 + 2) - 1, 0); check("P3.3 B", 1 / (-2 + 1), -1)
+for x in XS:
+    check(f"summary/P3.4: 1/(x^2+2x+5) = (1/4)/(((x+1)/2)^2+1) at {x}", 1 / (x * x + 2 * x + 5), 0.25 / (((x + 1) / 2) ** 2 + 1))
+primitive("summary/P3.4: (1/2) arctan((x+1)/2)", lambda x: atan((x + 1) / 2) / 2, lambda x: 1 / (x * x + 2 * x + 5), XS)
+check("P3.4 int_-1^1 = pi/8", integral(lambda x: 1 / (x * x + 2 * x + 5), -1, 1), pi / 8)
+for (p, a0) in ((1.0, 2.0), (-2.5, 0.5), (0.0, 3.0)):
+    primitive(f"formula: arctan form p={p} a={a0}", lambda x, p=p, a0=a0: atan((x + p) / a0) / a0, lambda x, p=p, a0=a0: 1 / ((x + p) ** 2 + a0 * a0), XS)
+    primitive(f"formula: a perfect square p={p}", lambda x, p=p: -1 / (x + p), lambda x, p=p: 1 / (x + p) ** 2, (-3.7, 0.4, 2.9))
+for (b0, c0) in ((2, 5), (-3, 1), (4, 4)):
+    for x in XS:
+        check(f"formula: making a square b={b0} c={c0} at {x}", x * x + b0 * x + c0, (x + b0 / 2) ** 2 + c0 - b0 * b0 / 4)
+check_true("summary: Delta of x^2+3x+2 > 0, of x^2+2x+5 < 0, of x^2-4x+4 = 0", 9 - 8 > 0 and 4 - 20 < 0 and 16 - 16 == 0)
+for x in XS:
+    check(f"summary: 2x/(x^2+2x+2) = (2x+2)/(...) - 2/((x+1)^2+1) at {x}", 2 * x / (x * x + 2 * x + 2), (2 * x + 2) / (x * x + 2 * x + 2) - 2 / ((x + 1) ** 2 + 1))
+# sqrt(ax + b): t = sqrt(x - 1)
+for x in (1.2, 2.0, 5.5):
+    t = sqrt(x - 1)
+    check(f"summary/P3.5: x + 2 sqrt(x-1) = (t+1)^2 at {x}", x + 2 * sqrt(x - 1), (t + 1) ** 2)
+    check(f"P3.5: 2t/(t+1)^2 = 2/(t+1) - 2/(t+1)^2 at t={t:.3f}", 2 * t / (t + 1) ** 2, 2 / (t + 1) - 2 / (t + 1) ** 2)
+F35 = lambda x: 2 * log(sqrt(x - 1) + 1) + 2 / (sqrt(x - 1) + 1)
+primitive("summary/P3.5: 2 ln(sqrt(x-1)+1) + 2/(sqrt(x-1)+1)", F35, lambda x: 1 / (x + 2 * sqrt(x - 1)), (1.3, 2.0, 4.5, 9.0))
+for (a0, b0) in ((1.0, -1.0), (2.0, 3.0), (0.5, 1.0)):
+    t0 = 1.7
+    x0 = (t0 * t0 - b0) / a0
+    check(f"formula: t = sqrt(ax+b) gives x = (t^2-b)/a (a={a0})", sqrt(a0 * x0 + b0), t0)
+    check(f"formula: dx/dt = 2t/a (a={a0})", d1(lambda t: (t * t - b0) / a0, t0), 2 * t0 / a0)
+# u = tan(x/2)
+for x in (-2.5, -1.0, 0.4, 1.3, 2.8):
+    u = tan(x / 2)
+    check(f"summary: cos x = (1-u^2)/(1+u^2) at {x}", cos(x), (1 - u * u) / (1 + u * u))
+    check(f"summary: sin x = 2u/(1+u^2) at {x}", sin(x), 2 * u / (1 + u * u))
+    check(f"summary: u^2 = (1-cos x)/(1+cos x) at {x}", u * u, (1 - cos(x)) / (1 + cos(x)))
+    check(f"summary: 1 + u^2 = 2/(1+cos x) at {x}", 1 + u * u, 2 / (1 + cos(x)))
+    check(f"summary: 1 - u^2 = 2cos x/(1+cos x) at {x}", 1 - u * u, 2 * cos(x) / (1 + cos(x)))
+    check(f"summary: (du/dx)^-1 = 2cos^2(x/2) = 1 + cos x = 2/(1+u^2) at {x}", 1 / d1(lambda s: tan(s / 2), x), 2 / (1 + u * u), 1e-6)
+    check(f"formula: tan(x/2) = sin x/(1+cos x) at {x}", tan(x / 2), sin(x) / (1 + cos(x)))
+F36 = lambda x: tan(x / 2) + log(1 + tan(x / 2) ** 2)
+primitive("summary/P3.6: tan(x/2) + ln(1+tan^2(x/2))", F36, lambda x: (1 + sin(x)) / (1 + cos(x)), (-2.5, -1.0, 0.4, 1.3, 2.8))
+for u in (-1.5, 0.2, 2.0):
+    check(f"P3.6: (1+2u+u^2)/(1+u^2) = 1 + 2u/(1+u^2) at {u}", (1 + 2 * u + u * u) / (1 + u * u), 1 + 2 * u / (1 + u * u))
+# integration by parts
+primitive("summary/P3.10a: x sin x -> -x cos x + sin x", lambda x: -x * cos(x) + sin(x), lambda x: x * sin(x), XS)
+primitive("summary/P3.10b: ln x -> x ln x - x", lambda x: x * log(x) - x, log, XP)
+for (fn, fd, gp, g, a0, b0) in ((lambda x: x, lambda x: 1, cos, sin, 0.2, 1.9), (lambda x: x * x, lambda x: 2 * x, exp, exp, -1.0, 1.5),
+                                (log, lambda x: 1 / x, lambda x: x, lambda x: x * x / 2, 1.0, 3.0)):
+    check(f"formula: by parts with limits on [{a0},{b0}]", integral(lambda x: fn(x) * gp(x), a0, b0),
+          (fn(b0) * g(b0) - fn(a0) * g(a0)) - integral(lambda x: fd(x) * g(x), a0, b0))
+    check(f"formula: (fg)' = f'g + fg' at {a0 + 0.3}", d1(lambda x: fn(x) * g(x), a0 + 0.3), fd(a0 + 0.3) * g(a0 + 0.3) + fn(a0 + 0.3) * gp(a0 + 0.3))
+F311 = lambda x: x * log(x * x + 1) - 2 * x + 2 * atan(x)
+primitive("summary/P3.11: x ln(x^2+1) - 2x + 2 arctan x", F311, lambda x: log(x * x + 1), XS)
+for x in XS:
+    check(f"P3.11: 2x^2/(x^2+1) = 2 - 2/(x^2+1) at {x}", 2 * x * x / (x * x + 1), 2 - 2 / (x * x + 1))
+check("summary/P3.11: int_0^1 ln(x^2+1) = ln2 - 2 + pi/2", integral(lambda x: log(x * x + 1), 0, 1), log(2) - 2 + pi / 2)
+F312 = lambda x: exp(2 * x) / 4 * (2 * x * x - 2 * x + 1)
+primitive("summary/P3.12: e^(2x)(2x^2-2x+1)/4", F312, lambda x: x * x * exp(2 * x), XS)
+primitive("P3.12: second round x e^(2x) -> x e^(2x)/2 - e^(2x)/4", lambda x: x * exp(2 * x) / 2 - exp(2 * x) / 4, lambda x: x * exp(2 * x), XS)
+check("summary/P3.12: int_0^2 x^2 e^(2x) = (5e^4-1)/4", integral(lambda x: x * x * exp(2 * x), 0, 2, 4000), (5 * exp(4) - 1) / 4, 1e-8)
+check("P3.12 F(2) = 5e^4/4, F(0) = 1/4", F312(2) - F312(0), (5 * exp(4) - 1) / 4)
+# watch-outs
+check("watch: (1 + e^(2x))' = 2e^(2x)", d1(lambda x: 1 + exp(2 * x), 0.7), 2 * exp(1.4))
+for x in XS:
+    check(f"watch: x/(x^2+1) dx = (1/2) du/u with u = x^2+1, du = 2x dx at {x}", x / (x * x + 1), 0.5 * (2 * x) / (x * x + 1))
+check("watch: int_1^2 ln x/x = int_0^ln2 u du", integral(lambda x: log(x) / x, 1, 2), log(2) ** 2 / 2)
+primitive("watch: 1/(x^2-4x+4) -> -1/(x-2)", lambda x: -1 / (x - 2), lambda x: 1 / (x * x - 4 * x + 4), (-1.0, 0.5, 3.5))
+check("watch: (1/4) * 2 du = (1/2) du", 0.25 * 2, 0.5)
+primitive("watch: x e^x by parts -> (x-1)e^x", lambda x: (x - 1) * exp(x), lambda x: x * exp(x), XS)
+# Exercise (1) and Exercise (2)
+check("P3.2a int_1^2 ln x/x = (ln2)^2/2", integral(lambda x: log(x) / x, 1, 2), log(2) ** 2 / 2)
+check_true("P3.2a (ln2)^2 is not ln(2^2)", abs(log(2) ** 2 - log(4)) > 0.5)
+check("P3.2b int_0^1 (x+1)/(x^2+1) = ln2/2 + pi/4", integral(lambda x: (x + 1) / (x * x + 1), 0, 1), log(2) / 2 + pi / 4)
+check("P3.2b first part (1/2) int_1^2 du/u", 0.5 * integral(lambda u: 1 / u, 1, 2), log(2) / 2)
+F37 = lambda x: log(x * x + 2 * x + 2) - 2 * atan(x + 1)
+primitive("P3.7: ln(x^2+2x+2) - 2 arctan(x+1)", F37, lambda x: 2 * x / (x * x + 2 * x + 2), XS)
+check("P3.7: int_-1^0 = ln2 - pi/2", integral(lambda x: 2 * x / (x * x + 2 * x + 2), -1, 0), log(2) - pi / 2)
+check("P3.7: F(0) - F(-1)", F37(0) - F37(-1), log(2) - pi / 2)
+check_true("P3.7: f < 0 on [-1, 0)", all(2 * (-1 + k / 100) / ((-1 + k / 100) ** 2 + 2 * (-1 + k / 100) + 2) < 0 for k in range(100)))
+F38 = lambda x: log(abs((sqrt(x + 1) - 1) / (sqrt(x + 1) + 1)))
+primitive("P3.8: ln|(sqrt(x+1)-1)/(sqrt(x+1)+1)|", F38, lambda x: 1 / (x * sqrt(x + 1)), (0.4, 1.0, 2.2, 3.0, 7.5))
+for t in (1.3, 2.0, 3.1):
+    check(f"P3.8: 2/(t^2-1) = 1/(t-1) - 1/(t+1) at {t}", 2 / (t * t - 1), 1 / (t - 1) - 1 / (t + 1))
+check("P3.8: int_1^3 = ln((3+2 sqrt2)/3)", integral(lambda x: 1 / (x * sqrt(x + 1)), 1, 3), log((3 + 2 * sqrt(2)) / 3))
+check("P3.8: = 2 ln(sqrt2+1) - ln3", log((3 + 2 * sqrt(2)) / 3), 2 * log(sqrt(2) + 1) - log(3))
+check("P3.8: = ln(1/3) - ln((sqrt2-1)/(sqrt2+1))", log(1 / 3) - log((sqrt(2) - 1) / (sqrt(2) + 1)), log((3 + 2 * sqrt(2)) / 3))
+check("P3.8: (sqrt2+1)/(sqrt2-1) = 3 + 2 sqrt2", (sqrt(2) + 1) / (sqrt(2) - 1), 3 + 2 * sqrt(2))
+primitive("P3.9: tan(x/2)", lambda x: tan(x / 2), lambda x: 1 / (1 + cos(x)), (-2.0, 0.3, 1.5, 2.6))
+check("P3.9: int_0^(pi/2) 1/(1+cos x) = 1", integral(lambda x: 1 / (1 + cos(x)), 0, pi / 2), 1)
+# Which method?
+primitive("P3.13a e^(x^2)/2", lambda x: exp(x * x) / 2, lambda x: x * exp(x * x), XS)
+primitive("P3.13b (x-1)e^x", lambda x: (x - 1) * exp(x), lambda x: x * exp(x), XS)
+primitive("P3.13c (1/2) ln|(x-1)/(x+1)|", lambda x: 0.5 * log(abs((x - 1) / (x + 1))), lambda x: 1 / (x * x - 1), (-3.0, -0.5, 0.4, 2.5))
+for x in (-3.0, 0.4, 2.5):
+    check(f"P3.13c 1/(x^2-1) = (1/2)(1/(x-1) - 1/(x+1)) at {x}", 1 / (x * x - 1), 0.5 * (1 / (x - 1) - 1 / (x + 1)))
+primitive("P3.13d arctan(x+2)", lambda x: atan(x + 2), lambda x: 1 / (x * x + 4 * x + 5), XS)
+primitive("P3.13e ln(1 + sin x)", lambda x: log(1 + sin(x)), lambda x: cos(x) / (1 + sin(x)), (-1.0, 0.3, 1.2, 2.5))
+primitive("P3.13f (2/5)(x+1)^(5/2) - (2/3)(x+1)^(3/2)", lambda x: 0.4 * (x + 1) ** 2.5 - (2 / 3) * (x + 1) ** 1.5, lambda x: x * sqrt(x + 1), (-0.5, 0.3, 1.1, 2.4))
+check_true("P3.13 Delta: x^2-1 has 4 > 0, x^2+4x+5 has 16-20 < 0", 0 + 4 > 0 and 16 - 20 < 0)
+# formulas g3 / g3b with numbers
+primitive("formula: linear inside, cos(3x - 1) -> sin(3x-1)/3", lambda x: sin(3 * x - 1) / 3, lambda x: cos(3 * x - 1), XS)
+primitive("formula: log rule, f = x^3 + 2", lambda x: log(abs(x ** 3 + 2)), lambda x: 3 * x * x / (x ** 3 + 2), (-0.5, 0.3, 1.1, 2.4))
+primitive("formula: u = tan(x/2) dx = 2du/(1+u^2): x = 2 arctan u", lambda u: 2 * atan(u), lambda u: 2 / (1 + u * u), (-2.0, 0.0, 0.7, 3.0))
+
+# ================= FOLLOW-UPS (Quiz 07) =================
+# 07-A
+check("07A Q1(1) int_0^2 (x+2)/(x^2+4x+4) = ln2", integral(lambda x: (x + 2) / (x * x + 4 * x + 4), 0, 2), log(2))
+check("07A Q1(2) int_0^(pi/2) cos^2 sin = 1/3", integral(lambda x: cos(x) ** 2 * sin(x), 0, pi / 2), 1 / 3)
+F = lambda x: exp(3 * x - 1) / 9 * (3 * x - 1)
+primitive("07A Q1(3) e^(3x-1)(3x-1)/9", F, lambda x: x * exp(3 * x - 1), XS)
+check("07A Q1(3) int_(1/3)^1 = 2e^2/9", integral(lambda x: x * exp(3 * x - 1), 1 / 3, 1), 2 * exp(2) / 9)
+check("07A Q1(3) F(1/3) = 0", F(1 / 3), 0)
+check("07A Q1(4) int_1^3 1/(x^2-4x+5) = pi/2", integral(lambda x: 1 / (x * x - 4 * x + 5), 1, 3), pi / 2)
+check("07A Q2 int_(pi/3)^(pi/2) 1/(1+cos x) = 1 - sqrt3/3", integral(lambda x: 1 / (1 + cos(x)), pi / 3, pi / 2), 1 - sqrt(3) / 3)
+check("07A Q2 = (3 - sqrt3)/3", 1 - sqrt(3) / 3, (3 - sqrt(3)) / 3)
+# 07-B
+check("07B Q1(1) int_2^3 (2x-2)/(x^2-2x+1) = 2 ln2", integral(lambda x: (2 * x - 2) / (x * x - 2 * x + 1), 2, 3), 2 * log(2))
+check("07B Q1(1) via ln(x^2-2x+1): ln4", log(4) - log(1), 2 * log(2))
+check("07B Q1(2) int_0^(pi/3) sin/cos^3 = 3/2", integral(lambda x: sin(x) / cos(x) ** 3, 0, pi / 3), 1.5)
+check("07B Q1(2) via u: int_(1/2)^1 u^-3 du", integral(lambda u: u ** -3, 0.5, 1), 1.5)
+F = lambda x: -exp(1 - 2 * x) / 4 * (2 * x + 1)
+primitive("07B Q1(3) -e^(1-2x)(2x+1)/4", F, lambda x: x * exp(1 - 2 * x), XS)
+check("07B Q1(3) int_0^(1/2) x e^(1-2x) = (e-2)/4", integral(lambda x: x * exp(1 - 2 * x), 0, 0.5), (math.e - 2) / 4)
+check("07B Q1(3) F(1/2) = -1/2, F(0) = -e/4", F(0.5) - F(0), (math.e - 2) / 4)
+check("07B Q1(4) int_-1^2 1/(x^2+2x+4) = pi/(3 sqrt3)", integral(lambda x: 1 / (x * x + 2 * x + 4), -1, 2), pi / (3 * sqrt(3)))
+check("07B Q1(4) = sqrt3 pi/9", pi / (3 * sqrt(3)), sqrt(3) * pi / 9)
+for x in XS:
+    check(f"07B Q1(4) x^2+2x+4 = 3[((x+1)/sqrt3)^2+1] at {x}", x * x + 2 * x + 4, 3 * (((x + 1) / sqrt(3)) ** 2 + 1))
+check("07B Q2 int_0^(pi/4) 1/(1+cos x) = sqrt2 - 1", integral(lambda x: 1 / (1 + cos(x)), 0, pi / 4), sqrt(2) - 1)
+check("07B Q2 tan(pi/8) = sqrt2 - 1", tan(pi / 8), sqrt(2) - 1)
+check("07B Q2 (sqrt2/2)/(1+sqrt2/2) = sqrt2/(2+sqrt2) = sqrt2 - 1", (sqrt(2) / 2) / (1 + sqrt(2) / 2), sqrt(2) - 1)
+
 # ================= GRAPH (riemann) =================
 check("graph: n = 4 right sum, as in P1.1", riemann(sq, 0, 2, 4, 'right'), Fr(15, 4))
 check("graph: area 8/3 shown as 2.6667", round(8 / 3, 4), 2.6667)

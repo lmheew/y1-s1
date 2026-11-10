@@ -2,6 +2,8 @@
 const R = String.raw;
 const NOV2 = '2026-11-02';
 const NOV6 = '2026-11-06';
+const NOV9 = '2026-11-09';
+const NOV10 = '2026-11-10';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -22,6 +24,20 @@ export const tags = {
   '2.7': 'definite integral F(b) - F(a) fundamental theorem primitive sin e^(2x) ln',
   '2.8': 'swap limits exchange initial final points arctan tan^-1 1/(1+x^2)',
   '2.9': 'area with a primitive split at zero signed area F(b) - F(a)',
+  '2.10': 'inverse trigonometric functions arcsin sin^-1 arccos 1/sqrt(1-x^2) values range negative angle',
+  '3.1': 'substitution definite integral change the limits u-axis e^(2x) sqrt(1+e^(2x)) class example',
+  '3.2': 'exercise substitution ln x / x log rule split the fraction arctan (x+1)/(x^2+1)',
+  '3.3': 'rational form partial fractions denominator factors roots log 1/(x^2+3x+2)',
+  '3.4': 'denominator does not factor make a square factor out the constant arctan 1/(x^2+2x+5)',
+  '3.5': 'square root sqrt(ax+b) t = sqrt(x-1) rational form perfect square',
+  '3.6': 'trigonometric rational form u = tan(x/2) (1+sin x)/(1+cos x) class example',
+  '3.7': 'exercise log and arctan 2x/(x^2+2x+2) make a square numerator derivative',
+  '3.8': 'exercise 1/(x sqrt(x+1)) t = sqrt(x+1) partial fractions rationalize',
+  '3.9': 'exercise 1/(1+cos x) u = tan(x/2) change the limits',
+  '3.10': 'integration by parts product of functions x sin x ln x class examples',
+  '3.11': 'integration by parts ln(x^2+1) times 1 divide first arctan exercise',
+  '3.12': 'integration by parts twice two rounds x^2 e^(2x) exercise',
+  '3.13': 'which method choose substitution by parts partial fractions arctan log rule square root',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -68,6 +84,37 @@ export const formulas = [
     ['1/(ax + b)', R`\int\frac{1}{ax+b}\,dx=\frac{1}{a}\ln|ax+b|+C`],
     ['1/(1 + x²)', R`\int\frac{1}{1+x^2}\,dx=\arctan x+C`],
     ['Values of arctan', R`\begin{gathered}\arctan0=0,\quad\arctan\tfrac{1}{\sqrt3}=\tfrac{\pi}{6}\\\arctan1=\tfrac{\pi}{4},\quad\arctan\sqrt3=\tfrac{\pi}{3}\end{gathered}`],
+  ]},
+  // taught on 9 Nov, the end of the primitive-functions lesson: labelled with its lesson, so the night-before sheet finds it
+  { id: 'g2c', title: 'Inverse trigonometric functions', quiz: 'Day 16 & 17 · Quiz 06', added: NOV9, rows: [
+    ['Derivative of arcsin', R`(\arcsin x)'=\frac{1}{\sqrt{1-x^2}}`],
+    ['Derivative of arccos', R`(\arccos x)'=-\frac{1}{\sqrt{1-x^2}}`],
+    ['Derivative of arctan', R`(\arctan x)'=\frac{1}{1+x^2}`],
+    ['1/√(1 − x²)', R`\int\frac{1}{\sqrt{1-x^2}}\,dx=\arcsin x+C`],
+    ['Ranges', R`-\tfrac{\pi}{2}\le\arcsin x\le\tfrac{\pi}{2},\quad0\le\arccos x\le\pi`],
+    ['Values of arcsin', R`\begin{gathered}\arcsin\tfrac{1}{2}=\tfrac{\pi}{6},\quad\arcsin\tfrac{\sqrt2}{2}=\tfrac{\pi}{4}\\\arcsin\tfrac{\sqrt3}{2}=\tfrac{\pi}{3},\quad\arcsin1=\tfrac{\pi}{2}\end{gathered}`],
+  ]},
+  { id: 'g3', title: 'Integration by substitution', quiz: 'Day 18 & 19 · Quiz 07', added: NOV9, rows: [
+    ['Substitution', R`\int f(g(x))\,g'(x)\,dx=F(g(x))+C`],
+    ['u and du', R`u=g(x)\ \Rightarrow\ du=g'(x)\,dx`],
+    ['New limits', R`\int_a^b f(h(x))\,h'(x)\,dx=\int_{h(a)}^{h(b)}f(u)\,du`],
+    ['Log rule', R`\int\frac{f'(x)}{f(x)}\,dx=\ln|f(x)|+C`],
+    ['Linear inside', R`\int f(ax+b)\,dx=\frac{1}{a}F(ax+b)+C`],
+    ['Partial fractions (class example)', R`\frac{1}{x^2+3x+2}=\frac{1}{x+1}-\frac{1}{x+2}`],
+    ['Making a square', R`x^2+bx+c=\left(x+\tfrac{b}{2}\right)^2+c-\tfrac{b^2}{4}`],
+    ['Arctan form', R`\int\frac{dx}{(x+p)^2+a^2}=\frac{1}{a}\arctan\frac{x+p}{a}+C`],
+    ['A perfect square', R`\int\frac{dx}{(x+p)^2}=-\frac{1}{x+p}+C`],
+    ['√(ax + b)', R`t=\sqrt{ax+b}\ \Rightarrow\ x=\frac{t^2-b}{a},\ dx=\frac{2t}{a}\,dt`],
+    ['u = tan(x/2): cos and sin', R`\cos x=\frac{1-u^2}{1+u^2},\quad\sin x=\frac{2u}{1+u^2}`],
+    ['u = tan(x/2): dx', R`dx=\frac{2}{1+u^2}\,du`],
+    ['tan(x/2) from sin and cos', R`\tan\frac{x}{2}=\frac{\sin x}{1+\cos x}`],
+  ]},
+  { id: 'g3b', title: 'Integration by parts', quiz: 'Day 18 & 19 · Quiz 07', added: NOV10, rows: [
+    ['Where it comes from', R`(fg)'=f'g+fg'`],
+    ['By parts', R`\int f\,g'\,dx=f\,g-\int f'\,g\,dx`],
+    ['By parts, with limits', R`\int_a^b f\,g'\,dx=\Big[f\,g\Big]_a^b-\int_a^b f'\,g\,dx`],
+    ['x sin x', R`\int x\sin x\,dx=-x\cos x+\sin x+C`],
+    ['ln x', R`\int\ln x\,dx=x\ln x-x+C`],
   ]},
 ];
 

@@ -3,6 +3,7 @@
 // Checked in verify.py (this folder).
 const R = String.raw;
 const NOV6 = '2026-11-06';
+const NOV10 = '2026-11-10';
 
 export const followups = {
   '06': [
@@ -51,7 +52,7 @@ The area adds them as positive numbers: $\frac{5}{6}+\frac{1}{6}+\frac{5}{6}=\fr
         answer: [R`(1) $S_N=\frac{14N^2+12N+4}{3N^2}$, which tends to $\frac{14}{3}$`],
         sol: R`
 The interval has length $2$, so $\Delta x=\frac{2}{N}$ (not $\frac{1}{N}$) and $x_k=\frac{2k}{N}$:
-$$S_N=\sum_{k=1}^{N}\left(\frac{4k^2}{N^2}+1\right)\frac{2}{N}=\frac{8}{N^3}\sum_{k=1}^{N}k^2+\frac{2}{N}\sum_{k=1}^{N}1$$
+$$\begin{aligned}S_N&=\sum_{k=1}^{N}\left(\frac{4k^2}{N^2}+1\right)\frac{2}{N}\\[4pt]&=\frac{8}{N^3}\sum_{k=1}^{N}k^2+\frac{2}{N}\sum_{k=1}^{N}1\end{aligned}$$
 
 The constant is added $N$ times, so the last term is $2$:
 $$S_N=\frac{4(N+1)(2N+1)}{3N^2}+2=\frac{14N^2+12N+4}{3N^2}$$
@@ -80,6 +81,52 @@ $$\begin{aligned}F(-2)&=-\frac{8}{3}+2=-\frac{2}{3}\\F(-1)&=-\frac{1}{3}+1=\frac
 The pieces are $F(-1)-F(-2)=\frac{4}{3}$ and $F(0)-F(-1)=-\frac{2}{3}$.
 
 The area is $\frac{4}{3}+\frac{2}{3}=2$. The integral alone, $F(0)-F(-2)=\frac{2}{3}$, is not the area.` },
+    ]},
+  ],
+  '07': [
+    { added: NOV10, focus: 'Each question mirrors Quiz 07 with new numbers.', qs: [
+      { label: 'Q.1', pts: '2pt×4', stem: R`Compute the definite integrals over the interval $D$.`,
+        parts: [R`$f(x)=\frac{x+2}{x^2+4x+4}$;  $D:\ [0,2]$`, R`$f(x)=\cos^2(x)\cdot\sin(x)$;  $D:\ [0,\pi/2]$`,
+                R`$f(x)=x\cdot e^{3x-1}$;  $D:\ [1/3,1]$`, R`$f(x)=\frac{1}{x^2-4x+5}$;  $D:\ [1,3]$`],
+        answer: [R`(1) $\ln2$`, R`(2) $\frac{1}{3}$`, R`(3) $\frac{2e^2}{9}$`, R`(4) $\frac{\pi}{2}$`],
+        sol: R`
+**(1)** $x^2+4x+4=(x+2)^2$, so $f(x)=\frac{1}{x+2}$ and $\Big[\ln(x+2)\Big]_0^2=\ln4-\ln2=\ln2$.
+
+**(2)** $u=\cos x$ and $du=-\sin x\,dx$. The limits: $x=0$ gives $u=1$, and $x=\frac{\pi}{2}$ gives $u=0$. So $\int_1^0u^2(-du)=\int_0^1u^2\,du=\frac{1}{3}$.
+
+**(3)** By parts with $f=x$ and $g'=e^{3x-1}$, so $g=\frac{e^{3x-1}}{3}$: $F(x)=\frac{x}{3}e^{3x-1}-\frac{e^{3x-1}}{9}=\frac{e^{3x-1}}{9}(3x-1)$. Then $F(1)=\frac{2e^2}{9}$ and $F\left(\frac{1}{3}\right)=0$.
+
+**(4)** $x^2-4x+5=(x-2)^2+1$. With $u=x-2$ the limits are $-1$ and $1$: $\arctan1-\arctan(-1)=\frac{\pi}{4}+\frac{\pi}{4}=\frac{\pi}{2}$.` },
+      { label: 'Q.2', pts: '2pt', stem: R`Compute the following definite integral.
+$$\int_{\pi/3}^{\pi/2}\frac{1}{1+\cos(x)}\,dx$$`,
+        parts: [],
+        answer: [R`$1-\frac{\sqrt3}{3}=\frac{3-\sqrt3}{3}$`],
+        sol: R`
+With $u=\tan\frac{x}{2}$, $\frac{dx}{1+\cos x}=du$, so the primitive is $\tan\frac{x}{2}$.
+
+$\Big[\tan\frac{x}{2}\Big]_{\pi/3}^{\pi/2}=\tan\frac{\pi}{4}-\tan\frac{\pi}{6}=1-\frac{\sqrt3}{3}$.` },
+    ]},
+    { added: NOV10, focus: 'Targets the usual slips: a perfect square in the denominator, the sign of du and the flipped limits with u = cos x, a negative number inside the exponential, factoring out a constant before arctan, and tan of an angle that is not in the table.', qs: [
+      { label: 'Q.1', pts: '2pt×4', stem: R`Compute the definite integrals over the interval $D$.`,
+        parts: [R`$f(x)=\frac{2x-2}{x^2-2x+1}$;  $D:\ [2,3]$`, R`$f(x)=\frac{\sin(x)}{\cos^3(x)}$;  $D:\ [0,\pi/3]$`,
+                R`$f(x)=x\cdot e^{1-2x}$;  $D:\ [0,1/2]$`, R`$f(x)=\frac{1}{x^2+2x+4}$;  $D:\ [-1,2]$`],
+        answer: [R`(1) $2\ln2$`, R`(2) $\frac{3}{2}$`, R`(3) $\frac{e-2}{4}$`, R`(4) $\frac{\pi}{3\sqrt3}=\frac{\sqrt3\,\pi}{9}$`],
+        sol: R`
+**(1)** $x^2-2x+1=(x-1)^2$, a perfect square, so this is not an arctan: $f(x)=\frac{2(x-1)}{(x-1)^2}=\frac{2}{x-1}$ and $\Big[2\ln(x-1)\Big]_2^3=2\ln2$. The top is also the derivative of the bottom, and $\Big[\ln(x^2-2x+1)\Big]_2^3=\ln4$ gives the same.
+
+**(2)** $u=\cos x$ and $du=-\sin x\,dx$. The limits: $x=0$ gives $u=1$, and $x=\frac{\pi}{3}$ gives $u=\frac{1}{2}$. So $\int_1^{1/2}u^{-3}(-du)=\int_{1/2}^1u^{-3}\,du=\left[-\frac{1}{2u^2}\right]_{1/2}^1=-\frac{1}{2}+2=\frac{3}{2}$.
+
+**(3)** By parts with $f=x$ and $g'=e^{1-2x}$. The number inside is $-2$, so $g=-\frac{e^{1-2x}}{2}$: $F(x)=-\frac{x}{2}e^{1-2x}-\frac{e^{1-2x}}{4}=-\frac{e^{1-2x}}{4}(2x+1)$. Then $F\left(\frac{1}{2}\right)=-\frac{1}{2}$ and $F(0)=-\frac{e}{4}$, so the integral is $\frac{e}{4}-\frac{1}{2}=\frac{e-2}{4}$.
+
+**(4)** $x^2+2x+4=(x+1)^2+3=3\left[\left(\frac{x+1}{\sqrt3}\right)^2+1\right]$. With $u=\frac{x+1}{\sqrt3}$, $dx=\sqrt3\,du$, and the limits are $0$ and $\sqrt3$: $\frac{\sqrt3}{3}\Big[\arctan u\Big]_0^{\sqrt3}=\frac{1}{\sqrt3}\cdot\frac{\pi}{3}=\frac{\pi}{3\sqrt3}$.` },
+      { label: 'Q.2', pts: '2pt', stem: R`Compute the following definite integral.
+$$\int_0^{\pi/4}\frac{1}{1+\cos(x)}\,dx$$`,
+        parts: [],
+        answer: [R`$\sqrt2-1$`],
+        sol: R`
+The primitive is $\tan\frac{x}{2}$ (with $u=\tan\frac{x}{2}$), so the integral is $\tan\frac{\pi}{8}-\tan0=\tan\frac{\pi}{8}$.
+
+$\frac{\pi}{8}$ is not in the table, but $\tan\frac{x}{2}=\frac{\sin x}{1+\cos x}$ with $x=\frac{\pi}{4}$ gives $\frac{\sqrt2/2}{1+\sqrt2/2}=\frac{\sqrt2}{2+\sqrt2}=\sqrt2-1$.` },
     ]},
   ],
 };

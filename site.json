@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-10",
+      "subject": "math",
+      "title": "Calculus midterm 2: substitution, integration by parts and Quiz 07",
+      "text": "Calculus midterm 2: Day 18 & 19 are added: integration by substitution (with the limits moved to the u-axis), rational forms (partial fractions, or a square and arctan when the denominator doesn't factor), √(ax + b) and u = tan(x/2), then integration by parts. Practice has the class examples and both exercise sets with step-by-step solutions, plus a \"Which method?\" drill; Formulas has two new groups. Quizzes has In-class Quiz 07 (password needed) with Follow-up A and B, and the primitive-functions lesson now includes the inverse trigonometric functions from 9 Nov.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-06",
       "subject": "all",
       "title": "Easier to use: a today screen, practice sessions and night-before sheets",

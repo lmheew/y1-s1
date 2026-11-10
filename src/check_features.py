@@ -398,7 +398,8 @@ with sync_playwright() as p:
     pg2.goto(BASE + '/math/integrals/')
     pg2.wait_for_selector('#view-summary .unit')
     check('new: Calculus midterm 2 has its own tab dots', dots(pg2) == ['practice', 'formulas', 'quizzes'], dots(pg2))
-    check('new: Calculus midterm 2 marks its new lessons and graph', pg2.locator('#su-u2 .unit-head .new-pill').count() == 1
+    check('new: Calculus midterm 2 marks its new lessons and graph', pg2.locator('#su-u3 .unit-head .new-pill').count() == 1
+          and pg2.locator('#su-u2 .unit-head .new-pill').count() == 1
           and pg2.locator('#su-u1 .unit-head .new-pill').count() == 1
           and pg2.locator('#gx-riemann .new-pill').count() == 1, pg2.locator('#su-u1 .new-pill').count())
     pg2.click('#tab-practice')
@@ -646,7 +647,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '/physics/midterm/')
     pg.wait_for_selector('#view-exams .up-item')
     check('night: it is never the tab a page opens on next time: the last tab (Exams) opens', pg.locator('#view-night').is_hidden() and pg.locator('#view-exams').is_visible())
-    for page, n in [('math/derivatives', 8), ('math/integrals', 4)]:
+    for page, n in [('math/derivatives', 8), ('math/integrals', 5)]:
         pg.goto(BASE + f'/{page}/#formulas')
         pg.wait_for_selector('#view-formulas .night-link')
         pg.click('#view-formulas .night-link')

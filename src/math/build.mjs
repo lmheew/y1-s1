@@ -135,7 +135,7 @@ const INTEGRALS = {
   units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: INTF.followups, mocks: [],
   icons: INTX.UNIT_ICONS, graphs: INTX.GRAPHS, graphsAdded: INTX.GRAPHS_ADDED, testbarAdded: '', seen: 'math-integrals',
   conf: { store: 'cla1-integrals-review', seen: 'math-integrals', home: 'summary', scores: 'cla1-integrals-mock-scores',
-    suggest: ['primitive', 'arctan', 'Riemann sum', 'signed area', 'ln', 'sin'], tryWords: '"primitive" or "area"' },
+    suggest: ['substitution', 'by parts', 'partial fractions', 'arctan', 'primitive', 'Riemann sum'], tryWords: '"substitution" or "by parts"' },
   title: 'CLA1 Midterm 2 Review',
   description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas and quizzes, added after each class.',
   og: {
