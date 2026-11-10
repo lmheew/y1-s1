@@ -61,6 +61,13 @@
   "news": [
     {
       "date": "2026-11-10",
+      "subject": "physics",
+      "title": "Physics midterm: Exercise Day 3",
+      "text": "Physics midterm: Quizzes has Exercise Day 3 (Lecture 27, 10 Nov), retyped with worked answers and opened with the in-class password. It is the review sheet before the midterm: Problems 0–7 are Day 1's and Problems 8.1–17 are Day 2's, under the new sheet's numbers, so the worked answers follow its numbering.",
+      "link": "physics/midterm/#quizzes"
+    },
+    {
+      "date": "2026-11-10",
       "subject": "math",
       "title": "Calculus midterm 2: shortcuts for integrals",
       "text": "Calculus midterm 2: two lessons now end with a Shortcuts box of extra tricks that aren't from the lectures. Day 16 & 17: rebuilding the arcsin and arctan values from the special triangles, odd functions on [−a, a], and half-circle areas. Day 18 & 19: guess and adjust, making the derivative appear on top, the cover-up method for partial fractions, which factor to differentiate in integration by parts, the DI table, and the King's rule. Formulas has a Shortcuts group, and Practice has three new problems to try them on.",

@@ -342,6 +342,21 @@ def('d2-12', 360, 205, 'Block S of mass M on a horizontal frictionless table, ti
   def('d2-44', 330, 230, 'A block on a slope rising to the right at angle θ. The push P is tilted by φ from the slope’s normal toward up the slope; the weight mg acts straight down', 'The push of 4-4, tilted by φ', s);
 }
 
+// ===== Exercise Day 3 =====
+// A review sheet: its problems are Days 1 and 2's under new numbers. Day 1's figures keep their numbers there; Day 2's
+// are the same drawings, captioned with the numbers the Day 3 sheet gives them.
+const again = (id, from, cap) => { if (!F[from]) throw new Error(`unknown figure "${from}"`); F[id] = { ...F[from], cap }; };
+again('d3-82', 'd2-12', 'Figure for Problem 8.2');
+again('d3-84', 'd2-14', 'Figure for Problem 8.4');
+again('d3-114', 'd2-44', 'The push of 11-4, tilted by φ');
+again('d3-13', 'd2-7', 'Figure 13 (cross-section)');
+again('d3-132', 'd2-72', 'Answer to 13-2: free-body diagram');
+again('d3-14', 'd2-15', 'Figure 14');
+again('d3-15', 'd2-6', 'Figure 15');
+again('d3-16', 'd2-8', 'Figure 16');
+again('d3-162', 'd2-82', 'Answer to 16-2: free-body diagram at B');
+again('d3-17', 'd2-9', 'Figure 17');
+
 // ===== Practice Set A =====
 {
   const g = plot({ w: 300, h: 230, xr: [0, 8], yr: [-2, 3], ylab: '{a} [m/s²]', lines: [

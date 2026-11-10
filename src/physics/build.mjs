@@ -161,6 +161,7 @@ function formulaRow(id, [name, t, s, note], where, keys, index) {
 // ---------- Exams: a mock midterm, timed and marked by the parts you tick (page.js), like Math's ----------
 const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right. The real paper doesn’t give points; here every problem counts 10.';
 const sumPts = (q) => q.pts.reduce((a, b) => a + b, 0);
+const word = (n) => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
 function mockQuestion(m, q, qi, index) {
   const id = `${m.id}-p${q.no}`;
   const labels = q.parts.map((_, i) => `${q.no}-${i + 1}`);
@@ -457,7 +458,7 @@ ${chapters.map((c) => {
   </section>
 
   <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
-    ${band('Quizzes', '小テスト', `The ${nEx === 2 ? 'two' : nEx} exercise-day sheets from class${locked && nEx ? ' <span class="nw">(password needed)</span>' : ''} and ${nSets === 3 ? 'three' : nSets} practice sets in the same format, each with worked answers that open one step at a time. Start the timer and work on paper, without notes or a calculator.`)}
+    ${band('Quizzes', '小テスト', `The ${word(nEx)} exercise-day sheets from class${locked && nEx ? ' <span class="nw">(password needed)</span>' : ''} and ${word(nSets)} practice sets in the same format, each with worked answers that open one step at a time. Start the timer and work on paper, without notes or a calculator.`)}
     ${lazyBox('quizzes')}
   </section>
 

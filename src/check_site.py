@@ -457,7 +457,7 @@ with sync_playwright() as p:
         check(f'{label}: three practice sets, each Problem 0 and ten problems',
               page.locator('#sets .psheet').count() == 3 and all(page.locator(f'#{s} .prq').count() == 11 for s in ('pa', 'pb', 'pc')))
         plocks = page.locator('#ex .sheet.lock').count()
-        check(f'{label}: both exercise days are locked', plocks == 2 and page.locator('#ex .prq').count() == 0, plocks)
+        check(f'{label}: all three exercise days are locked', plocks == 3 and page.locator('#ex .prq').count() == 0, plocks)
         sets = page.locator('#sets')
         sets.locator('.seg-btn[data-seg="1"]').click()
         check(f'{label}: the switcher opens Practice Set B', page.locator('#pb').is_visible() and not page.locator('#pa').is_visible())
@@ -543,16 +543,21 @@ with sync_playwright() as p:
             form.locator('input[name="password"]').fill('not-the-password')
             form.locator('.u-go').click()
             page.wait_for_function("document.querySelector('#ex .u-msg').textContent.includes('didn')", timeout=20000)
-            check(f'{label}: Physics refuses a wrong password', ex.locator('.sheet.lock').count() == 2)
+            check(f'{label}: Physics refuses a wrong password', ex.locator('.sheet.lock').count() == 3)
             form.locator('input[name="password"]').fill(PASSWORD)
             if label == 'phone':
                 form.locator('input[name="remember"]').check()
             form.locator('.u-go').click()
             page.wait_for_selector('body.unlocked', timeout=20000)
-            check(f'{label}: the in-class password opens both exercise days', ex.locator('.sheet.lock').count() == 0
-                  and page.locator('#ex1 .prq').count() == 8 and page.locator('#ex2 .prq').count() == 14)
+            check(f'{label}: the in-class password opens all three exercise days', ex.locator('.sheet.lock').count() == 0
+                  and page.locator('#ex1 .prq').count() == 8 and page.locator('#ex2 .prq').count() == 14 and page.locator('#ex3 .prq').count() == 21)
             ex.locator('.seg-btn[data-seg="1"]').click()
             check(f'{label}: the switcher opens Exercise Day 2', page.locator('#ex2').is_visible())
+            ex.locator('.seg-btn[data-seg="2"]').click()
+            check(f'{label}: the switcher opens Exercise Day 3, with its own numbers and figures', page.locator('#ex3').is_visible()
+                  and page.locator('#ex3-p8-2 .pfig-cap').first.text_content().strip() == 'Figure for Problem 8.2'
+                  and page.locator('#ex3-p17 .pn').nth(5).text_content().strip() == '17-6' and not page.locator('#ex2').is_visible(),
+                  [page.locator('#ex3-p8-2 .pfig-cap').first.text_content(), page.locator('#ex3-p17 .pn').nth(5).text_content(), page.locator('#ex2').is_visible()])
             check(f'{label}: unlocked Physics has no sideways scroll', overflow(page) <= 0, overflow(page))
             shot(page, f'{label}-physics-unlocked')
             check(f'{label}: Physics search finds the exercise days after unlocking', any(t.startswith('Exercise Day') for t in search(page, 'Lorentz')))
