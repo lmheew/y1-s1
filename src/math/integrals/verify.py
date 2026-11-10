@@ -495,6 +495,65 @@ primitive("formula: linear inside, cos(3x - 1) -> sin(3x-1)/3", lambda x: sin(3 
 primitive("formula: log rule, f = x^3 + 2", lambda x: log(abs(x ** 3 + 2)), lambda x: 3 * x * x / (x ** 3 + 2), (-0.5, 0.3, 1.1, 2.4))
 primitive("formula: u = tan(x/2) dx = 2du/(1+u^2): x = 2 arctan u", lambda u: 2 * atan(u), lambda u: 2 / (1 + u * u), (-2.0, 0.0, 0.7, 3.0))
 
+# ================= SHORTCUTS (extras, 10 Nov): u2/u3 tricks, group gs, P2.11, P3.14, P3.15 =================
+# u2: values from the special triangles
+check("tricks: tan(pi/4) = 1 from the 45-degree triangle (1, 1, sqrt2)", tan(pi / 4), 1)
+check("tricks: tan(pi/6) = 1/sqrt3", tan(pi / 6), 1 / sqrt(3)); check("tricks: tan(pi/3) = sqrt3", tan(pi / 3), sqrt(3))
+check("tricks: sin(pi/6) = 1/2", sin(pi / 6), 0.5); check("tricks: sin(pi/3) = sqrt3/2", sin(pi / 3), sqrt(3) / 2)
+check_true("tricks: the triangles are right triangles", abs(1 + 1 - sqrt(2) ** 2) < 1e-12 and abs(1 + 3 - 2 ** 2) < 1e-12)
+# odd and even on [-a, a]
+for (fn, kind) in ((lambda x: sin(x) / (1 + x * x), 'odd'), (lambda x: x ** 3 * cos(x), 'odd'), (lambda x: x * sin(x), 'even'), (lambda x: exp(-x * x), 'even')):
+    for a0 in (0.7, 1.0, 2.5):
+        if kind == 'odd':
+            check(f"tricks/gs: odd function integrates to 0 on [-{a0},{a0}]", integral(fn, -a0, a0), 0, 1e-9)
+        else:
+            check(f"tricks/gs: even function, int_-a^a = 2 int_0^a (a={a0})", integral(fn, -a0, a0), 2 * integral(fn, 0, a0))
+check("tricks: int_-1^1 sin x/(1+x^2) = 0", integral(lambda x: sin(x) / (1 + x * x), -1, 1), 0, 1e-9)
+# half a circle
+for r in (1.0, 2.0, 3.5):
+    check(f"tricks/gs: int_-r^r sqrt(r^2-x^2) = pi r^2/2 (r={r})", integral(lambda x: sqrt(max(r * r - x * x, 0.0)), -r, r, 20000), pi * r * r / 2, 1e-5)
+check("tricks: int_0^1 sqrt(1-x^2) = pi/4", integral(lambda x: sqrt(max(1 - x * x, 0.0)), 0, 1, 20000), pi / 4, 1e-5)
+# u3: guess and adjust (class example)
+check("tricks: ((1+e^(2x))^(3/2))' = 3 e^(2x) sqrt(1+e^(2x)) at 0.4", d1(lambda x: (1 + exp(2 * x)) ** 1.5, 0.4), 3 * exp(0.8) * sqrt(1 + exp(0.8)))
+primitive("tricks: (1/3)(1+e^(2x))^(3/2)", lambda x: (1 + exp(2 * x)) ** 1.5 / 3, lambda x: exp(2 * x) * sqrt(1 + exp(2 * x)), XS)
+# make the derivative appear
+check("tricks: x + 3 = (1/2)(2x+2) + 2", 0.5 * (2 * 1.7 + 2) + 2, 1.7 + 3)
+primitive("tricks: (x+3)/(x^2+2x+5) -> (1/2)ln(x^2+2x+5) + arctan((x+1)/2)", lambda x: 0.5 * log(x * x + 2 * x + 5) + atan((x + 1) / 2), lambda x: (x + 3) / (x * x + 2 * x + 5), XS)
+for (pp, qq, bb, cc) in ((1, 3, 2, 5), (2, -1, -4, 13), (-3, 2, 1, 1)):
+    for x in XS:
+        check(f"gs: make the derivative appear p={pp} q={qq} b={bb} c={cc} at {x}", (pp * x + qq) / (x * x + bb * x + cc),
+              pp / 2 * (2 * x + bb) / (x * x + bb * x + cc) + (qq - pp * bb / 2) / (x * x + bb * x + cc))
+# cover-up
+fr = lambda x: (x + 5) / ((x - 1) * (x + 2))
+check("tricks: cover-up A at x = 1: 6/3 = 2", (1 + 5) / (1 + 2), 2); check("tricks: cover-up B at x = -2: 3/(-3) = -1", (-2 + 5) / (-2 - 1), -1)
+for x in (-3.3, 0.0, 0.5, 2.7):
+    check(f"tricks: (x+5)/((x-1)(x+2)) = 2/(x-1) - 1/(x+2) at {x}", fr(x), 2 / (x - 1) - 1 / (x + 2))
+    check(f"gs: cover-up A = (x-1) f(x) near x = 1 ({x})", ((1 + 1e-7) - 1) * fr(1 + 1e-7), 2, 1e-5)
+# DI table
+primitive("tricks/gs: x^2 e^x -> e^x(x^2-2x+2)", lambda x: exp(x) * (x * x - 2 * x + 2), lambda x: x * x * exp(x), XS)
+primitive("tricks: DI with ln x stops early: x ln x -> (x^2/2) ln x - x^2/4", lambda x: x * x / 2 * log(x) - x * x / 4, lambda x: x * log(x), XP)
+# King's rule
+for (fn, a0) in ((lambda x: x * exp(-x), 1.5), (lambda x: sin(x) ** 2 * x, 2.0), (lambda x: 1 / (1 + x ** 3), 1.2)):
+    check(f"tricks/gs: King's rule on [0,{a0}]", integral(fn, 0, a0), integral(lambda x: fn(a0 - x), 0, a0))
+check("tricks: int_0^(pi/2) sin/(sin+cos) = pi/4", integral(lambda x: sin(x) / (sin(x) + cos(x)), 0, pi / 2), pi / 4)
+check("tricks: int_0^(pi/2) cos/(sin+cos) = pi/4", integral(lambda x: cos(x) / (sin(x) + cos(x)), 0, pi / 2), pi / 4)
+# P2.11
+check("P2.11a int_-1^1 sin x/(1+x^2) = 0", integral(lambda x: sin(x) / (1 + x * x), -1, 1), 0, 1e-9)
+check("P2.11b int_-1^1 (x^3 + 3x^2) = 2", integral(lambda x: x ** 3 + 3 * x * x, -1, 1), 2)
+check("P2.11c int_-2^2 sqrt(4-x^2) = 2 pi", integral(lambda x: sqrt(max(4 - x * x, 0.0)), -2, 2, 20000), 2 * pi, 1e-5)
+# P3.14
+primitive("P3.14a (x^3+1)^5/15", lambda x: (x ** 3 + 1) ** 5 / 15, lambda x: x * x * (x ** 3 + 1) ** 4, XS)
+check("P3.14b x + 2 = (1/2)(2x+2) + 1", 0.5 * (2 * 0.9 + 2) + 1, 0.9 + 2)
+primitive("P3.14b (1/2)ln(x^2+2x+2) + arctan(x+1)", lambda x: 0.5 * log(x * x + 2 * x + 2) + atan(x + 1), lambda x: (x + 2) / (x * x + 2 * x + 2), XS)
+check("P3.14c cover-up at x = -1: 1/2", (3 * -1 + 1) / (-1 - 3), 0.5); check("P3.14c cover-up at x = 3: 5/2", (3 * 3 + 1) / (3 + 1), 2.5)
+primitive("P3.14c (1/2)ln|x+1| + (5/2)ln|x-3|", lambda x: 0.5 * log(abs(x + 1)) + 2.5 * log(abs(x - 3)), lambda x: (3 * x + 1) / ((x + 1) * (x - 3)), (-2.5, -0.5, 1.0, 4.2))
+# P3.15
+primitive("P3.15a e^x(x^3-3x^2+6x-6)", lambda x: exp(x) * (x ** 3 - 3 * x * x + 6 * x - 6), lambda x: x ** 3 * exp(x), XS)
+primitive("P3.15b -x^2 cos x + 2x sin x + 2 cos x", lambda x: -x * x * cos(x) + 2 * x * sin(x) + 2 * cos(x), lambda x: x * x * sin(x), XS)
+g315 = lambda x: sqrt(sin(x)) / (sqrt(sin(x)) + sqrt(cos(x)))
+check("P3.15c int_0^(pi/2) sqrt(sin)/(sqrt(sin)+sqrt(cos)) = pi/4", integral(g315, 1e-12, pi / 2 - 1e-12, 20000), pi / 4, 1e-6)
+check("P3.15c King's rule swaps sin and cos: g(pi/2 - x) + g(x) = 1", g315(0.4) + g315(pi / 2 - 0.4), 1)
+
 # ================= FOLLOW-UPS (Quiz 07) =================
 # 07-A
 check("07A Q1(1) int_0^2 (x+2)/(x^2+4x+4) = ln2", integral(lambda x: (x + 2) / (x * x + 4 * x + 4), 0, 2), log(2))

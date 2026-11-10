@@ -38,6 +38,9 @@ export const tags = {
   '3.11': 'integration by parts ln(x^2+1) times 1 divide first arctan exercise',
   '3.12': 'integration by parts twice two rounds x^2 e^(2x) exercise',
   '3.13': 'which method choose substitution by parts partial fractions arctan log rule square root',
+  '2.11': 'shortcut trick odd even function symmetric interval half circle known shape area',
+  '3.14': 'shortcut trick guess and adjust derivative on top numerator cover-up partial fractions',
+  '3.15': "shortcut trick DI table tabular integration by parts repeated King's rule a - x",
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -115,6 +118,17 @@ export const formulas = [
     ['By parts, with limits', R`\int_a^b f\,g'\,dx=\Big[f\,g\Big]_a^b-\int_a^b f'\,g\,dx`],
     ['x sin x', R`\int x\sin x\,dx=-x\cos x+\sin x+C`],
     ['ln x', R`\int\ln x\,dx=x\ln x-x+C`],
+  ]},
+  // extras from outside the lectures, added at the user's request; its label matches no lesson, so the night-before
+  // sheet lists it with the values to know
+  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV10, rows: [
+    ['Odd function on [−a, a]', R`f(-x)=-f(x)\ \Rightarrow\ \int_{-a}^{a}f(x)\,dx=0`],
+    ['Even function on [−a, a]', R`f(-x)=f(x)\ \Rightarrow\ \int_{-a}^{a}f\,dx=2\int_0^{a}f\,dx`],
+    ['Half a circle', R`\int_{-r}^{r}\sqrt{r^2-x^2}\,dx=\frac{\pi r^2}{2}`],
+    ['Make the derivative appear', R`\frac{px+q}{x^2+bx+c}=\frac{p}{2}\cdot\frac{2x+b}{x^2+bx+c}+\frac{q-\frac{pb}{2}}{x^2+bx+c}`],
+    ['Cover-up', R`A=\Big[(x-\alpha)\,f(x)\Big]_{x=\alpha}`],
+    ['DI table: x²eˣ', R`\int x^2e^x\,dx=e^x(x^2-2x+2)+C`],
+    ["King's rule", R`\int_0^{a}f(x)\,dx=\int_0^{a}f(a-x)\,dx`],
   ]},
 ];
 

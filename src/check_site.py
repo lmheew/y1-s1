@@ -323,6 +323,10 @@ with sync_playwright() as p:
               and 'primitive functions' in page.locator('#su-u2 h2').inner_text().lower()
               and 'day 18 & 19' in page.locator('#su-u3 .unit-head .kicker').inner_text().lower()
               and 'quiz 07' in page.locator('#su-u3 .unit-head .kicker').inner_text().lower())
+        check(f'{label}: midterm 2 has its Shortcuts boxes after Watch out, marked as not from the lectures',
+              page.locator('#su-u2 .tricks li').count() == 3 and page.locator('#su-u3 .tricks li').count() == 6 and page.locator('#su-u1 .tricks').count() == 0
+              and 'not from the lectures' in page.locator('#su-u3 .tricks-note').inner_text()
+              and page.evaluate("document.querySelector('#su-u3 .watch').compareDocumentPosition(document.querySelector('#su-u3 .tricks')) & 4") > 0)
         check(f'{label}: midterm 2 lessons still to come go by their dates', page.locator('#view-summary .tile.upcoming .tile-k').first.inner_text().lower() == '12 & 13 nov',
               page.locator('#view-summary .tile.upcoming .tile-k').first.inner_text())
         check(f'{label}: midterm 2 Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
@@ -342,8 +346,8 @@ with sync_playwright() as p:
         shot(page, f'{label}-integrals-summary')
         page.click('#tab-practice')
         page.wait_for_selector('#view-practice .prob')
-        check(f'{label}: midterm 2 Practice has 8 + 10 + 13 problems, the 2 & 3 Nov ones keeping their ids',
-              page.locator('#pu1 .prob').count() == 8 and page.locator('#pu2 .prob').count() == 10 and page.locator('#pu3 .prob').count() == 13
+        check(f'{label}: midterm 2 Practice has 8 + 11 + 15 problems, the 2 & 3 Nov ones keeping their ids',
+              page.locator('#pu1 .prob').count() == 8 and page.locator('#pu2 .prob').count() == 11 and page.locator('#pu3 .prob').count() == 15
               and page.locator('#prob-1-12').count() == 1 and page.locator('#prob-1-4').count() == 0 and page.locator('#prob-2-10').count() == 1
               and page.locator('#prob-3-13').count() == 1)
         card = page.locator('#prob-1-1')
@@ -358,6 +362,7 @@ with sync_playwright() as p:
         check(f'{label}: midterm 2 Formulas has the Riemann-sum sheet, the primitive-function, substitution and by-parts sheets and the exact values',
               page.locator('#fg-g1 .frow').count() == 12 and page.locator('#fg-g2 .frow').count() == 11 and page.locator('#fg-g2b .frow').count() == 14
               and page.locator('#fg-g2c .frow').count() == 6 and page.locator('#fg-g3 .frow').count() == 13 and page.locator('#fg-g3b .frow').count() == 5
+              and page.locator('#fg-gs .frow').count() == 7
               and page.locator('#fg-exact').count() == 1)
         check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-quizzes')
@@ -385,6 +390,8 @@ with sync_playwright() as p:
         hits = search(page, 'riemann')
         check(f'{label}: midterm 2 search finds the lesson and its practice', any(t.startswith('Practice · Day 14 & 15') for t in hits)
               and any('Riemann sum and definite integrals' in t for t in hits), hits[:4])
+        hits = search(page, 'cover-up')
+        check(f'{label}: midterm 2 search finds the shortcuts', any(t.startswith('Shortcut — The cover-up method') for t in hits), hits[:4])
         ft = page.locator('.site-foot time').get_attribute('datetime') or ''
         check(f'{label}: midterm 2 footer says when it was last updated', ft == page.locator('.tabbar').get_attribute('data-updated')
               and ft >= max(page_news('math/integrals/')), ft)

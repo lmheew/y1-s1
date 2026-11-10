@@ -194,13 +194,23 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
       INDEX.push(entry('Summary', 'summary', id, `Watch out — ${u.title}`, plain(it), 'mistake slip ' + (u.quiz || dayOf(u))));
       return `<li id="${id}">${inline(it, false)}</li>`;
     }).join('');
+    // Shortcuts: extra tricks that weren't taught in class (a unit's `tricks`, added at the user's request), kept apart
+    // from the lecture's key ideas in a box of their own, after Watch out. `tricksAdded` gives the box its New label.
+    const tricks = (u.tricks ? items(u.tricks) : []).map((it, i) => {
+      const id = `su-${u.id}-t${i + 1}`;
+      const label = (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => texPlain(m.slice(1, -1)));
+      INDEX.push(entry('Summary', 'summary', id, `Shortcut — ${label || u.title}`, plain(it.replace(/^\*\*.+?\*\*\s*/, '')), 'shortcut trick tip extra ' + (u.quiz || dayOf(u))));
+      return `<li id="${id}">${inline(it, false)}</li>`;
+    }).join('');
+    const tricksHTML = tricks ? `
+  <div class="tricks"${u.tricksAdded ? ` data-added="${esc(u.tricksAdded)}"` : ''}><h3>Shortcuts</h3><p class="tricks-note">Extra tricks, not from the lectures. On a quiz, still write the usual working.</p><ul>${tricks}</ul></div>` : '';
     return `
 <section class="unit" id="su-${u.id}"${addedAttr(u)}>
   <header class="unit-head">${UNIT_ICONS[u.id]}<div><p class="kicker">${meta([u.days, u.dates, u.quiz, u.note])}</p><h2>${esc(u.title)}</h2></div></header>
   ${u.intro ? `<p class="unit-note">${inline(u.intro, false)}</p>` : ''}
   <ul class="ideas">${ideas}</ul>
   ${(P.graphs[u.id] || []).map(graphHTML(P.graphsAdded)).join('')}
-  <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
+  <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>${tricksHTML}
 </section>`;
   }).join('') + `
 <section class="habits" id="su-habits"><h2 class="deco">Exam-day habits</h2><ul>${items(habits).map((it, i) => {

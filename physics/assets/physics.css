@@ -144,7 +144,7 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .ideas li::before { content: ""; position: absolute; left: 3px; top: 1.32em; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
 /* key formulas sit full size on their own line; a wide one scrolls inside its line rather than widening the page */
 .katex-display { overflow-x: auto; overflow-y: hidden; padding-block: 2px; }
-.ideas .katex-display, .watch .katex-display { margin: .45em 0 .35em; }
+.ideas .katex-display, .watch .katex-display, .tricks .katex-display { margin: .45em 0 .35em; }
 /* full-size fractions in running text: a little room above and below, so two on neighbouring lines don't touch
    (the padding only shows where a formula is taller than the line, and the math can still wrap between its parts) */
 .katex .base { padding-block: 2px; }
@@ -154,6 +154,13 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .watch ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .watch li { position: relative; padding-left: 22px; min-width: 0; scroll-margin-top: var(--anchor-top); }
 .watch li::before { content: "×"; position: absolute; left: 2px; top: 0; color: var(--warn); font-size: 17px; font-weight: 900; line-height: 1.6; }
+/* Shortcuts: extra tricks from outside the lectures, in the page's green, after Watch out */
+.tricks { margin-top: 12px; background: var(--tint); border-left: 3px solid var(--lime); border-radius: 4px; padding: 12px 14px; }
+.tricks h3 { margin: 0 0 2px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green-text); }
+.tricks-note { margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.tricks ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tricks li { position: relative; padding-left: 20px; min-width: 0; scroll-margin-top: var(--anchor-top); }
+.tricks li::before { content: ""; position: absolute; left: 3px; top: .62em; width: 7px; height: 7px; transform: rotate(45deg); background: var(--lime-deep); }
 .habits { margin-top: 32px; border: 2px solid var(--green); padding: 18px 16px 16px; background: var(--surface); scroll-margin-top: var(--anchor-top); }
 .habits ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
 .habits li { scroll-margin-top: var(--anchor-top); }

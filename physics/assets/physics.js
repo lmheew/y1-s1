@@ -324,7 +324,7 @@
       el.classList.add('is-new');
       const lead = $('.test-hint', el); // the Test me bar: the label leads its hint
       if (lead) { if (!$('.new-pill', lead)) lead.insertAdjacentHTML('afterbegin', '<span class="new-pill lead">New</span> '); return; }
-      const head = $('.punit-head h2, .prob-head, .unit-head h2, .fgroup > h2, .sheet-title, .gx-title', el);
+      const head = $('.punit-head h2, .prob-head, .unit-head h2, .fgroup > h2, .sheet-title, .gx-title, .tricks > h3', el);
       if (head && !$('.new-pill', head)) head.insertAdjacentHTML('beforeend', ' <span class="new-pill">New</span>');
     });
   }

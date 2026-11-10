@@ -94,6 +94,14 @@ From the exact values, $\arcsin\frac{1}{2}=\frac{\pi}{6}$, $\arcsin\frac{\sqrt2}
 - In $F(b)-F(a)$, work out $F(a)$ on its own line, then subtract all of it: $\mathord{\Big[-\cos x\Big]_0^{\pi}}=-\cos\pi-(-\cos0)=2$. With a negative limit, $-(-2)=+2$.
 - An area question needs the zeros of $f$ first: $\mathord{\int_{-1}^{1}x\,dx}=0$, but the area between $y=x$ and the axis on $[-1,1]$ is $1$.
 - Check every primitive by differentiating it back to $f$.`,
+    tricksAdded: NOV10,
+    tricks: R`
+- **Rebuild the inverse trig values:** draw the two special triangles. The $45^\circ$ one, with sides $1$, $1$, $\sqrt2$, gives $\tan\frac{\pi}{4}=1$, so $\arctan1=\frac{\pi}{4}$. The $30$-$60$-$90$ one, with sides $1$, $\sqrt3$, $2$, gives $\tan\frac{\pi}{6}=\frac{1}{\sqrt3}$ and $\tan\frac{\pi}{3}=\sqrt3$, and for arcsin $\sin\frac{\pi}{6}=\frac{1}{2}$ and $\sin\frac{\pi}{3}=\frac{\sqrt3}{2}$.
+- **Odd functions on $[-a,a]$ give $0$:** if $f(-x)=-f(x)$, the parts left and right of $0$ cancel; if $f(-x)=f(x)$, they are equal:
+$$\begin{gathered}f\text{ odd}:\ \int_{-a}^{a}f(x)\,dx=0\\[4pt]f\text{ even}:\ \int_{-a}^{a}f(x)\,dx=2\int_0^af(x)\,dx\end{gathered}$$
+Odd times even is odd, and odd times odd is even. So $\int_{-1}^{1}\frac{\sin x}{1+x^2}\,dx=0$, although $\frac{\sin x}{1+x^2}$ has no primitive in the table.
+- **Known shapes:** $y=\sqrt{r^2-x^2}$ is the top half of a circle of radius $r$, so its integral is half the circle's area:
+$$\begin{gathered}\int_{-r}^{r}\sqrt{r^2-x^2}\,dx=\frac{\pi r^2}{2}\\[4pt]\int_0^1\sqrt{1-x^2}\,dx=\frac{\pi}{4}\end{gathered}$$`,
   },
   {
     id: 'u3', quiz: 'Quiz 07', days: 'Day 18 & 19', dates: '9 & 10 Nov', starred: true, added: NOV10,
@@ -141,6 +149,19 @@ A square of $x$ needs two rounds: the class exercise $\int_0^2x^2e^{2x}\,dx=\fra
 - With $u=\tan\frac{x}{2}$, change $dx$ as well: $dx=\frac{2\,du}{1+u^2}$.
 - By parts, keep the minus sign before $\int f'g\,dx$, and integrate $g'$ with care: $g'=\sin x$ gives $g=-\cos x$, and $g'=e^{2x}$ gives $g=\frac{e^{2x}}{2}$.
 - Choose the factors the right way round: in $\int xe^x\,dx$ differentiate $x$. Taking $g'=x$ instead leaves $\int\frac{x^2}{2}e^x\,dx$, which is harder.`,
+    tricksAdded: NOV10,
+    tricks: R`
+- **Guess and adjust:** guess the answer from the outer function, differentiate it, then fix the constant. For the class example, guess $(1+e^{2x})^{3/2}$: its derivative is $\frac{3}{2}(1+e^{2x})^{1/2}\cdot2e^{2x}=3e^{2x}\sqrt{1+e^{2x}}$, three times too big, so $\int e^{2x}\sqrt{1+e^{2x}}\,dx=\frac{1}{3}(1+e^{2x})^{3/2}+C$. It is also a quick check after any substitution.
+- **Make the derivative appear:** write the numerator as $k\cdot(\text{denominator})'+r$. The first part gives a log and the rest an arctan. With $x+3=\frac{1}{2}(2x+2)+2$:
+$$\begin{aligned}\int\frac{x+3}{x^2+2x+5}\,dx&=\frac{1}{2}\ln(x^2+2x+5)\\[4pt]&\quad+\arctan\frac{x+1}{2}+C\end{aligned}$$
+- **The cover-up method:** to find $A$ over $x-\alpha$, cover the factor $x-\alpha$ in the original fraction and put $x=\alpha$ into what is left. For $\frac{x+5}{(x-1)(x+2)}$: $x=1$ gives $A=\frac{6}{3}=2$, and $x=-2$ gives $\mathord{B=\frac{3}{-3}=-1}$, so it is $\frac{2}{x-1}-\frac{1}{x+2}$. It works for separate linear factors only. On a quiz, also write the line $x+5=A(x+2)+B(x-1)$.
+- **Which factor to differentiate:** in integration by parts, differentiate whichever comes first in this list and integrate the other: logarithm, inverse trig, polynomial, trig, exponential.
+- **The DI table:** integration by parts several times over, set out as a table. Differentiate the polynomial down to $0$ in column D, integrate the other factor once per row in column I, give the rows the signs $+,-,+,\dots$, then multiply each D by the I one row below and add:
+$$\begin{array}{c|c|c}&D&I\\\hline+&x^2&e^x\\-&2x&e^x\\+&2&e^x\\&0&e^x\end{array}$$
+So $\int x^2e^x\,dx=x^2e^x-2xe^x+2e^x+C=e^x(x^2-2x+2)+C$. With $\ln x$ the D column never reaches $0$: stop at the first row whose D times I you can integrate, and add that integral with the row's sign.
+- **The King's rule:** replacing $x$ by $a-x$ (the substitution $u=a-x$) gives
+$$\int_0^af(x)\,dx=\int_0^af(a-x)\,dx$$
+For $I=\int_0^{\pi/2}\frac{\sin x}{\sin x+\cos x}\,dx$ it gives the same integral with $\cos x$ on top. Adding the two, $2I=\int_0^{\pi/2}dx=\frac{\pi}{2}$, so $I=\frac{\pi}{4}$.`,
   },
   { id: 'u4', dates: '12 & 13 Nov', title: 'Application of integration: area, average, etc.', starred: true, upcoming: true },
   { id: 'u5', dates: '16 & 17 Nov', title: 'Parametric and polar curves', starred: true, upcoming: true },
@@ -408,6 +429,17 @@ The area is $\frac{10}{3}+\frac{11}{6}=\frac{31}{6}$, while the integral is $\fr
 **(2)** $\Big[\arcsin x\Big]_0^{1/2}=\arcsin\frac{1}{2}-\arcsin0=\frac{\pi}{6}$.
 
 **(3)** $\arcsin\frac{\sqrt3}{2}-\arcsin\left(-\frac{1}{2}\right)=\frac{\pi}{3}+\frac{\pi}{6}=\frac{\pi}{2}$.` },
+    { src: 'Shortcut: symmetry and shapes', added: NOV10,
+      stem: R`Use symmetry or a known shape; no primitive is needed.`,
+      parts: [R`$\displaystyle\int_{-1}^{1}\frac{\sin x}{1+x^2}\,dx$`, R`$\displaystyle\int_{-1}^{1}(x^3+3x^2)\,dx$`, R`$\displaystyle\int_{-2}^{2}\sqrt{4-x^2}\,dx$`],
+      hint: R`Is the function odd or even? And $y=\sqrt{4-x^2}$ is the top half of a circle.`,
+      answer: [R`(1) $0$`, R`(2) $2$`, R`(3) $2\pi$`],
+      sol: R`
+**(1)** $\sin x$ is odd and $1+x^2$ is even, so $\frac{\sin x}{1+x^2}$ is odd, and its integral over $[-1,1]$ is $0$.
+
+**(2)** Split: $x^3$ is odd, so it gives $0$; $3x^2$ is even, so it gives $2\int_0^13x^2\,dx=2\Big[x^3\Big]_0^1=2$.
+
+**(3)** $y=\sqrt{4-x^2}$ is the top half of a circle of radius $2$, so the integral is $\frac{\pi\cdot2^2}{2}=2\pi$.` },
   ],
   u3: [
     { src: 'Class example: limits on the u-axis', added: NOV9,
@@ -585,5 +617,27 @@ So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{
 **(5)** The top is the derivative of the bottom: $\ln(1+\sin x)+C$, with no absolute value since $1+\sin x\ge0$.
 
 **(6)** $t=\sqrt{x+1}$: $x=t^2-1$ and $dx=2t\,dt$, so $\int(t^2-1)\,t\cdot2t\,dt=\int(2t^4-2t^2)\,dt=\frac{2}{5}t^5-\frac{2}{3}t^3+C$, with $t=\sqrt{x+1}$.` },
+    { src: 'Shortcuts: guess, derivative on top, cover-up', added: NOV10,
+      stem: R`Find the indefinite integrals with the shortcuts.`,
+      parts: [R`$\displaystyle\int x^2(x^3+1)^4\,dx$ (guess and adjust)`, R`$\displaystyle\int\frac{x+2}{x^2+2x+2}\,dx$ (make the derivative appear)`, R`$\displaystyle\int\frac{3x+1}{(x+1)(x-3)}\,dx$ (cover-up)`],
+      hint: R`(1) Guess $(x^3+1)^5$. (2) The derivative of the bottom is $2x+2$. (3) Put $x=-1$ and $x=3$ into what is left after covering each factor.`,
+      answer: [R`(1) $\frac{(x^3+1)^5}{15}+C$`, R`(2) $\frac{1}{2}\ln(x^2+2x+2)+\arctan(x+1)+C$`, R`(3) $\frac{1}{2}\ln|x+1|+\frac{5}{2}\ln|x-3|+C$`],
+      sol: R`
+**(1)** The derivative of $(x^3+1)^5$ is $5(x^3+1)^4\cdot3x^2=15x^2(x^3+1)^4$, fifteen times too big, so the answer is $\frac{(x^3+1)^5}{15}+C$.
+
+**(2)** $x+2=\frac{1}{2}(2x+2)+1$, so the integrand is $\frac{1}{2}\cdot\frac{2x+2}{x^2+2x+2}+\frac{1}{(x+1)^2+1}$, and the answer is $\frac{1}{2}\ln(x^2+2x+2)+\arctan(x+1)+C$.
+
+**(3)** Cover $x+1$ and put $x=-1$: $\frac{-3+1}{-1-3}=\frac{1}{2}$. Cover $x-3$ and put $x=3$: $\frac{9+1}{3+1}=\frac{5}{2}$. So the integrand is $\frac{1/2}{x+1}+\frac{5/2}{x-3}$, and the answer is $\frac{1}{2}\ln|x+1|+\frac{5}{2}\ln|x-3|+C$.` },
+    { src: 'Shortcuts: the DI table and the King’s rule', added: NOV10,
+      stem: R`Use the DI table for (1) and (2), and the King's rule for (3).`,
+      parts: [R`$\displaystyle\int x^3e^x\,dx$`, R`$\displaystyle\int x^2\sin x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\frac{\sqrt{\sin x}}{\sqrt{\sin x}+\sqrt{\cos x}}\,dx$`],
+      hint: R`(1) and (2): differentiate the polynomial down to $0$, and mind the signs of the I column for $\sin x$. (3) Replace $x$ by $\frac{\pi}{2}-x$ and add the two integrals.`,
+      answer: [R`(1) $e^x(x^3-3x^2+6x-6)+C$`, R`(2) $-x^2\cos x+2x\sin x+2\cos x+C$`, R`(3) $\frac{\pi}{4}$`],
+      sol: R`
+**(1)** D: $x^3$, $3x^2$, $6x$, $6$, $0$. I: $e^x$ on every row. With the signs $+,-,+,-$: $x^3e^x-3x^2e^x+6xe^x-6e^x+C=e^x(x^3-3x^2+6x-6)+C$.
+
+**(2)** D: $x^2$, $2x$, $2$, $0$. I: $\sin x$, $-\cos x$, $-\sin x$, $\cos x$. With the signs $+,-,+$: $x^2(-\cos x)-2x(-\sin x)+2\cos x+C=-x^2\cos x+2x\sin x+2\cos x+C$.
+
+**(3)** With $x\to\frac{\pi}{2}-x$, $\sin x$ and $\cos x$ swap, so the same integral $I$ has $\sqrt{\cos x}$ on top. Adding the two, the tops make the bottom: $2I=\int_0^{\pi/2}dx=\frac{\pi}{2}$, so $I=\frac{\pi}{4}$.` },
   ],
 };
