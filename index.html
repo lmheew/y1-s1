@@ -67,6 +67,11 @@
   :where(a, button):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
   svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
+  /* iOS and iPadOS 26+ blur the page under the Home Screen app's status bar unless a fixed, full-width box more than
+     10 px tall sits at the top edge. This strip paints nothing, and the system fills the status bar with its colour. */
+  .sb-edge { position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 2147483647; pointer-events: none;
+    background-color: var(--surface); -webkit-background-clip: text; background-clip: text; }
+  @media print { .sb-edge { display: none; } }
   .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
   .appbar-row { display: flex; align-items: center; height: 60px; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); text-decoration: none; }
@@ -185,6 +190,7 @@
 </style>
 </head>
 <body>
+<div class="sb-edge" aria-hidden="true"></div>
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="./" aria-label="Study Notes, home">
     <img src="logo.png" width="36" height="36" alt="">

@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="assets/physics.css?v=704466e63c">
+<link rel="stylesheet" href="assets/physics.css?v=500ca17b1d">
 <style>
 /* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
@@ -58,6 +58,7 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 <script src="../src/shared/totop.js" defer></script>
 </head>
 <body class="picker">
+<div class="sb-edge" aria-hidden="true"></div>
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="./" aria-label="EP1 Review, all exams"><svg class="badge" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="b-bg"/><path d="M8.5 6.5h15" class="b-curve b-ceil"/><path d="M16 6.5L21.2 19.2" class="b-curve b-string"/><path d="M9 20.5Q16 27 23 20.5" class="b-tan b-arc"/><circle cx="21.9" cy="21" r="3.3" class="b-dot"/></svg><span class="brand-text"><b>EP1 Review</b><small>Engineering Physics 1</small></span></a>
   <div class="appbar-actions"><a class="icon-btn subj-btn" href="../math/" aria-label="Switch to Math (CLA1)" title="Switch to Math (CLA1)"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></a></div>

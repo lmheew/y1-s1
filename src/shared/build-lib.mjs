@@ -263,6 +263,9 @@ export async function openBox(key, box) {
   return JSON.parse(zlib.gunzipSync(Buffer.from(pt)).toString('utf8'));
 }
 
+// first in every page's body: the strip iOS takes the status bar's colour from (.sb-edge in page.css)
+export const SB_EDGE = '<div class="sb-edge" aria-hidden="true"></div>';
+
 export const PICKER_CSS = `
 /* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }

@@ -50,6 +50,15 @@
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 8px); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+/* iOS and iPadOS 26+ blur the page under the status bar of the Home Screen app unless they find a fixed, full-width box
+   more than 10 px tall at the top edge (a real element: a ::before isn't found, and the safe-area inset there is 0). This
+   strip is that box. It paints nothing (its background is clipped to text it doesn't have), and the system fills the
+   status bar with its colour: the app bar's, or on wide screens the tab bar's once that sticks to the top (page.js). */
+.sb-edge { position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 2147483647; pointer-events: none;
+  background-color: var(--surface); -webkit-background-clip: text; background-clip: text; }
+.sb-edge.on-bar { background-color: var(--bar); }
+body.noscroll .sb-edge { background-color: var(--bg); } /* the search sheet is open */
+@media print { .sb-edge { display: none; } }
 body.noscroll { overflow: hidden; }
 .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 p { margin: 0; }

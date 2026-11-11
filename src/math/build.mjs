@@ -33,7 +33,7 @@ import * as INTX from './integrals/extras.mjs';
 import * as INTF from './integrals/followups.mjs';
 import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
-  THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, KATEX_DIR } from '../shared/build-lib.mjs';
+  THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, KATEX_DIR } from '../shared/build-lib.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
@@ -718,6 +718,7 @@ ${PRELOAD.map((f) => `<link rel="preload" href="../assets/fonts/${f}.woff2" as="
 <link rel="stylesheet" href="../assets/${a.css}">
 </head>
 <body data-page="${esc(JSON.stringify({ name: P.name, ...(P.conf || {}) }))}">
+${SB_EDGE}
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
 ${foot(true, P.updated)}
 ${indexScript(r.INDEX)}
@@ -789,6 +790,7 @@ ${FONT_LINKS}
 <script src="../src/shared/totop.js" defer></script>
 </head>
 <body class="picker">
+${SB_EDGE}
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="./" aria-label="CLA1 Review, all exams">${BADGE}<span class="brand-text"><b>CLA1 Review</b><small>Calculus &amp; Linear Algebra 1</small></span></a>
   <div class="appbar-actions">${subjectSwitch('physics', '../physics/')}</div>

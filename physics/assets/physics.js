@@ -52,6 +52,21 @@
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY = 86400000;
 
+  // ----- the Home Screen app's status bar (iOS 26+) takes its colour from the strip at the top (.sb-edge, page.css):
+  // the app bar's, or on wide screens the tab bar's once that has stuck to the top -----
+  const sbEdge = $('.sb-edge'), sbTabbar = $('.tabbar');
+  const sbWide = window.matchMedia ? window.matchMedia('(min-width: 860px)') : null;
+  let sbQueued = false;
+  const paintEdge = () => {
+    sbQueued = false;
+    sbEdge.classList.toggle('on-bar', Boolean(sbTabbar && sbWide && sbWide.matches && sbTabbar.getBoundingClientRect().top < 1));
+  };
+  if (sbEdge) {
+    window.addEventListener('scroll', () => { if (!sbQueued) { sbQueued = true; requestAnimationFrame(paintEdge); } }, { passive: true });
+    window.addEventListener('resize', paintEdge);
+    paintEdge();
+  }
+
   // ----- theme: system follows the device (or the host's choice); light/dark override it. On the site a script in
   // the page's head has already set the saved light/dark choice (data-theme-early), so that one isn't a host's. -----
   const hostTheme = root.hasAttribute('data-theme-early') ? null : root.getAttribute('data-theme');

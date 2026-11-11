@@ -896,6 +896,42 @@ with sync_playwright() as p:
     check('offline: the home page keeps its back-to-top button', pg.evaluate("(() => { const b = document.querySelector('.totop'); return Boolean(b) && getComputedStyle(b).position === 'fixed'; })()"))
     ctx.set_offline(False)
     ctx.close()
+
+    # The status-bar strip: iOS and iPadOS 26+ blur the page under the Home Screen app's status bar unless a fixed,
+    # full-width box more than 10 px tall sits at the top edge. Every page starts with one (.sb-edge) that paints nothing
+    # and has the colour of the bar at the top: the app bar's, or on wide exam pages the tab bar's once that has stuck.
+    EDGE = """(() => { const e = document.body.firstElementChild, c = getComputedStyle(e), r = e.getBoundingClientRect();
+      return { cls: e.className, pos: c.position, top: r.top, w: r.width, vw: document.documentElement.clientWidth, h: r.height,
+        z: c.zIndex, pe: c.pointerEvents, bg: c.backgroundColor, clip: c.backgroundClip || c.webkitBackgroundClip }; })()"""
+    bg_of = "s => getComputedStyle(document.querySelector(s)).backgroundColor"
+    for label, vp in (('iPad', {'width': 1180, 'height': 820}), ('phone', {'width': 390, 'height': 844})):
+        ctx = b.new_context(viewport=vp)
+        ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+        pg = ctx.new_page()
+        for path in ('/', '/404.html', '/math/', '/physics/', '/math/derivatives/', '/math/integrals/', '/physics/midterm/'):
+            pg.goto(BASE + path)
+            pg.wait_for_load_state('load')
+            e = pg.evaluate(EDGE)
+            check(f'{label} {path}: starts with the status-bar strip: fixed, full width, 12 px, topmost, tap-through, a colour that paints nothing',
+                  e['cls'] == 'sb-edge' and e['pos'] == 'fixed' and e['top'] == 0 and abs(e['w'] - e['vw']) < 1 and e['h'] == 12
+                  and e['z'] == '2147483647' and e['pe'] == 'none' and e['bg'].startswith('rgb(') and e['clip'] == 'text', e)
+            if path.count('/') == 3:  # an exam page
+                pg.evaluate("window.scrollTo(0, 300)")
+                pg.wait_for_timeout(250)
+                area = {'x': 0, 'y': 0, 'width': vp['width'], 'height': 30}
+                shown = pg.screenshot(clip=area, animations='disabled')
+                pg.evaluate("document.querySelector('.sb-edge').style.display = 'none'")
+                gone = pg.screenshot(clip=area, animations='disabled')
+                pg.evaluate("document.querySelector('.sb-edge').style.display = ''")
+                check(f'{label} {path}: the strip changes nothing on screen', shown == gone)
+                pg.evaluate("window.scrollTo(0, 900)")
+                pg.wait_for_timeout(250)
+                bar = '.tabbar' if label == 'iPad' else '.appbar'
+                check(f'{label} {path}: scrolled, the strip has the colour of the bar at the top ({bar[1:]})', pg.evaluate(EDGE)['bg'] == pg.evaluate(bg_of, bar))
+                pg.evaluate("window.scrollTo(0, 0)")
+                pg.wait_for_timeout(250)
+                check(f'{label} {path}: at the top it has the app bar colour', pg.evaluate(EDGE)['bg'] == pg.evaluate(bg_of, '.appbar'))
+        ctx.close()
     b.close()
 srv.shutdown()
 srv2.shutdown()

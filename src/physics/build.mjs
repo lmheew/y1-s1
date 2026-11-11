@@ -20,7 +20,7 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { fmtDate, esc, tex, inline, items, blocks, plain, entry, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
   indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged, THEME_EARLY, HEAD_COMMON, ogTags, unb64, normalize, readJSON, deriveKey,
-  sealBox, openBox, PICKER_CSS, PICKER_JS, ring, MARU } from '../shared/build-lib.mjs';
+  sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, ring, MARU } from '../shared/build-lib.mjs';
 import { TAB_ICONS, UI_ICONS, subjectSwitch } from '../shared/icons.mjs';
 import { chapters, EXAMS, BADGE, CH_ICONS, EXAM_ICONS } from './content.mjs';
 import { sets } from './quizzes.mjs';
@@ -612,6 +612,7 @@ ${PRELOAD.map((f) => `<link rel="preload" href="../../math/assets/fonts/${f}.wof
 <link rel="stylesheet" href="../assets/${a.css}">
 </head>
 <body data-page="${esc(JSON.stringify(PAGE_CONF))}">
+${SB_EDGE}
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
 ${foot()}
 ${indexScript(r.INDEX)}
@@ -667,6 +668,7 @@ ${FONT_LINKS}
 <script src="../src/shared/totop.js" defer></script>
 </head>
 <body class="picker">
+${SB_EDGE}
 <header class="appbar"><div class="wrap appbar-row">
   <a class="brand" href="./" aria-label="EP1 Review, all exams">${BADGE}<span class="brand-text"><b>EP1 Review</b><small>Engineering Physics 1</small></span></a>
   <div class="appbar-actions">${subjectSwitch('math', '../math/')}</div>
