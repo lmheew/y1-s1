@@ -6,7 +6,7 @@ Unofficial study notes for KUAS engineering courses (Calculus &amp; Linear Algeb
 | Subject | Page | Status |
 | --- | --- | --- |
 | Calculus & Linear Algebra 1 (CLA1) | [/math/](https://lmheew.github.io/y1-s1/math/) | One page per exam. Calculus midterm 1 (derivatives): Summary, Practice, Formulas, Quizzes, Exams. Calculus midterm 2 (integrals): the lesson schedule, with Summary, Practice and Formulas added after each class. Linear Algebra: coming soon |
-| Engineering Physics 1 (EP1) | [/physics/](https://lmheew.github.io/y1-s1/physics/) | One page per exam. Midterm (Chapters 1–8): Summary (every module, each with a worked example), Practice (103 problems in three tiers, with practice sessions), Formulas (every formula of the eight chapters, plus extras), Quizzes (the exercise-day sheets and three practice sets, with worked answers), Exams (three mock midterms) and a night-before sheet |
+| Engineering Physics 1 (EP1) | [/physics/](https://lmheew.github.io/y1-s1/physics/) | One page per exam. Midterm (Chapters 1–8): Summary (every module, each with a worked example), Practice (103 problems in three tiers, with practice sessions), Formulas (every formula of the eight chapters, plus extras), Quizzes (the exercise-day sheets and three practice sets, with worked answers), Exams (three mock midterms, and the 2021 and 2022 midterm papers with worked answers, locked) and a night-before sheet |
 
 ## What's in the repository
 

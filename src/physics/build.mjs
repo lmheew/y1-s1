@@ -162,15 +162,18 @@ function formulaRow(id, [name, t, s, note], where, keys, index) {
 const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right. The real paper doesn’t give points; here every problem counts 10.';
 const sumPts = (q) => q.pts.reduce((a, b) => a + b, 0);
 const word = (n) => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
-function mockQuestion(m, q, qi, index) {
+// A problem of a mock or a past paper. Parts are labelled 1-1, 1-2 … unless `labels` gives the paper's own ((a), 1-1a);
+// an empty label is a problem that is one question.
+function mockQuestion(m, q, qi, index, keys = 'mock midterm exam practice test') {
   const id = `${m.id}-p${q.no}`;
-  const labels = q.parts.map((_, i) => `${q.no}-${i + 1}`);
-  if (q.answer.length !== q.parts.length || q.pts.length !== q.parts.length) throw new Error(`${id}: parts, points and answers don't match`);
+  const labels = q.labels || q.parts.map((_, i) => `${q.no}-${i + 1}`);
+  if (q.answer.length !== q.parts.length || q.pts.length !== q.parts.length || labels.length !== q.parts.length) throw new Error(`${id}: parts, labels, points and answers don't match`);
   index.push(entry('Exams', 'exams', id, `${m.title} · Problem ${q.no} — ${q.topic}`, plainP([q.stem || '', ...q.parts].join(' ')),
-    plainP(q.answer.join(' ')) + ' mock midterm exam practice test'));
-  const parts = `<ol class="parts">${q.parts.map((t, i) => `<li><span class="pn">${esc(labels[i])}</span><span class="pt">${inline(`${t} (${q.pts[i]}pt)`)}</span></li>`).join('')}</ol>`;
-  const ans = `<div class="answer"><span class="lbl">Answer</span><ul>${q.answer.map((a, i) => `<li><b class="al">${esc(labels[i])}</b><span>${inline(a)}</span></li>`).join('')}</ul></div>`;
-  const marks = q.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">${esc(labels[pi])} · ${p} pt</button>`).join('');
+    plainP(q.answer.join(' ')) + ' ' + keys));
+  const long = labels.some((l) => l.length > 4);
+  const parts = `<ol class="parts${long ? ' long' : ''}">${q.parts.map((t, i) => (labels[i] ? `<li><span class="pn">${esc(labels[i])}</span>` : '<li class="solo">') + `<span class="pt">${inline(`${t} (${q.pts[i]}pt)`)}</span></li>`).join('')}</ol>`;
+  const ans = `<div class="answer"><span class="lbl">Answer</span><ul>${q.answer.map((a, i) => (labels[i] ? `<li><b class="al">${esc(labels[i])}</b>` : '<li class="solo">') + `<span>${inline(a)}</span></li>`).join('')}</ul></div>`;
+  const marks = q.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">${labels[pi] ? esc(labels[pi]) + ' · ' : ''}${p} pt</button>`).join('');
   return `
     <div class="rq prq" id="${id}">
       <div class="rq-head"><b class="ql">Problem ${esc(q.no)}</b><span class="qtopic-wrap"><span class="qtopic">${esc(q.topic)}</span></span><span class="pts">${sumPts(q)} pt</span></div>
@@ -195,6 +198,32 @@ function mockSheet(m, mi, index) {
   </article>`;
 }
 
+// A past midterm paper (private/past.mjs): timed, printed and marked like a mock, locked like the exercise days.
+const PAST_FOCUS = 'A real midterm paper, retyped, with worked answers added. The paper gives no time limit or points, so the timer and the points here are estimates: every problem counts 10. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.';
+const PAST_KEYS = 'past midterm exam previous year real paper';
+const pastPoints = (p) => p.qs.reduce((t, q) => t + sumPts(q), 0);
+function pastSheet(p, seg, visible, index) {
+  const points = pastPoints(p);
+  return `
+  <article class="sheet mock" id="${p.id}" data-seg="${seg}" data-mock="${p.id}" data-total="${points}"${visible ? '' : ' hidden'}${addedAttr(p)}>
+    <header class="sheet-head">
+      <div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${meta([...p.sub.split(' · '), `${p.qs.length} problems`, `${p.minutes} min`, `${points} pt`])}</p></div>
+      ${timerHTML(p.minutes * 60)}
+    </header>
+    <p class="print-only print-score">Score: <span class="blank"></span> / ${points} pt</p>
+    <p class="focus">${p.focus ? inline(p.focus) : PAST_FOCUS}</p>
+    ${printTools}
+    ${p.qs.map((q, qi) => mockQuestion(p, q, qi, index, PAST_KEYS)).join('')}
+    <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
+  </article>`;
+}
+const pastMeta = (p) => ({ id: p.id, seg: p.seg, title: p.title, sub: p.sub, n: p.qs.length, minutes: p.minutes, points: pastPoints(p), added: p.added || '' });
+const pastLockPanel = (x, seg, visible) => `
+  <article class="sheet lock" id="${x.id}" data-seg="${seg}"${visible ? '' : ' hidden'}${addedAttr(x)}>
+    <header class="sheet-head"><div><h3 class="sheet-title">${esc(x.title)}</h3><p class="sheet-sub">${meta([...x.sub.split(' · '), `${x.n} problems`, `${x.minutes} min`, `${x.points} pt`])}</p></div></header>
+    ${unlockForm(x.id, 'The past midterms are locked, with the same password as the exercise sheets. The mock midterms above are open to everyone.')}
+  </article>`;
+
 // what the page shows of a locked sheet: its title and a password panel (also kept readable in locked.json)
 const sheetMeta = (sh) => ({ id: sh.id, seg: sh.seg, title: sh.title, sub: sh.sub, n: sh.problems.length, added: sh.added || '' });
 const lockPanel = (x, seg, visible) => `
@@ -205,8 +234,9 @@ const lockPanel = (x, seg, visible) => `
 
 // ---------- the midterm page ----------
 // exercises: the exercise days (src/physics/private/exercises.mjs), or null when they aren't available, in which case
-// exList (from locked.json) says what to draw password panels for. locked: true for the site.
-function render({ exercises, locked, exList }) {
+// exList (from locked.json) says what to draw password panels for; past and pastLocked the same for the past midterms
+// (src/physics/private/past.mjs). locked: true for the site.
+function render({ exercises, past = null, locked, exList, pastLocked = [] }) {
   const INDEX = [], PRIV = [], sheets = {};
 
   // Summary: a tile per chapter; for each chapter, every module's key ideas and worked example, then "Watch out"
@@ -368,8 +398,26 @@ ${practiceHTML}
 </section>
 ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The exercise sheets are open in this browser.</span></div>' : ''}`;
 
-  // Exams: upcoming exams (site.json; page.js counts down) and the mock midterms, timed and marked like Math's
+  // Exams: upcoming exams (site.json; page.js counts down) and the mock midterms, timed and marked like Math's, then the
+  // past midterms, locked like the exercise days
   const mockSheets = mocks.map((m, mi) => mockSheet(m, mi, INDEX)).join('');
+  const pList = past ? past.map(pastMeta) : pastLocked;
+  let pastSheets = '';
+  pList.forEach((x, i) => {
+    const full = past && past.find((p) => p.id === x.id);
+    if (full) {
+      const html = pastSheet(full, String(i), i === 0, locked ? PRIV : INDEX);
+      if (locked) { sheets[x.id] = html.trim(); pastSheets += pastLockPanel(x, String(i), i === 0); } else pastSheets += html;
+    } else pastSheets += pastLockPanel(x, String(i), i === 0);
+  });
+  const pastMark = locked && pList.length ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : '';
+  const pastHTML = pList.length ? `
+    <section class="qgroup mockgroup" id="past">
+      <header class="qg-head"><p class="kicker">Real papers, retyped with worked answers</p><h2>Past midterms</h2></header>
+      <div class="seg" role="tablist" aria-label="Past midterms">${pList.map((x, i) =>
+    `<button type="button" class="seg-btn" role="tab" data-seg="${i}" aria-controls="${x.id}" aria-selected="${i === 0}">${esc(x.seg)}${pastMark}<span class="seg-score"></span></button>`).join('')}</div>
+      ${pastSheets}
+    </section>` : '';
   const upcomingHTML = SITE.exams.filter((x) => x.subject === 'physics').map((x) => `
       <li class="up-item" data-date="${esc(x.date || '')}" data-time="${esc(x.time || '')}">
         <span class="up-cal" aria-hidden="true">${UI_ICONS.calendar}</span>
@@ -387,12 +435,12 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
       <div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">${esc(m.seg)}<span class="seg-score"></span></button>`).join('')}</div>
       ${mockSheets}
-    </section>`;
+    </section>${pastHTML}`;
 
   const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
   const newest = (dates) => dates.filter(Boolean).sort().pop() || '';
   const NEWEST = { summary: SUMMARY_ADDED, practice: PRACTICE_ADDED, formulas: FORMULAS_ADDED,
-    quizzes: newest([...sets.map((s) => s.added), ...list.map((x) => x.added)]), exams: MOCKS_ADDED };
+    quizzes: newest([...sets.map((s) => s.added), ...list.map((x) => x.added)]), exams: newest([MOCKS_ADDED, ...pList.map((x) => x.added)]) };
   const formulasTab = `
 <div class="testbar">
   <button type="button" class="pill" id="test-btn" aria-pressed="false">${UI_ICONS.eye}<span>Test me</span></button>
@@ -463,7 +511,7 @@ ${chapters.map((c) => {
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, and ${mocks.length === 3 ? 'three' : mocks.length} mock midterms in the exam’s format: <span class="nw">six problems</span> in <span class="nw">60 minutes</span>. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', `Upcoming exams with a countdown, ${pList.length ? '' : 'and '}${word(mocks.length)} mock midterms in the exam’s format (<span class="nw">six problems</span> in <span class="nw">60 minutes</span>)${pList.length ? `, and ${word(pList.length)} past midterms${locked ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 
@@ -474,7 +522,7 @@ ${chapters.map((c) => {
 </main>
 ${lazyScripts}
 `;
-  return { body, INDEX, PRIV, sheets, exList: list, hasLocks: locked && list.length > 0, nSets, nEx, nFormulas, nPractice, nMocks: mocks.length };
+  return { body, INDEX, PRIV, sheets, exList: list, pastList: pList, hasLocks: locked && (list.length > 0 || pList.length > 0), nSets, nEx, nPast: pList.length, nFormulas, nPractice, nMocks: mocks.length };
 }
 
 function foot() {
@@ -572,15 +620,21 @@ async function buildSite(pw = PASSWORD) {
   else if (readPrivateDir()) console.warn('note: src/physics/private/ exists but SITE_PASSWORD is not set, so the locked exercise sheets were not rebuilt.');
   const exercises = ring ? await loadPrivate(pw, 'exercises.mjs', 'exercises') : null;
   if (ring && !exercises) fail('the exercise sheets are missing: src/physics/private/exercises.mjs (or the sealed copy).');
+  const past = ring ? await loadPrivate(pw, 'past.mjs', 'past') : null;
   let box = readJSON(LOCKED);
-  const r = render({ exercises, locked: true, exList: box ? box.ex : [] });
+  const r = render({ exercises, past, locked: true, exList: box ? box.ex : [], pastLocked: (box && box.past) || [] });
   if (exercises) {
     const payload = { sheets: r.sheets, index: r.PRIV };
     let same = false;
-    if (sameSalt(box, ring)) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.ex) === JSON.stringify(r.exList); } catch { same = false; } }
+    if (sameSalt(box, ring)) {
+      try {
+        same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.ex) === JSON.stringify(r.exList)
+          && JSON.stringify(box.past || []) === JSON.stringify(r.pastList);
+      } catch { same = false; }
+    }
     if (!same) {
-      // `ex` (titles and sizes) stays readable, so a build without the password can still draw the panels
-      box = await sealBox(ring, payload, { ex: r.exList });
+      // `ex` and `past` (titles and sizes) stay readable, so a build without the password can still draw the panels
+      box = await sealBox(ring, payload, { ex: r.exList, ...(r.pastList.length ? { past: r.pastList } : {}) });
       fs.mkdirSync(PAGE_DIR, { recursive: true });
       fs.writeFileSync(LOCKED, JSON.stringify(box) + '\n');
       console.log('wrote', rel(LOCKED), (fs.statSync(LOCKED).size / 1024).toFixed(0) + ' KB · private search entries:', r.PRIV.length);
@@ -597,7 +651,7 @@ async function buildSite(pw = PASSWORD) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EP1 Midterm Review</title>
-<meta name="description" content="Review for the Engineering Physics 1 midterm (Chapters 1–8): a summary of every module with worked examples, practice problems in three tiers, the formulas, the exercise-day sheets and practice sets with worked answers, and mock midterms.">
+<meta name="description" content="Review for the Engineering Physics 1 midterm (Chapters 1–8): a summary of every module with worked examples, practice problems in three tiers, the formulas, the exercise-day sheets and practice sets with worked answers, mock midterms and past midterms.">
 ${ogTags({
     title: 'EP1 Review · Physics midterm (Chapters 1–8)',
     description: 'Unofficial review notes for the Engineering Physics 1 midterm: module summaries with worked examples, practice problems, formulas, quiz sheets and mock midterms.',
@@ -622,7 +676,7 @@ ${indexScript(r.INDEX)}
 `;
   writeIfChanged(path.join(PAGE_DIR, 'index.html'), html);
   console.log('wrote', rel(path.join(PAGE_DIR, 'index.html')), (html.length / 1024).toFixed(0) + ' KB · public index entries:', r.INDEX.length,
-    '· exercise days:', r.nEx, r.hasLocks ? '(locked)' : '', '· practice sets:', r.nSets);
+    '· exercise days:', r.nEx, '· past midterms:', r.nPast, r.hasLocks ? '(locked)' : '', '· practice sets:', r.nSets);
   const picker = pickerHTML(a, r);
   writeIfChanged(path.join(PHYS, 'index.html'), picker);
   console.log('wrote', rel(path.join(PHYS, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
@@ -638,7 +692,7 @@ function pickerHTML(a, r) {
     if ((ex.page || null) !== page) fail(`site.json: "${x.exam}" needs "page": ${JSON.stringify(page)}, like the picker's card`);
     const day = ex.date ? new Date(`${ex.date}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (ex.time ? ' · ' + ex.time : '') : 'Date to be announced';
     const when = `<span class="e-when"${ex.date ? ` data-date="${esc(ex.date)}"` : ''}>${UI_ICONS.calendar}<span class="nw">${esc(day)}</span><span class="e-left" aria-live="off"></span></span>`;
-    const stats = x.page ? `<p class="e-stats">${meta([`${chapters.length} chapters`, `${r.nPractice} practice problems`, `${r.nFormulas} formulas`, `${r.nEx} exercise days`, `${r.nSets} practice sets`, `${r.nMocks} mocks`])}</p>` : '';
+    const stats = x.page ? `<p class="e-stats">${meta([`${chapters.length} chapters`, `${r.nPractice} practice problems`, `${r.nFormulas} formulas`, `${r.nEx} exercise days`, `${r.nSets} practice sets`, `${r.nMocks} mocks`, r.nPast ? `${r.nPast} past midterms` : ''].filter(Boolean))}</p>` : '';
     const inner = `${EXAM_ICONS[x.id]}<span class="e-head"><span class="kicker">${esc(x.kicker)}</span><span class="e-title">${esc(x.title)}</span></span>
       <p class="e-text">${esc(x.text)}</p>${stats}
       <span class="e-foot">${when}${x.page ? `<span class="pill">Open${UI_ICONS.arrow}</span>` : '<span class="e-soon">Coming soon</span>'}</span>`;
@@ -720,7 +774,7 @@ async function rekey() {
     if (!box) continue;
     let data;
     try { data = await openBox(await deriveKey(PASSWORD, unb64(box.salt), box.iter), box); } catch { fail(`the old password does not open ${rel(f)}.`); }
-    const extra = f === LOCKED ? { ex: box.ex } : {};
+    const extra = f === LOCKED ? { ex: box.ex, ...(box.past ? { past: box.past } : {}) } : {};
     fs.writeFileSync(f, JSON.stringify(await sealBox(ring, data, extra)) + '\n');
   }
   console.log('re-encrypted the Physics files with the new password.');

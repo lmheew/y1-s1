@@ -511,6 +511,9 @@ with sync_playwright() as p:
         check(f'{label}: Physics Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
         shot(page, f'{label}-physics-mock')
         q.locator('.mk').first.click()
+        check(f'{label}: Physics Exams has the two past midterms, locked',
+              [x.inner_text() for x in page.locator('#past .seg-btn').all()] == ['2022', '2021'] and page.locator('#past .sheet.lock').count() == 2
+              and page.locator('#past .rq').count() == 0)
         check(f'{label}: no Physics tab has a placeholder left', page.locator('.soon-box').count() == 0)
         check(f'{label}: Physics Exams lists the midterm on 13 Nov', 'Physics midterm' in page.locator('#view-exams .up-list').inner_text()
               and page.locator('#view-exams .up-item[data-date="2026-11-13"]').count() == 1)
@@ -561,6 +564,24 @@ with sync_playwright() as p:
             check(f'{label}: unlocked Physics has no sideways scroll', overflow(page) <= 0, overflow(page))
             shot(page, f'{label}-physics-unlocked')
             check(f'{label}: Physics search finds the exercise days after unlocking', any(t.startswith('Exercise Day') for t in search(page, 'Lorentz')))
+            page.click('#tab-exams')
+            page.wait_for_selector('#pp22 .rq')
+            check(f'{label}: the password opens the past midterms: 2022 with six problems (60 pt), 2021 with five',
+                  page.locator('#past .sheet.lock').count() == 0 and page.locator('#pp22 .rq').count() == 6 and page.locator('#pp21 .rq').count() == 5
+                  and page.locator('#pp22').get_attribute('data-total') == '60' and page.locator('#pp22 .timer').count() == 1)
+            page.locator('#past .seg-btn[data-seg="1"]').click()
+            check(f'{label}: the switcher opens the 2021 paper', page.locator('#pp21').is_visible() and not page.locator('#pp22').is_visible())
+            q = page.locator('#pp21-p1')
+            q.scroll_into_view_if_needed()
+            q.locator('details.sol > summary').click()
+            q.locator('.step-all').click()
+            q.locator('.mk').first.click()
+            check(f'{label}: a past paper scores like a mock', page.locator('#pp21 .score-val').inner_text() == '2'
+                  and '2/50' in page.locator('#past .seg-btn[data-seg="1"] .seg-score').inner_text())
+            check(f'{label}: its answers draw their figures', q.locator('.steps svg.pfig').count() == 4)
+            q.locator('.mk').first.click()
+            check(f'{label}: the unlocked Exams tab has no sideways scroll', overflow(page) <= 0, overflow(page))
+            check(f'{label}: Physics search finds the past midterms after unlocking', any(t.startswith('Midterm 2022') for t in search(page, 'Midterm 2022')))
             if label == 'phone':
                 other = ctx.new_page()
                 other.goto(BASE + '/math/derivatives/#quizzes')

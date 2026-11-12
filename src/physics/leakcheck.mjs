@@ -1,5 +1,5 @@
 // Safety net for the public site, like src/math/leakcheck.mjs: fails if a formula, sentence, figure or problem id that
-// exists only in the private exercise-day sheets appears on a public Physics page (physics/index.html and the exam
+// exists only in the private exercise-day sheets or past midterms appears on a public Physics page (physics/index.html and the exam
 // pages, physics/<exam>/index.html, with their lazy tabs and search index). Wording the public sources (practice sets,
 // summary, formulas) share on purpose is not counted. Needs the private sources: run `node src/physics/build.mjs open` first.
 //   node src/physics/leakcheck.mjs
@@ -13,6 +13,8 @@ const ROOT = path.resolve(SRC, '..', '..');
 const file = path.join(SRC, 'private', 'exercises.mjs');
 if (!fs.existsSync(file)) { console.error('error: src/physics/private/exercises.mjs is missing; run `node src/physics/build.mjs open` first.'); process.exit(1); }
 const { exercises } = await import(pathToFileURL(file).href);
+const pastFile = path.join(SRC, 'private', 'past.mjs');
+const past = fs.existsSync(pastFile) ? (await import(pathToFileURL(pastFile).href)).past : [];
 const PHYS = path.join(ROOT, 'physics');
 const exams = fs.readdirSync(PHYS, { withFileTypes: true }).filter((d) => d.isDirectory() && fs.existsSync(path.join(PHYS, d.name, 'index.html')))
   .map((d) => path.join('physics', d.name, 'index.html'));
@@ -29,7 +31,7 @@ for (const f of [path.join('physics', 'index.html'), ...exams]) {
 const shared = ['quizzes.mjs', 'summary.mjs', 'formulas.mjs', 'content.mjs', 'build.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 let leaks = 0, checked = 0;
-const probs = exercises.flatMap((x) => x.problems);
+const probs = [...exercises.flatMap((x) => x.problems), ...past.flatMap((p) => p.qs)];
 const figIds = new Set();
 for (const p of probs) {
   const src = [p.stem || '', ...p.parts, ...p.answer, p.sol].join('\n');
@@ -55,6 +57,6 @@ for (const id of figIds) {
   checked++;
   if (FIGS[id] && pub.includes(FIGS[id].svg)) { leaks++; console.log('figure in the public page:', id); }
 }
-const ids = (pub.match(/id="ex\d+-p[\w-]+"/g) || []).length + (index.match(/"id":"ex\d+-p[\w-]+"/g) || []).length;
-console.log(`checked ${checked} private formulas, sentences and figures (${exercises.length} exercise days) against ${exams.length + 1} pages: ${leaks} in public; private problem ids: ${ids}`);
+const ids = (pub.match(/id="(?:ex|pp)\d+-p[\w-]+"/g) || []).length + (index.match(/"id":"(?:ex|pp)\d+-p[\w-]+"/g) || []).length;
+console.log(`checked ${checked} private formulas, sentences and figures (${exercises.length} exercise days, ${past.length} past midterms) against ${exams.length + 1} pages: ${leaks} in public; private problem ids: ${ids}`);
 process.exit(leaks || ids ? 1 : 0);

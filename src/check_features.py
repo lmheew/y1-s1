@@ -183,7 +183,6 @@ with sync_playwright() as p:
         check(f'{label}: math fonts load from the shared files', files['fonts'] >= 2, files)
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
         check(f'{label}: Exams tab shows a New dot', pg.evaluate("document.getElementById('tab-exams').classList.contains('has-new')"))
-        check(f'{label}: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7)
         tiles = pg.locator('.tiles .tile')
         check(f'{label}: Summary tiles follow the schedule: day, lesson name, then a small quiz line', tiles.count() == 8
               and 'continuous functions' in tiles.nth(0).inner_text().lower() and tiles.nth(0).locator('.tile-q').inner_text() == 'Quiz 01'
@@ -302,7 +301,6 @@ with sync_playwright() as p:
         check(f'{label}: mock 1 has six questions and 60 points', pg.locator('#m1 .rq').count() == 6 and '60 pt' in pg.locator('#m1 .sheet-sub').inner_text())
         check(f'{label}: past midterms are locked: three password panels (AY2022, AY2023, AY2026), no questions', pg.locator('#past .sheet.lock').count() == 3
               and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 3)
-        check(f'{label}: mock sheets show New labels', pg.locator('#m1 .sheet-title .new-pill').count() == 1)
         check(f'{label}: mock timer starts at 60:00', pg.locator('#m1 .time').inner_text() == '60:00')
         pg.locator('#m1 .t-go').click()
         pg.wait_for_timeout(1300)
@@ -368,8 +366,11 @@ with sync_playwright() as p:
     ctx.close()
 
     # ---- New labels only for what this device hasn't seen: a tab's dot goes when it opens, its labels at the next
-    # visit (a new browser tab here: same localStorage, fresh sessionStorage) ----
+    # visit (a new browser tab here: same localStorage, fresh sessionStorage). Labels last 14 days, so the pages see a
+    # fixed moment, noon on 11 Nov 2026, when every item counted below was new (Calculus midterm 1's lessons are from
+    # 29 Oct); the rest of the browser keeps the real time ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 11, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     dots = lambda page: page.evaluate("Array.from(document.querySelectorAll('.tab.has-new')).map((t) => t.dataset.view)")
@@ -383,6 +384,8 @@ with sync_playwright() as p:
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
     check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
+    check('new: first visit: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7,
+          pg.locator('#view-summary .gx-title .new-pill').count())
     pg.click('#tab-exams')
     check('new: opening a tab clears its dot, and its New labels stay for this visit', 'exams' not in dots(pg) and pg.locator('#m1 .sheet-title .new-pill').count() == 1, dots(pg))
     pg.reload()

@@ -43,6 +43,7 @@
 .prq .rq-head { margin-bottom: 6px; }
 .prq .parts li { grid-template-columns: 3.4em minmax(0, 1fr); }
 .prq .parts.long li { grid-template-columns: 4.1em minmax(0, 1fr); }
+.prq .parts li.solo { grid-template-columns: minmax(0, 1fr); } /* a problem that is one question */
 .prq .parts .pn { font-weight: 700; color: var(--green-text); }
 .prq .answer li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 8px; align-items: baseline; }
 .prq .answer .al { font-weight: 700; color: var(--green-text); font-size: 14px; }

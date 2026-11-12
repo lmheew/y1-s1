@@ -171,19 +171,21 @@ function tablePulley({ left = 'S', leftSub = '{M}', right = 'H', rightSub = '{m}
     { pts: [[0, -2], [2, -2]], c: 'ans' }, { pts: [[2, 0], [4, 0]], c: 'ans' }, { pts: [[4, 0.5], [6, 0.5]], c: 'ans' }] });
   def('d1-42a', 300, 230, 'Answer: acceleration against time, −2 from 0 to 2 s, 0 from 2 to 4 s, 0.5 from 4 to 6 s', 'Answer to 4-2: the a–t plot', g.s);
 }
-{ // the three pulls of Problem 5, seen from above, for 5-1 (Charles at 135°) with 5-2's direction dashed
+// the three pulls on the tire, seen from above: Charles at 135° for the first part, the second part's direction dashed
+function tirePulls(id, first, second) {
   const cx = 150, cy = 108;
   let s = circ(cx, cy, 13, 'body');
   s += arrowAt(cx + 13, cy, 92, 0, 'frc') + T(cx + 112, cy + 5, '{F_B}', { anchor: 'start', c: 'frc' });
   const [ax, ay] = at(cx, cy, 13, -150); s += arrowAt(ax, ay, 100, -150, 'frc');
   const [alx, aly] = at(cx, cy, 128, -150); s += T(alx - 4, aly + 14, '√2 {F}', { c: 'frc' });
   const [c1x, c1y] = at(cx, cy, 13, 135); s += arrowAt(c1x, c1y, 72, 135, 'frc');
-  const [l1x, l1y] = at(cx, cy, 98, 135); s += T(l1x, l1y, '{F} (5-1)', { c: 'frc' });
+  const [l1x, l1y] = at(cx, cy, 98, 135); s += T(l1x, l1y, `{F} (${first})`, { c: 'frc' });
   const [c2x, c2y] = at(cx, cy, 13, 45); s += arrowAt(c2x, c2y, 72, 45, 'soft', { c: 'dash' });
-  const [l2x, l2y] = at(cx, cy, 100, 45); s += T(l2x + 4, l2y, '{F} (5-2)', { c: 'ts' });
+  const [l2x, l2y] = at(cx, cy, 100, 45); s += T(l2x + 4, l2y, `{F} (${second})`, { c: 'ts' });
   s += line(cx - 120, cy, cx - 16, cy, 'thin dot') + arc(cx, cy, 34, -180, -150, '30°', { lr: 50 });
-  def('d1-5', 300, 210, 'Top view of the tire with the three pulls: Betty along +x, Alex √2F at 150° clockwise from it, Charles F at 135° (5-1) or 45° (5-2)', 'The pulls, seen from above', s);
+  def(id, 300, 210, `Top view of the tire with the three pulls: Betty along +x, Alex √2F at 150° clockwise from it, Charles F at 135° (${first}) or 45° (${second})`, 'The pulls, seen from above', s);
 }
+tirePulls('d1-5', '5-1', '5-2');
 { // Problem 6: a ball thrown at a target (d, h)
   const O = [40, 196], sx = 2.1, sy = 2.1, d = 100, hgt = 52;
   const X = (x) => O[0] + x * sx, Y = (y) => O[1] - y * sy;
@@ -356,6 +358,89 @@ again('d3-15', 'd2-6', 'Figure 15');
 again('d3-16', 'd2-8', 'Figure 16');
 again('d3-162', 'd2-82', 'Answer to 16-2: free-body diagram at B');
 again('d3-17', 'd2-9', 'Figure 17');
+
+// ===== Past midterms (private/past.mjs; like the exercise days' figures, they only travel in the locked file) =====
+// 2021, a proficiency check set as a report: Day 1's graphs and Day 2's mound under the paper's numbers, two x–t answers
+// and a sketch of the ring
+again('p21-11', 'd1-41', 'Figure 1-1');
+again('p21-12', 'd1-42', 'Figure 1-2');
+again('p21-11a', 'd1-41a', 'Answer to 1-1a: the v–t plot');
+again('p21-12a', 'd1-42a', 'Answer to 1-2a: the a–t plot');
+again('p21-5', 'd2-8', 'Figure for Problem 5');
+again('p21-52', 'd2-82', 'Answer to 5-2: free-body diagram at B');
+{
+  const x = (t) => (t <= 2 ? t * t / 2 : t <= 4 ? 2 + 2 * (t - 2) + 2 * (t - 2) ** 2 : 14 + 10 * (t - 4));
+  const pts = []; for (let i = 0; i <= 60; i++) pts.push([i / 10, x(i / 10)]);
+  const g = plot({ w: 300, h: 250, xr: [0, 6], yr: [0, 35], yt: 5, ylab: '{x} [m]', lines: [{ pts, c: 'ans' }],
+    dots: [[2, 2], [4, 14], [6, 34]], notes: [{ x: 2, y: 2, s: '(2, 2)', dx: -6, dy: -8, anchor: 'end' },
+      { x: 4, y: 14, s: '(4, 14)', dx: -8, dy: -4, anchor: 'end' }, { x: 6, y: 34, s: '(6, 34)', dx: -8, dy: 4, anchor: 'end' }] });
+  def('p21-11b', 300, 250, 'Answer: position against time, a curve bending upward from (0, 0) through (2, 2) to (4, 14), then a straight line up to (6, 34)', 'Answer to 1-1b: the x–t plot', g.s);
+}
+{
+  const x = (t) => (t <= 2 ? 5 * t - t * t : t <= 4 ? 6 + (t - 2) : 8 + (t - 4) + 0.25 * (t - 4) ** 2);
+  const pts = []; for (let i = 0; i <= 60; i++) pts.push([i / 10, x(i / 10)]);
+  const g = plot({ w: 300, h: 240, xr: [0, 6], yr: [0, 12], yt: 2, ylab: '{x} [m]', lines: [{ pts, c: 'ans' }],
+    dots: [[2, 6], [4, 8], [6, 11]], notes: [{ x: 2, y: 6, s: '(2, 6)', dx: 0, dy: -10 }, { x: 4, y: 8, s: '(4, 8)', dx: 0, dy: -10 },
+      { x: 6, y: 11, s: '(6, 11)', dx: -8, dy: 4, anchor: 'end' }] });
+  def('p21-12b', 300, 240, 'Answer: position against time, a curve bending downward from (0, 0) to (2, 6), a straight line to (4, 8), then a curve bending upward to (6, 11)', 'Answer to 1-2b: the x–t plot', g.s);
+}
+{ // 2021 2-2: the ring at (d, h) in a plane tilted at π/4, and a path that crosses it at right angles
+  const O = [40, 196], sc = 2.1, d = 100, hgt = 52;
+  const X = (x) => O[0] + x * sc, Y = (y) => O[1] - y * sc;
+  let s = arrow(O[0] - 10, O[1], 306, O[1], 'ink', { head: 8 }) + arrow(O[0], O[1] + 10, O[0], 14, 'ink', { head: 8 });
+  s += T(302, O[1] + 18, '{x}', { anchor: 'end' }) + T(O[0] - 10, 24, '{y}', { anchor: 'end' }) + T(O[0] - 8, O[1] + 16, 'O', { anchor: 'end', c: 'ts' });
+  const t2 = (d + 2 * hgt) / d, k = (d * t2 - hgt) / (d * d); // tan θ0 = (d + 2h)/d: the path reaches (d, h) at −45°
+  const pts = []; for (let x = 0; x <= d + 24; x += 2.5) pts.push([X(x), Y(x * t2 - k * x * x)]);
+  s += poly(pts, 'vel dash');
+  const cx = X(d), cy = Y(hgt);
+  s += line(...at(cx, cy, 50, 225), ...at(cx, cy, 50, 45), 'thin dash') + line(cx, cy, cx + 44, cy, 'thin dot');
+  s += arc(cx, cy, 30, 0, 45, '{π}/4', { lr: 46 });
+  s += `<ellipse class="ln" cx="${r1(cx)}" cy="${r1(cy)}" rx="15" ry="5" transform="rotate(-45 ${r1(cx)} ${r1(cy)})"/>`;
+  const [p1x, p1y] = at(cx, cy, 10, 45), [p2x, p2y] = at(p1x, p1y, 10, -45), [p3x, p3y] = at(cx, cy, 10, -45);
+  s += poly([[p1x, p1y], [p2x, p2y], [p3x, p3y]], 'thin');
+  s += arrowAt(cx, cy, 54, -45, 'vel') + (() => { const [vx, vy] = at(cx, cy, 64, -45); return T(vx + 4, vy + 6, '{v}', { anchor: 'start', c: 'vel' }); })();
+  s += T(cx, cy + 28, '({d}, {h})');
+  const th0 = Math.atan(t2) * 180 / Math.PI;
+  s += arrowAt(O[0], O[1], 54, th0, 'vel') + T(O[0] + 26, O[1] - 34, '{v_0}', { anchor: 'start', c: 'vel' }) + arc(O[0], O[1], 24, 0, th0, '{θ_0}', { lr: 38 });
+  def('p21-22', 320, 220, 'The ball thrown from the origin passes through a small ring at (d, h). The ring lies in a plane tilted at π/4 to the horizontal, and the ball crosses it at right angles, moving down and to the right at 45°', 'Sketch for 2-2', s);
+}
+
+// 2022: the tire's pulls labelled (a) and (b), body A on an incline pulled by body B, Day 2's mound and circle
+tirePulls('p22-1', 'a', 'b');
+again('p22-4', 'd2-8', 'Fig. 4');
+again('p22-42', 'd2-82', 'Answer to 4-2: free-body diagram at B');
+again('p22-6', 'd2-6', 'The set-up of the proof');
+{ // Fig. 3: body A (2m) on an incline at θ, tied over a pulley at the top to body B (m), which hangs
+  const A = [24, 200], th = 30, Lr = 230;
+  const [Bx, By] = at(A[0], A[1], Lr, th);
+  let s = slopeHatch(A[0], A[1], Bx, By) + line(A[0], A[1], Bx, A[1]) + line(Bx, By, Bx, A[1]) + arc(A[0], A[1], 40, 0, th, '{θ}', { lr: 54 });
+  const [cx0, cy0] = at(A[0], A[1], 120, th), [cx, cy] = at(cx0, cy0, 15, th + 90);
+  s += box(cx, cy, 46, 30, '', th) + T(cx, cy + 5, 'A');
+  const pr = 13, [qx, qy] = at(Bx, By, 15, th + 90 - 40);
+  s += pulley(qx, qy, pr) + line(Bx, By, qx, qy, 'thin');
+  const [sx0, sy0] = at(cx, cy, 23, th);
+  const [tx, ty] = at(qx, qy, pr, th + 90);
+  s += line(sx0, sy0, tx, ty, 'str');
+  s += line(qx + pr, qy, qx + pr, 122, 'str') + box(qx + pr, 141, 26, 38, 'B');
+  s += T(cx - 10, cy - 26, '2{m}', { c: 'ts' }) + T(qx + pr + 20, 145, '{m}', { anchor: 'start', c: 'ts' });
+  def('p22-3', 300, 215, 'Body A of mass 2m on an incline at angle θ, tied by a string running up the incline over a frictionless, massless pulley at the top to body B of mass m, which hangs beside the incline', 'Fig. 3', s);
+}
+{ // 3(a): free-body diagrams of A, moving up the incline, and of B
+  const th = 30, C = [112, 140];
+  const [bx, by] = at(C[0], C[1], 15, th - 90);
+  let s = line(...at(bx, by, 92, th + 180), ...at(bx, by, 92, th), 'thin soft');
+  s += box(C[0], C[1], 46, 30, '', th) + T(C[0], C[1] + 5, 'A');
+  const force = (deg, len, label, { dx = 0, dy = 0, anchor = 'middle' } = {}) => {
+    const [x, y] = at(C[0], C[1], len + 14, deg);
+    return arrowAt(C[0], C[1], len, deg, 'frc') + T(x + dx, y + dy + 4, label, { anchor, c: 'frc' });
+  };
+  s += force(th + 90, 66, '{N}') + force(270, 80, '2{m}{g}', { dx: 6, dy: -8, anchor: 'start' }) + force(th, 80, '{T}') + force(th + 180, 62, '{f}');
+  const Bc = [266, 140];
+  s += box(Bc[0], Bc[1], 28, 36, 'B');
+  s += arrowAt(Bc[0], Bc[1] - 18, 58, 90, 'frc') + T(Bc[0] + 8, Bc[1] - 66, '{T}', { anchor: 'start', c: 'frc' });
+  s += arrowAt(Bc[0], Bc[1] + 18, 58, 270, 'frc') + T(Bc[0] + 8, Bc[1] + 72, '{m}{g}', { anchor: 'start', c: 'frc' });
+  def('p22-3a', 330, 250, 'Free-body diagrams. A: the normal force N perpendicular to the incline, its weight 2mg straight down, the tension T up the incline and kinetic friction f down the incline, against its motion. B: the tension T up and its weight mg down', 'Answer to 3(a): free-body diagrams', s);
+}
 
 // ===== Practice Set A =====
 {

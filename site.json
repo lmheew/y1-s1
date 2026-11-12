@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-12",
+      "subject": "physics",
+      "title": "Physics midterm: the 2021 and 2022 midterm papers",
+      "text": "Physics midterm: Exams has two past midterms, 2022 (six problems) and 2021 (five), retyped with worked answers and opened with the in-class password. Most of their problems are the exercise days' own. The new ones are an incline with a pulley and friction (2022), and from 2021 the x–t plots, a ball that must cross a ring at right angles, and the terminal velocity of a block with drag. Each works like a mock: a timer, printing, and ticking the parts you got right.",
+      "link": "physics/midterm/#exams"
+    },
+    {
       "date": "2026-11-10",
       "subject": "physics",
       "title": "Physics midterm: Exercise Day 3",
