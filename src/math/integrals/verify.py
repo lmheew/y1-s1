@@ -7,7 +7,7 @@ Each check prints PASS/FAIL; the script exits non-zero if anything fails.
     python3 src/math/integrals/verify.py"""
 import math, sys
 from fractions import Fraction as Fr
-from math import sin, cos, tan, exp, log, sqrt, pi, atan
+from math import sin, cos, tan, exp, log, sqrt, pi, atan, atan2, asin
 
 fails = []
 def check(name, got, want, tol=1e-9):
@@ -581,6 +581,192 @@ for x in XS:
 check("07B Q2 int_0^(pi/4) 1/(1+cos x) = sqrt2 - 1", integral(lambda x: 1 / (1 + cos(x)), 0, pi / 4), sqrt(2) - 1)
 check("07B Q2 tan(pi/8) = sqrt2 - 1", tan(pi / 8), sqrt(2) - 1)
 check("07B Q2 (sqrt2/2)/(1+sqrt2/2) = sqrt2/(2+sqrt2) = sqrt2 - 1", (sqrt(2) / 2) / (1 + sqrt(2) / 2), sqrt(2) - 1)
+
+# ================= 12 & 13 Nov: applications (u4: area, volume, averages, length, cos^n and sin^n) =================
+E = math.e
+vol = lambda f, a, b, m=4000: pi * integral(lambda x: f(x) ** 2, a, b, m)          # pi int f^2
+length = lambda fp, a, b, m=4000: integral(lambda x: sqrt(1 + fp(x) ** 2), a, b, m)  # int sqrt(1 + f'^2)
+# Summary: area between two curves (the region between y = x and y = x^2 via the general rule)
+check("summary: area between y = x and y = x^2 on [0,1] = 1/6", integral(lambda x: x - x * x, 0, 1), 1 / 6)
+# volume from slices: cylinder, cone, sphere (several r and h)
+for (r, h) in ((1.0, 1.0), (2.0, 3.0), (1.5, 0.5)):
+    check(f"summary/g4: cylinder from slices r={r} h={h}", integral(lambda x: pi * r * r, 0, h), pi * r * r * h)
+    check(f"summary/g4: cone from slices r={r} h={h}", integral(lambda x: pi * (r * x / h) ** 2, 0, h), pi * r * r * h / 3)
+    check(f"summary/g4: sphere from slices r={r}", integral(lambda x: pi * (r * r - x * x), -r, r), 4 / 3 * pi * r ** 3)
+    check(f"summary: the cone is a third of the cylinder (r={r}, h={h})", integral(lambda x: pi * (r * x / h) ** 2, 0, h) * 3, pi * r * r * h)
+# solid of revolution, class exercise (1) and (2)
+check("summary/P4.3a: pi int_(pi/6)^(pi/3) 1/cos^2 = 2 sqrt3 pi/3", vol(lambda x: 1 / cos(x), pi / 6, pi / 3), 2 * sqrt(3) * pi / 3)
+check("P4.3a: sqrt3 - sqrt3/3 = 2 sqrt3/3", sqrt(3) - sqrt(3) / 3, 2 * sqrt(3) / 3)
+check("P4.3a: tan(pi/3) - tan(pi/6)", tan(pi / 3) - tan(pi / 6), 2 * sqrt(3) / 3)
+check_true("P4.3a: the other order is negative", tan(pi / 6) - tan(pi / 3) < 0)
+check("summary/P4.3b: pi int_0^(1/2) x e^(-x^2) = (pi/2)(1 - e^(-1/4))", vol(lambda x: sqrt(x) * exp(-x * x / 2), 0, 0.5), pi / 2 * (1 - exp(-0.25)))
+check("P4.3b: with u = -x^2: (pi/2) int_(-1/4)^0 e^u du", pi / 2 * integral(exp, -0.25, 0), pi / 2 * (1 - exp(-0.25)))
+check("P4.3b: f^2 = x e^(-x^2) at 0.3", (sqrt(0.3) * exp(-0.045)) ** 2, 0.3 * exp(-0.09))
+check("P4.3b: x = 1/2 gives u = -(1/2)^2 = -1/4", -(0.5 ** 2), -0.25)
+# with a hole: y = x and y = x^2 on [0,1]
+check("summary/P4.4a: pi int_0^1 (x^2 - x^4) = 2 pi/15", pi * integral(lambda x: x * x - x ** 4, 0, 1), 2 * pi / 15)
+check("P4.4a: washers = pi int x^2 - pi int x^4", vol(lambda x: x, 0, 1) - vol(lambda x: x * x, 0, 1), 2 * pi / 15)
+check("P4.4b: y = 2 and y = x^2 + 1: pi int_-1^1 (4 - (x^2+1)^2) = 64 pi/15", pi * integral(lambda x: 4 - (x * x + 1) ** 2, -1, 1), 64 * pi / 15)
+check("P4.4b: 4 - (x^2+1)^2 = 3 - 2x^2 - x^4 at 0.7", 4 - (0.49 + 1) ** 2, 3 - 2 * 0.49 - 0.7 ** 4)
+check("P4.4b: 6 - 4/3 - 2/5 = 64/15", Fr(6) - Fr(4, 3) - Fr(2, 5), Fr(64, 15))
+check("P4.4b: squaring the difference gives 16 pi/15 instead", pi * integral(lambda x: (2 - (x * x + 1)) ** 2, -1, 1), 16 * pi / 15)
+check("watch: pi (int f)^2 is not pi int f^2 (f = 1 + sin x on [0, pi/2])", abs(pi * integral(lambda x: 1 + sin(x), 0, pi / 2) ** 2 - vol(lambda x: 1 + sin(x), 0, pi / 2)) > 1, 1)
+for x in XS:
+    check(f"watch: (1 + sin x)^2 = 1 + 2 sin x + sin^2 x at {x}", (1 + sin(x)) ** 2, 1 + 2 * sin(x) + sin(x) ** 2)
+# two types of averages
+check("summary/P4.5a: average of sin on [0,pi] = 2/pi", integral(sin, 0, pi) / pi, 2 / pi)
+check("P4.5a: 2/pi is about 0.64", 2 / pi, 0.6366197724, 1e-9)
+check("P4.5b: average of x^2 on [0,3] = 3", integral(sq, 0, 3) / 3, 3)
+check("P4.5b: reached at x = sqrt3", sqrt(3) ** 2, 3)
+xbar = lambda f, a, b: integral(lambda x: x * f(x), a, b) / integral(f, a, b)
+check("summary/P4.5c: x bar with f = x^2 on [0,1] = 3/4", xbar(sq, 0, 1), 0.75)
+check("P4.5c: (1/4)/(1/3)", Fr(1, 4) / Fr(1, 3), Fr(3, 4))
+check("P4.5d: x bar with f = e^(-x) on [0,1] = (e-2)/(e-1)", xbar(lambda x: exp(-x), 0, 1), (E - 2) / (E - 1))
+check("P4.5d: int_0^1 x e^(-x) = 1 - 2/e", integral(lambda x: x * exp(-x), 0, 1), 1 - 2 / E)
+check("P4.5d: P = 1 - 1/e", integral(lambda x: exp(-x), 0, 1), 1 - 1 / E)
+primitive("P4.5d: -x e^(-x) - e^(-x)", lambda x: -x * exp(-x) - exp(-x), lambda x: x * exp(-x), XS)
+check("P4.5d: about 0.42", (E - 2) / (E - 1), 0.4180232931, 1e-9)
+for (f, a, b) in ((lambda x: 3.0, 1.0, 4.0), (lambda x: x, 0.0, 2.0), (lambda x: exp(x), -1.0, 1.0)):
+    check(f"summary: p = f/P has area 1 on [{a},{b}]", integral(lambda x: f(x) / integral(f, a, b), a, b), 1)
+check("summary: a constant weight gives the middle: x bar = (a+b)/2", xbar(lambda x: 3.0, 1.0, 4.0), 2.5)
+check("summary: the average value is the rectangle's height: f bar (b-a) = area", integral(sin, 0, pi) / pi * pi, integral(sin, 0, pi))
+# length of a curve: the straight piece, the integral, the examples
+for c0 in (0.0, 0.5, -2.0, 3.0):
+    check(f"summary/g4b: a straight piece dl = dx sqrt(1+c^2) (c={c0})", sqrt(0.3 ** 2 + (c0 * 0.3) ** 2), 0.3 * sqrt(1 + c0 * c0))
+    check(f"summary: the line y = {c0}x + 1 on [0,2] has length 2 sqrt(1+c^2)", length(lambda x: c0, 0, 2), 2 * sqrt(1 + c0 * c0))
+# the Riemann sum of the pieces tends to the length (y = x^2 on [0,1], polygon of N chords)
+chord = lambda N: sum(sqrt((1 / N) ** 2 + ((k / N) ** 2 - ((k - 1) / N) ** 2) ** 2) for k in range(1, N + 1))
+check("summary: chords of y = x^2 on [0,1] tend to the length", chord(4000), length(lambda x: 2 * x, 0, 1), 1e-7)
+check("summary/P4.6a: y = (2/3)x^(3/2) on [0,3]: 14/3", length(lambda x: sqrt(x), 0, 3), 14 / 3)
+check("P4.6a: 1 + f'^2 = 1 + x", 1 + sqrt(2.2) ** 2, 3.2)
+check("P4.6b: y = x^(3/2) on [0,4/3]: 56/27", length(lambda x: 1.5 * sqrt(x), 0, 4 / 3), 56 / 27)
+check("P4.6b: (2/3)(4/9) = 8/27", Fr(2, 3) * Fr(4, 9), Fr(8, 27))
+check("P4.6b: 1 + (9/4)(4/3) = 4, 4^(3/2) = 8", (1 + 9 / 4 * 4 / 3) ** 1.5, 8)
+ch = lambda x: (exp(x) + exp(-x)) / 2
+sh = lambda x: (exp(x) - exp(-x)) / 2
+check("P4.6c: y = (e^x + e^-x)/2 on [0,1]: (e - 1/e)/2", length(sh, 0, 1), (E - 1 / E) / 2)
+for x in XS:
+    check(f"P4.6c: 1 + f'^2 = ((e^x+e^-x)/2)^2 at {x}", 1 + sh(x) ** 2, ch(x) ** 2)
+check("P4.7a: y = x^2/2 - ln x/4 on [1,e]: (2e^2-1)/4", length(lambda x: x - 1 / (4 * x), 1, E), (2 * E * E - 1) / 4)
+for x in XP:
+    check(f"P4.7a: 1 + (x - 1/(4x))^2 = (x + 1/(4x))^2 at {x}", 1 + (x - 1 / (4 * x)) ** 2, (x + 1 / (4 * x)) ** 2)
+    check(f"P4.7a: f' = x - 1/(4x) at {x}", d1(lambda t: t * t / 2 - log(t) / 4, x), x - 1 / (4 * x), 1e-6)
+check("P4.7b: y = x^3/6 + 1/(2x) on [1,2]: 17/12", length(lambda x: x * x / 2 - 1 / (2 * x * x), 1, 2), 17 / 12)
+for x in XP:
+    check(f"P4.7b: 1 + f'^2 = (x^2/2 + 1/(2x^2))^2 at {x}", 1 + (x * x / 2 - 1 / (2 * x * x)) ** 2, (x * x / 2 + 1 / (2 * x * x)) ** 2)
+    check(f"P4.7b: f' = x^2/2 - 1/(2x^2) at {x}", d1(lambda t: t ** 3 / 6 + 1 / (2 * t), x), x * x / 2 - 1 / (2 * x * x), 1e-6)
+check("P4.7b: (4/3 - 1/4) - (1/6 - 1/2) = 17/12", (Fr(4, 3) - Fr(1, 4)) - (Fr(1, 6) - Fr(1, 2)), Fr(17, 12))
+check("watch: (ln x/4)' = 1/(4x) at 1.7", d1(lambda x: log(x) / 4, 1.7), 1 / (4 * 1.7), 1e-6)
+check("watch: (ln(x/4))' = 1/x at 1.7", d1(lambda x: log(x / 4), 1.7), 1 / 1.7, 1e-6)
+# the circle
+for r in (1.0, 2.0, 3.0):
+    for x in (0.1 * r, 0.5 * r, 0.8 * r):
+        fp = d1(lambda t: sqrt(r * r - t * t), x)
+        check(f"summary/P4.8a: 1 + f'^2 = r^2/(r^2-x^2) (r={r}, x={x})", 1 + fp * fp, r * r / (r * r - x * x), 1e-6)
+    primitive(f"summary: r arcsin(x/r) is a primitive of r/sqrt(r^2-x^2) (r={r})", lambda x: r * asin(x / r), lambda x: r / sqrt(r * r - x * x), (0.1 * r, 0.5 * r, 0.8 * r))
+    check(f"summary/P4.8c: quarter circle r pi/2 (r={r})", r * (asin(1) - asin(0)), pi * r / 2)
+check("P4.8b: arc of y = sqrt(4-x^2) from 0 to 1 = pi/3", length(lambda x: -x / sqrt(4 - x * x), 0, 1), pi / 3)
+check("P4.8b: 2 arcsin(1/2)", 2 * asin(0.5), pi / 3)
+check("P4.8b: r theta with theta = pi/6", 2 * (pi / 2 - atan2(sqrt(3), 1)), pi / 3)
+check("summary: an arc of angle theta has length r theta (r=2, theta=1)", length(lambda x: -x / sqrt(4 - x * x), 0, 2 * sin(1)), 2 * 1)
+# reduction formulas for cos^n and sin^n
+for n in range(2, 8):
+    Cn = lambda x, n=n: cos(x) ** n
+    for x in (0.3, 1.1, 2.4):
+        # d/dx [ (1/n) cos^(n-1) sin ] + (n-1)/n cos^(n-2) = cos^n
+        check(f"summary/g4c: C_n reduction (n={n}) at {x}", d1(lambda t: cos(t) ** (n - 1) * sin(t) / n, x) + (n - 1) / n * cos(x) ** (n - 2), Cn(x), 1e-6)
+        check(f"summary/g4c: S_n reduction (n={n}) at {x}", d1(lambda t: -sin(t) ** (n - 1) * cos(t) / n, x) + (n - 1) / n * sin(x) ** (n - 2), sin(x) ** n, 1e-6)
+        check(f"summary: by parts, C_n = cos^(n-1) sin + (n-1) int cos^(n-2) sin^2 (derivative, n={n}) at {x}",
+              d1(lambda t: cos(t) ** (n - 1) * sin(t), x) + (n - 1) * cos(x) ** (n - 2) * sin(x) ** 2, Cn(x), 1e-6)
+        check(f"watch: cos^(n-2) sin^2 = cos^(n-2) - cos^n (n={n}) at {x}", cos(x) ** (n - 2) * sin(x) ** 2, cos(x) ** (n - 2) - cos(x) ** n)
+def I(n):
+    return pi / 2 if n == 0 else 1.0 if n == 1 else (n - 1) / n * I(n - 2)
+for n in range(0, 9):
+    check(f"summary/g4c: I_{n} = int_0^(pi/2) cos^n", integral(lambda x: cos(x) ** n, 0, pi / 2), I(n))
+    check(f"summary/g4c: I_{n} = int_0^(pi/2) sin^n", integral(lambda x: sin(x) ** n, 0, pi / 2), I(n))
+check("summary/g4c: I_2 = pi/4", I(2), pi / 4); check("g4c: I_3 = 2/3", I(3), 2 / 3)
+check("summary/g4c/P4.9c: I_4 = 3 pi/16", I(4), 3 * pi / 16); check("summary/g4c/P4.9d: I_5 = 8/15", I(5), 8 / 15)
+check_true("watch: I_3 has no pi", abs(I(3) - 2 / 3) < 1e-15)
+primitive("P4.9a: (1/2) sin x cos x + x/2", lambda x: sin(x) * cos(x) / 2 + x / 2, lambda x: cos(x) ** 2, XS)
+primitive("P4.9a: x/2 + sin 2x/4 (half-angle)", lambda x: x / 2 + sin(2 * x) / 4, lambda x: cos(x) ** 2, XS)
+primitive("P4.9b: -(1/3) sin^2 x cos x - (2/3) cos x", lambda x: -sin(x) ** 2 * cos(x) / 3 - 2 / 3 * cos(x), lambda x: sin(x) ** 3, XS)
+# products of sines and cosines
+for (m, n) in ((1, 2), (2, 3), (1, 3), (3, 5), (2, -1), (4, 1)):
+    check(f"summary/g4d: int_0^pi sin mx sin nx = 0 (m={m}, n={n})", integral(lambda x: sin(m * x) * sin(n * x), 0, pi), 0, 1e-9)
+    check(f"g4d: int_0^pi cos mx cos nx = 0 (m={m}, n={n})", integral(lambda x: cos(m * x) * cos(n * x), 0, pi), 0, 1e-9)
+for x in XS:
+    for (A, B) in ((0.7, 1.9), (2.0, -0.4)):
+        Ax, Bx = A * x, B * x
+        check(f"g4d: sin A sin B product to sum ({A}x, {B}x) at {x}", sin(Ax) * sin(Bx), 0.5 * (cos(Ax - Bx) - cos(Ax + Bx)))
+        check(f"g4d: cos A cos B product to sum ({A}x, {B}x) at {x}", cos(Ax) * cos(Bx), 0.5 * (cos(Ax - Bx) + cos(Ax + Bx)))
+        check(f"g4d: sin A cos B product to sum ({A}x, {B}x) at {x}", sin(Ax) * cos(Bx), 0.5 * (sin(Ax + Bx) + sin(Ax - Bx)))
+    check(f"g4d: cos 2x = 1 - 2 sin^2 x at {x}", cos(2 * x), 1 - 2 * sin(x) ** 2)
+    check(f"g4d: cos 2x = 2 cos^2 x - 1 at {x}", cos(2 * x), 2 * cos(x) ** 2 - 1)
+    check(f"g4d: sin^2 x = (1 - cos 2x)/2 at {x}", sin(x) ** 2, (1 - cos(2 * x)) / 2)
+    check(f"g4d: cos^2 x = (1 + cos 2x)/2 at {x}", cos(x) ** 2, (1 + cos(2 * x)) / 2)
+    check(f"g4d: sin x cos x = sin 2x/2 at {x}", sin(x) * cos(x), sin(2 * x) / 2)
+primitive("g4d: int sin^2 = x/2 - sin 2x/4", lambda x: x / 2 - sin(2 * x) / 4, lambda x: sin(x) ** 2, XS)
+primitive("g4d: int cos^2 = x/2 + sin 2x/4", lambda x: x / 2 + sin(2 * x) / 4, lambda x: cos(x) ** 2, XS)
+check("summary/watch: on [-pi/2, pi/2], int cos x cos 2x = 2/3", integral(lambda x: cos(x) * cos(2 * x), -pi / 2, pi / 2), 2 / 3)
+check("P4.10a: int_0^pi sin 2x sin 3x = 0", integral(lambda x: sin(2 * x) * sin(3 * x), 0, pi), 0, 1e-9)
+check("P4.10b: int_0^pi sin^2 2x = pi/2", integral(lambda x: sin(2 * x) ** 2, 0, pi), pi / 2)
+check("P4.10c: int_(-pi/2)^(pi/2) cos 2x cos 3x = 6/5", integral(lambda x: cos(2 * x) * cos(3 * x), -pi / 2, pi / 2), 6 / 5)
+check("P4.10c: sin(pi/2) + sin(5pi/2)/5", sin(pi / 2) + sin(5 * pi / 2) / 5, 1.2)
+# area examples
+check("P4.1a: int_0^2 (2x - x^2) = 4/3", integral(lambda x: 2 * x - x * x, 0, 2), 4 / 3)
+check_true("P4.1a: 2x >= x^2 on [0,2]", all(2 * (k / 50) >= (k / 50) ** 2 for k in range(0, 101)))
+check("P4.1b: int_0^(pi/4) (cos - sin) = sqrt2 - 1", integral(lambda x: cos(x) - sin(x), 0, pi / 4), sqrt(2) - 1)
+check_true("P4.1b: cos >= sin on [0, pi/4]", all(cos(k * pi / 400) >= sin(k * pi / 400) - 1e-15 for k in range(0, 101)))
+# volumes from slices
+check("P4.2a: cone r = 3, h = 4: 12 pi", integral(lambda x: pi * (3 * x / 4) ** 2, 0, 4), 12 * pi)
+check("P4.2a: (9 pi/16)(64/3)", 9 * pi / 16 * 64 / 3, 12 * pi)
+check("P4.2b: sphere r = 2: 32 pi/3", pi * integral(lambda x: 4 - x * x, -2, 2), 32 * pi / 3)
+check("P4.2b: 16 - 16/3 = 32/3", Fr(16) - Fr(16, 3), Fr(32, 3))
+check("P4.2c: square slices of side x on [0,2]: 8/3", integral(sq, 0, 2), 8 / 3)
+check("P4.2c: pyramid (1/3)(4)(2)", 4 * 2 / 3, 8 / 3)
+# shortcuts of u4 (extras)
+check("tricks/P4.11a: I_6 = (5.3.1)/(6.4.2) pi/2 = 5 pi/32", integral(lambda x: sin(x) ** 6, 0, pi / 2), 5 * pi / 32)
+check("tricks: 15/48 pi/2", 15 / 48 * pi / 2, 5 * pi / 32)
+check("tricks/P4.11b: I_7 = (6.4.2)/(7.5.3) = 16/35", integral(lambda x: cos(x) ** 7, 0, pi / 2), 16 / 35)
+check("tricks: 48/105 = 16/35", Fr(48, 105), Fr(16, 35))
+for n in range(2, 10):
+    num = math.prod(range(n - 1, 0, -2)); den = math.prod(range(n, 0, -2))
+    check(f"gs: the reduction formula in one line, n={n}", num / den * (pi / 2 if n % 2 == 0 else 1), I(n))
+check("tricks/gs: int_0^(pi/2) sin^2 = pi/4", integral(lambda x: sin(x) ** 2, 0, pi / 2), pi / 4)
+check("tricks/gs: int_0^(pi/2) cos^2 = pi/4", integral(lambda x: cos(x) ** 2, 0, pi / 2), pi / 4)
+check("tricks/P4.11c: int_0^pi sin^2 = pi/2", integral(lambda x: sin(x) ** 2, 0, pi), pi / 2)
+check("tricks: int_0^pi cos^2 = pi/2", integral(lambda x: cos(x) ** 2, 0, pi), pi / 2)
+for (A0, B0) in ((lambda x: x, lambda x: 1 / (4 * x)), (lambda x: x * x / 2, lambda x: 1 / (2 * x * x)), (lambda x: x / 2, lambda x: 1 / (2 * x))):
+    for x in XP:
+        check(f"tricks/gs: AB = 1/4 at {x}", A0(x) * B0(x), 0.25)
+        check(f"tricks/gs: 1 + (A-B)^2 = (A+B)^2 at {x}", 1 + (A0(x) - B0(x)) ** 2, (A0(x) + B0(x)) ** 2)
+check_true("tricks: 2/pi lies between 0 and 1", 0 < 2 / pi < 1)
+# habits
+check("habit: expand f^2 for f = 1 + e^x at 0.4", (1 + exp(0.4)) ** 2, 1 + 2 * exp(0.4) + exp(0.8))
+
+# ================= FOLLOW-UPS (Quiz 08) =================
+# 08-A
+check("08A Q1 pi int_0^pi (2 + sin x)^2 = 9pi^2/2 + 8 pi", vol(lambda x: 2 + sin(x), 0, pi), 9 * pi * pi / 2 + 8 * pi)
+check("08A Q1 terms 4pi + 8 + pi/2", integral(lambda x: 4.0, 0, pi) + integral(lambda x: 4 * sin(x), 0, pi) + integral(lambda x: sin(x) ** 2, 0, pi), 4 * pi + 8 + pi / 2)
+check("08A Q2 length of (2/3)(x+1)^(3/2) on [0,2] = (16 - 4 sqrt2)/3", length(lambda x: sqrt(x + 1), 0, 2), (16 - 4 * sqrt(2)) / 3)
+check("08A Q2 f' = (x+1)^(1/2) at 0.9", d1(lambda x: 2 / 3 * (x + 1) ** 1.5, 0.9), sqrt(1.9), 1e-6)
+check("08A Q2 (2/3)(8 - 2 sqrt2)", 2 / 3 * (8 - 2 * sqrt(2)), (16 - 4 * sqrt(2)) / 3)
+for (m, n) in ((1, 2), (2, 5), (3, 1), (4, -2), (0, 3)):
+    check(f"08A Q3 int_0^pi cos mx cos nx = 0 (m={m}, n={n})", integral(lambda x: cos(m * x) * cos(n * x), 0, pi), 0, 1e-9)
+# 08-B
+check("08B Q1 pi int_0^(pi/2) (sin + cos)^2 = pi^2/2 + pi", vol(lambda x: sin(x) + cos(x), 0, pi / 2), pi * pi / 2 + pi)
+for x in XS:
+    check(f"08B Q1 (sin x + cos x)^2 = 1 + sin 2x at {x}", (sin(x) + cos(x)) ** 2, 1 + sin(2 * x))
+check("08B Q1 without the middle term: pi^2/2", pi * integral(lambda x: 1.0, 0, pi / 2), pi * pi / 2)
+check("08B Q2 length of x^2/4 - ln x/2 on [1,e] = (e^2+1)/4", length(lambda x: x / 2 - 1 / (2 * x), 1, E), (E * E + 1) / 4)
+for x in XP:
+    check(f"08B Q2 f' = x/2 - 1/(2x) at {x}", d1(lambda t: t * t / 4 - log(t) / 2, x), x / 2 - 1 / (2 * x), 1e-6)
+    check(f"08B Q2 1 + f'^2 = (x/2 + 1/(2x))^2 at {x}", 1 + (x / 2 - 1 / (2 * x)) ** 2, (x / 2 + 1 / (2 * x)) ** 2)
+gen = lambda m, n: sin((m - n) * pi / 2) / (m - n) - sin((m + n) * pi / 2) / (m + n)
+for (m, n) in ((1, 2), (2, 3), (1, 3), (3, 6), (2, -1), (4, 1)):
+    check(f"08B Q3 int_(-pi/2)^(pi/2) sin mx sin nx = the formula (m={m}, n={n})", integral(lambda x: sin(m * x) * sin(n * x), -pi / 2, pi / 2), gen(m, n), 1e-9)
+check("08B Q3 m = 1, n = 2: 4/3", integral(lambda x: sin(x) * sin(2 * x), -pi / 2, pi / 2), 4 / 3)
+check("08B Q3 1 + 1/3", gen(1, 2), 4 / 3)
 
 # ================= GRAPH (riemann) =================
 check("graph: n = 4 right sum, as in P1.1", riemann(sq, 0, 2, 4, 'right'), Fr(15, 4))

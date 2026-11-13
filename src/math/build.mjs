@@ -293,8 +293,11 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     ${focus ? `<p class="focus">${esc(focus)}</p>` : ''}
     ${qs.map((x, i) => {
       const id = `${sheetId}-q${i + 1}`;
-      index.push(entry('Quizzes', 'quizzes', id, `${searchLabel} · ${x.label}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' ' + searchExtra));
-      return `
+      // a quiz handed out on more than one sheet: `sheet` names each question's sheet, with a heading where one starts
+      const part = x.sheet && (i === 0 || qs[i - 1].sheet !== x.sheet) ? `
+    <p class="sheet-part">Sheet ${esc(x.sheet)}</p>` : '';
+      index.push(entry('Quizzes', 'quizzes', id, `${searchLabel}${x.sheet ? ` · Sheet ${x.sheet}` : ''} · ${x.label}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' ' + searchExtra));
+      return `${part}
     <div class="rq" id="${id}">
       <div class="stem">${blocks(withPts(x.stem, x.pts)).replace(/^<p>/, `<p><b class="ql">${x.label}</b> `)}</div>
       ${partsList(x.parts)}

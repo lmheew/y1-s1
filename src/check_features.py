@@ -182,7 +182,11 @@ with sync_playwright() as p:
               and files['js'] == [f'../assets/math.js?v={ver("math.js")}'] and files['styles'] == 0 and 'data:font' not in open(os.path.join(REPO, 'math', 'derivatives', 'index.html')).read(), files)
         check(f'{label}: math fonts load from the shared files', files['fonts'] >= 2, files)
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
-        check(f'{label}: Exams tab shows a New dot', pg.evaluate("document.getElementById('tab-exams').classList.contains('has-new')"))
+        # its items are from 29 Oct, so whether the dot shows depends on today: it must show exactly while they are New
+        # (the fixed-moment checks further down see it shown)
+        check(f'{label}: Exams tab shows a New dot exactly while its newest item is New', pg.evaluate("""(() => {
+          const t = document.getElementById('tab-exams'), d = Date.parse(t.dataset.newest + 'T00:00:00+09:00'), DAY = 864e5;
+          return Boolean(t.dataset.newest) && t.classList.contains('has-new') === (Date.now() - d < 14 * DAY && Date.now() >= d - DAY); })()"""))
         tiles = pg.locator('.tiles .tile')
         check(f'{label}: Summary tiles follow the schedule: day, lesson name, then a small quiz line', tiles.count() == 8
               and 'continuous functions' in tiles.nth(0).inner_text().lower() and tiles.nth(0).locator('.tile-q').inner_text() == 'Quiz 01'
@@ -376,11 +380,15 @@ with sync_playwright() as p:
     dots = lambda page: page.evaluate("Array.from(document.querySelectorAll('.tab.has-new')).map((t) => t.dataset.view)")
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#news .new-pill').count() == pg.locator('#news .n-day').count())
+    # a day dated after the page's moment (13 Nov at noon on 11 Nov) isn't New yet: count the days up to 12 Nov
+    fresh_days = pg.evaluate("[...document.querySelectorAll('#news .n-day time')].filter((t) => t.getAttribute('datetime') <= '2026-11-12').length")
+    check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1
+          and fresh_days >= 3 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
-    check('new: first visit: the picker marks Calculus midterms 1 and 2 New', pg.locator('#exam-derivatives .new-pill').count() == 1
-          and pg.locator('#exam-integrals .new-pill').count() == 1)
+    # Calculus midterm 2 was last updated on 13 Nov, more than a day after this moment, so its card waits (see 13 Nov below)
+    check('new: first visit: the picker marks Calculus midterm 1 New', pg.locator('#exam-derivatives .new-pill').count() == 1
+          and pg.locator('#exam-integrals .new-pill').count() == 0)
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
     check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
@@ -397,14 +405,10 @@ with sync_playwright() as p:
     check('new: next visit: tabs not opened yet keep their dots', dots(pg2) == ['practice', 'formulas'], dots(pg2))
     check('new: next visit: no New labels in the tabs already opened', pg2.locator('#m1 .new-pill').count() == 0
           and pg2.locator('#view-summary .new-pill').count() == 0, (pg2.locator('#m1 .new-pill').count(), pg2.locator('#view-summary .new-pill').count()))
-    # Calculus midterm 2 keeps its own keys in study-seen ("math-integrals:<tab>"): its dots and Calculus midterm 1's don't mix
+    # Calculus midterm 2 keeps its own keys in study-seen ("math-integrals:<tab>"): its dots and Calculus midterm 1's don't
+    # mix (its own dots and labels are checked at noon on 13 Nov, below, when all of its content is New)
     pg2.goto(BASE + '/math/integrals/')
     pg2.wait_for_selector('#view-summary .unit')
-    check('new: Calculus midterm 2 has its own tab dots', dots(pg2) == ['practice', 'formulas', 'quizzes'], dots(pg2))
-    check('new: Calculus midterm 2 marks its new lessons and graph', pg2.locator('#su-u3 .unit-head .new-pill').count() == 1
-          and pg2.locator('#su-u2 .unit-head .new-pill').count() == 1
-          and pg2.locator('#su-u1 .unit-head .new-pill').count() == 1
-          and pg2.locator('#gx-riemann .new-pill').count() == 1, pg2.locator('#su-u1 .new-pill').count())
     pg2.click('#tab-practice')
     pg2.goto(BASE + '/math/derivatives/')
     pg2.wait_for_selector('.calc-fab')
@@ -435,6 +439,30 @@ with sync_playwright() as p:
     pg2.click('#theme-btn')
     check('theme: on an exam page the saved choice is set early, and "system" still follows the device', pg2.evaluate("document.documentElement.hasAttribute('data-theme')") is False
           and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
+    ctx.close()
+
+    # ---- the same at noon on 13 Nov, when Day 20 & 21 and Quiz 08 arrived: the lesson, its Shortcuts and the day in
+    # What's new are New (Calculus midterm 1's lessons, from 29 Oct, are past their 14 days by then) ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 13, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news .n-day')
+    check('new (13 Nov): the day Quiz 08 arrived is New on the home page', pg.locator('#news .n-day').first.locator('.new-pill').count() == 1
+          and pg.locator('#news .n-day time').first.get_attribute('datetime') == '2026-11-13')
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.exams')
+    check('new (13 Nov): the picker marks Calculus midterm 2 New, and midterm 1 no longer', pg.locator('#exam-integrals .new-pill').count() == 1
+          and pg.locator('#exam-derivatives .new-pill').count() == 0)
+    pg.goto(BASE + '/math/integrals/')
+    pg.wait_for_selector('#view-summary .unit')
+    check('new (13 Nov): Calculus midterm 2 has its own tab dots', dots(pg) == ['practice', 'formulas', 'quizzes'], dots(pg))
+    check('new (13 Nov): Calculus midterm 2 marks its new lessons and graph', all(pg.locator(f'#su-{u} .unit-head .new-pill').count() == 1 for u in ('u1', 'u2', 'u3', 'u4'))
+          and pg.locator('#gx-riemann .new-pill').count() == 1, [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4')])
+    pg.click('#tab-quizzes')
+    pg.wait_for_selector('#qg08')
+    check('new (13 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     ctx.close()
 
     # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
@@ -650,7 +678,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '/physics/midterm/')
     pg.wait_for_selector('#view-exams .up-item')
     check('night: it is never the tab a page opens on next time: the last tab (Exams) opens', pg.locator('#view-night').is_hidden() and pg.locator('#view-exams').is_visible())
-    for page, n in [('math/derivatives', 8), ('math/integrals', 5)]:
+    for page, n in [('math/derivatives', 8), ('math/integrals', 6)]:
         pg.goto(BASE + f'/{page}/#formulas')
         pg.wait_for_selector('#view-formulas .night-link')
         pg.click('#view-formulas .night-link')

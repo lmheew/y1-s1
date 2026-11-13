@@ -315,6 +315,9 @@ details[open] .when-open { display: inline; }
 .t-reset { appearance: none; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); padding: 7px 11px; font: 700 13px/1 var(--font); cursor: pointer; }
 .rq { min-width: 0; padding-top: 12px; scroll-margin-top: var(--anchor-top); }
 .rq + .rq { border-top: 1px dashed var(--line); }
+/* a quiz handed out on more than one sheet: a heading where each sheet starts */
+.sheet-part { margin: 16px 0 0; padding-top: 12px; border-top: 1.5px solid var(--green); font: 800 12.5px/1.2 var(--font); letter-spacing: .06em; text-transform: uppercase; color: var(--green-text); }
+.sheet-head + .sheet-part { margin-top: 0; border-top: 0; }
 .ql { margin-right: 4px; font-weight: 900; color: var(--green); }
 .pts { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
 .nw { white-space: nowrap; }

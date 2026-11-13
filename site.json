@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-13",
+      "subject": "math",
+      "title": "Calculus midterm 2: areas, volumes, averages, curve length and Quiz 08",
+      "text": "Calculus midterm 2: Day 20 & 21 are added: the area between two curves, volumes from slices (cylinder, cone and sphere), solids of revolution with and without a hole, the two types of averages, the length of a curve and of a circular arc, and the reduction formulas for powers of cos and sin by integration by parts. Practice has eleven new problems, including the class exercise; Formulas has four new groups, one of them the power-reducing and product-to-sum identities. Quizzes has In-class Quiz 08 (password needed, both sheets) with Follow-up A and B.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-12",
       "subject": "physics",
       "title": "Physics midterm: the 2021 and 2022 midterm papers",

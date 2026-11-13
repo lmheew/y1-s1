@@ -2,8 +2,9 @@
 // schedule (integral part): one unit per lesson pair, in schedule order. The schedule slide gives dates, not day
 // numbers, so every unit carries `dates` ("2 & 3 Nov"); a lesson gets `days` and `quiz` once a quiz sheet shows them
 // (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15;
-// Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19). The 9 Nov class finished the primitive-functions
-// lesson (inverse trigonometric functions) before substitution, so that part sits in u2.
+// Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19; Quiz 08 is "Day20 & Day21", 12 & 13 Nov). The 9 Nov
+// class finished the primitive-functions lesson (inverse trigonometric functions) before substitution, so that part
+// sits in u2.
 // A lesson still to come has `upcoming: true` and shows as a greyed-out Summary tile; `starred` marks the lessons with
 // an in-class quiz (the schedule's *).
 // Markup: $inline$, $$display$$, **bold**, "- " list items (continuation lines join the item),
@@ -14,6 +15,7 @@ const NOV3 = '2026-11-03';
 const NOV6 = '2026-11-06';
 const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
+const NOV13 = '2026-11-13';
 
 export const units = [
   {
@@ -163,7 +165,72 @@ So $\int x^2e^x\,dx=x^2e^x-2xe^x+2e^x+C=e^x(x^2-2x+2)+C$. With $\ln x$ the D col
 $$\int_0^af(x)\,dx=\int_0^af(a-x)\,dx$$
 For $I=\int_0^{\pi/2}\frac{\sin x}{\sin x+\cos x}\,dx$ it gives the same integral with $\cos x$ on top. Adding the two, $2I=\int_0^{\pi/2}dx=\frac{\pi}{2}$, so $I=\frac{\pi}{4}$.`,
   },
-  { id: 'u4', dates: '12 & 13 Nov', title: 'Application of integration: area, average, etc.', starred: true, upcoming: true },
+  {
+    id: 'u4', quiz: 'Quiz 08', days: 'Day 20 & 21', dates: '12 & 13 Nov', starred: true, added: NOV13,
+    title: 'Application of integration: area, average, etc.',
+    ideas: R`
+- **Area between two curves:** if $f(x)\ge g(x)$ on $[a,b]$, the region between the two graphs has area
+$$A=\int_a^b\big(f(x)-g(x)\big)\,dx$$
+Solve $f(x)=g(x)$ to find where the curves cross, which gives $a$ and $b$, and check which curve is on top. With $g=0$ this is the area under $f$. Where the curves change places, split there, as for the area between a curve and the $x$-axis.
+- **Volume from slices:** cut a solid across the $x$-axis into thin slices. If the slice at $x$ has area $S(x)$, a slice of thickness $\Delta x$ has volume about $S(x)\,\Delta x$, and adding them up gives
+$$V=\int_a^b S(x)\,dx$$
+For a cylinder of radius $r$ and height $h$, every slice is the same circle, $S(x)=\pi r^2$, so $V=\pi r^2h$. For a cone with its tip at $x=0$, the radius grows in proportion to $x$, as $\frac{rx}{h}$:
+$$V=\int_0^h\pi\frac{r^2x^2}{h^2}\,dx=\frac{1}{3}\pi r^2h$$
+a third of the cylinder. For a sphere of radius $r$, the slice at $x$ (with $-r\le x\le r$) is a circle of radius $\sqrt{r^2-x^2}$:
+$$V=\int_{-r}^{r}\pi(r^2-x^2)\,dx=\frac{4}{3}\pi r^3$$
+- **Solid of revolution:** turning the graph of $y=f(x)$, $a\le x\le b$, around the $x$-axis makes every slice a circle of radius $|f(x)|$, so $S(x)=\pi f(x)^2$ and
+$$V=\pi\int_a^b f(x)^2\,dx$$
+Square $f$ first, then integrate. The class exercise: $f(x)=\frac{1}{\cos x}$ on $\left[\frac{\pi}{6},\frac{\pi}{3}\right]$ has $f^2=\frac{1}{\cos^2x}$, whose primitive is $\tan x$, so $V=\pi\left(\sqrt3-\frac{\sqrt3}{3}\right)=\frac{2\sqrt3}{3}\pi$. And $f(x)=\sqrt{x}\,e^{-x^2/2}$ on $\left[0,\frac{1}{2}\right]$ has $f^2=xe^{-x^2}$; with $u=-x^2$ the volume is $\frac{\pi}{2}\left(1-e^{-1/4}\right)$.
+- **Solid of revolution with a hole:** turning the region between $y=f(x)$ and $y=g(x)$, with $f\ge g\ge0$, around the $x$-axis makes every slice a ring: a disc of radius $f(x)$ with a hole of radius $g(x)$. So
+$$V=\pi\int_a^b\big(f(x)^2-g(x)^2\big)\,dx$$
+For the region between $y=x$ and $y=x^2$ on $[0,1]$: $\pi\int_0^1(x^2-x^4)\,dx=\frac{2\pi}{15}$.
+- **Two types of averages.** The average of $y=f(x)$ in $a\le x\le b$ is the height of the rectangle on $[a,b]$ whose area $A$ is that of the region under the curve:
+$$\bar f=\frac{1}{b-a}\int_a^b f(x)\,dx$$
+For example, $\sin x$ on $[0,\pi]$ has the average $\frac{2}{\pi}$. The average of $x$ with the probability $\frac{f(x)}{P}$, where $P=\int_a^b f(x)\,dx$ so that $p(x)=\frac{f(x)}{P}$ has area $1$, counts each $x$ with the weight $f(x)$:
+$$\bar x=\frac{\int_a^b x\,f(x)\,dx}{\int_a^b f(x)\,dx}$$
+For $f(x)=x^2$ on $[0,1]$: $\bar x=\frac{1/4}{1/3}=\frac{3}{4}$, right of the middle, because the larger values of $x$ carry more weight.
+- **Length of a curve:** on a smooth plane curve ($f'$ is continuous, so there are no corners) short pieces are nearly straight. On a straight line $y=cx+d$, a step $\Delta x$ rises $c\,\Delta x$, so by Pythagoras
+$$\begin{gathered}(\Delta\ell)^2=(\Delta x)^2(1+c^2)\\[2pt]\Delta\ell=\Delta x\sqrt{1+c^2}\end{gathered}$$
+On a curve the slope at $x_k$ is $f'(x_k)$. Adding up the pieces and letting $N\to\infty$ turns the sum into an integral:
+$$\begin{aligned}\ell&=\lim_{N\to\infty}\sum_{k=1}^{N}\sqrt{1+f'(x_k)^2}\,\Delta x\\[4pt]&=\int_a^b\sqrt{1+f'(x)^2}\,dx\end{aligned}$$
+Here $f'(x)^2$ is the square of the first derivative. Simplify $1+f'(x)^2$ before taking the root: for $y=\frac{2}{3}x^{3/2}$ it is $1+x$, and often it is a perfect square.
+- **Length of a circular arc:** the upper half of the circle of radius $r$ is $y=\sqrt{r^2-x^2}$. Its slope is $f'=-\frac{x}{\sqrt{r^2-x^2}}$, so $1+f'^2=\frac{r^2}{r^2-x^2}$ and, with $u=\frac{x}{r}$,
+$$\int\frac{r}{\sqrt{r^2-x^2}}\,dx=r\arcsin\frac{x}{r}+C$$
+From $x=0$ to $x=r$ this gives $r\cdot\frac{\pi}{2}$, a quarter of $2\pi r$. An arc of angle $\theta$ (in radians) has length $r\theta$.
+- **Primitive functions of $\cos^nx$ and $\sin^nx$ (integration by parts):** write $C_n=\int\cos^nx\,dx$. Split off one factor, $\cos^nx=\cos^{n-1}x\cdot\cos x$, and integrate by parts with $f=\cos^{n-1}x$ and $g'=\cos x$:
+$$\begin{aligned}C_n&=\cos^{n-1}x\sin x\\[2pt]&\quad+(n-1)\int\cos^{n-2}x\sin^2x\,dx\end{aligned}$$
+With $\sin^2x=1-\cos^2x$, the last integral is $C_{n-2}-C_n$, so $C_n$ appears on both sides. Moving it to the left gives $nC_n=\cos^{n-1}x\sin x+(n-1)C_{n-2}$:
+$$C_n=\frac{1}{n}\cos^{n-1}x\sin x+\frac{n-1}{n}C_{n-2}$$
+The same steps for $S_n=\int\sin^nx\,dx$ give
+$$S_n=-\frac{1}{n}\sin^{n-1}x\cos x+\frac{n-1}{n}S_{n-2}$$
+Each step lowers the power by $2$, down to $C_0=x$, $C_1=\sin x$ or $S_1=-\cos x$. For $n=2$ the half-angle formulas give the same: $\sin^2x=\frac{1-\cos2x}{2}$ and $\cos^2x=\frac{1+\cos2x}{2}$.
+- **On $\left[0,\frac{\pi}{2}\right]$:** the first term is $0$ at both ends, so the cosine and sine integrals follow the same rule from the same start, and are equal:
+$$I_n=\int_0^{\pi/2}\cos^nx\,dx=\int_0^{\pi/2}\sin^nx\,dx$$
+$$I_n=\frac{n-1}{n}I_{n-2},\qquad I_0=\frac{\pi}{2},\quad I_1=1$$
+For example $I_2=\frac{1}{2}\cdot\frac{\pi}{2}=\frac{\pi}{4}$, $I_4=\frac{3}{4}\cdot\frac{1}{2}\cdot\frac{\pi}{2}=\frac{3\pi}{16}$ and $I_5=\frac{4}{5}\cdot\frac{2}{3}=\frac{8}{15}$.
+- **Products of sines and cosines** (asked on Quiz 08): turn the product into a sum first,
+$$\begin{aligned}\sin mx\sin nx&=\tfrac{1}{2}\cos(m-n)x\\&\quad-\tfrac{1}{2}\cos(m+n)x\\[6pt]\cos mx\cos nx&=\tfrac{1}{2}\cos(m-n)x\\&\quad+\tfrac{1}{2}\cos(m+n)x\end{aligned}$$
+With $|m|\ne|n|$, neither $m-n$ nor $m+n$ is $0$, so each term integrates to a sine. For whole numbers $m$ and $n$, $\int_0^{\pi}\sin mx\sin nx\,dx=0$, because $\sin k\pi=0$. On another interval, work it out: on $\left[-\frac{\pi}{2},\frac{\pi}{2}\right]$ the result is not always $0$.`,
+    watch: R`
+- Square $f$ before you integrate: $V=\pi\int f(x)^2\,dx$, not $\pi\left(\int f\,dx\right)^2$. Expand the square completely: $(1+\sin x)^2=1+2\sin x+\sin^2x$, with the middle term.
+- With a hole, square each radius on its own: $\pi\int\big(f^2-g^2\big)\,dx$, not $\pi\int(f-g)^2\,dx$.
+- After a substitution, move the limits too: with $u=-x^2$, $x=\frac{1}{2}$ gives $u=-\frac{1}{4}$, not $\frac{1}{2}$. And $du=-2x\,dx$ keeps its minus sign, which flips the limits back.
+- $\int e^u\,du=e^u+C$: once everything is in $u$, there is nothing to divide by. Dividing by the number inside works only for a linear inside, like $\int e^{3x}\,dx=\frac{e^{3x}}{3}+C$.
+- A volume, a length and an area are positive. A negative answer usually means the limits went in the wrong order: it is $F(\text{upper})-F(\text{lower})$.
+- In $\sqrt{1+f'(x)^2}$ the first derivative is squared: $f'(x)^2=\big(f'(x)\big)^2$, not $f''(x)$.
+- $\left(\frac{\ln x}{4}\right)'=\frac{1}{4x}$, but $\left(\ln\frac{x}{4}\right)'=\frac{1}{x}$, since $\ln\frac{x}{4}=\ln x-\ln4$.
+- The average value divides by the width $b-a$; the average of $x$ divides by $\int f\,dx$. Don't leave out the bottom integral.
+- In the reduction formula, $\sin^2x=1-\cos^2x$ gives $+(n-1)C_{n-2}$ and $-(n-1)C_n$. Keep these signs when you move $C_n$ to the left; with them the other way round, the $C_n$ terms don't add up to $nC_n$.
+- On $\left[0,\frac{\pi}{2}\right]$ an even power ends with $I_0=\frac{\pi}{2}$ and an odd one with $I_1=1$: $I_3=\frac{2}{3}$, with no $\pi$.
+- $\int\sin mx\sin nx\,dx=0$ needs whole numbers and an interval such as $[0,\pi]$. On $\left[-\frac{\pi}{2},\frac{\pi}{2}\right]$, $\int\cos x\cos2x\,dx=\frac{2}{3}$.`,
+    tricksAdded: NOV13,
+    tricks: R`
+- **The reduction formula in one line:** on $\left[0,\frac{\pi}{2}\right]$, multiply the fractions $\frac{n-1}{n}$, $\frac{n-3}{n-2}$, … down to $\frac{1}{2}$ (then times $\frac{\pi}{2}$) or to $\frac{2}{3}$ (then stop):
+$$\begin{gathered}I_6=\frac{5\cdot3\cdot1}{6\cdot4\cdot2}\cdot\frac{\pi}{2}=\frac{5\pi}{32}\\[4pt]I_7=\frac{6\cdot4\cdot2}{7\cdot5\cdot3}=\frac{16}{35}\end{gathered}$$
+- **$\sin^2$ and $\cos^2$ without a formula:** on $\left[0,\frac{\pi}{2}\right]$ they have the same integral and add up to $1$, so each gives half of $\frac{\pi}{2}$, that is $\frac{\pi}{4}$. On $[0,\pi]$ each gives $\frac{\pi}{2}$.
+- **Spot the perfect square in a length:** if $f'=A-B$ with $AB=\frac{1}{4}$, then $1+f'^2=A^2+2AB+B^2=(A+B)^2$, so the root is $A+B$ (when it is positive). For example $f'=x-\frac{1}{4x}$ gives $\sqrt{1+f'^2}=x+\frac{1}{4x}$.
+- **Check an average:** it must lie between the smallest and the largest value of $f$ on the interval, and $\bar x$ must lie in $[a,b]$. $\frac{2}{\pi}\approx0.64$ for $\sin x$ on $[0,\pi]$ passes.`,
+  },
   { id: 'u5', dates: '16 & 17 Nov', title: 'Parametric and polar curves', starred: true, upcoming: true },
   { id: 'u6', dates: '19 & 20 Nov', title: 'Improper integrals and orthogonal functions', starred: true, upcoming: true },
 ];
@@ -177,6 +244,8 @@ export const habits = R`
 - When $f$ changes sign, find its zeros first: the integral and the area of the region are different answers.
 - Before integrating a fraction, ask two things: is the top the derivative of the bottom, and does the bottom factor ($\Delta$)?
 - After a substitution, write the new limits at once, on the line with $du$.
+- For a volume, write $V=\pi\int_a^b f(x)^2\,dx$ first, then expand $f(x)^2$ completely before you integrate.
+- For a length, simplify $1+f'(x)^2$ (look for a perfect square) before you take the root.
 - Keep answers exact: $\frac{16}{3}$, $\frac{\pi}{4}$ or $\frac{e^2-1}{2}$, not decimals.`;
 
 // ---------------- Practice ----------------
@@ -639,5 +708,155 @@ So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{
 **(2)** D: $x^2$, $2x$, $2$, $0$. I: $\sin x$, $-\cos x$, $-\sin x$, $\cos x$. With the signs $+,-,+$: $x^2(-\cos x)-2x(-\sin x)+2\cos x+C=-x^2\cos x+2x\sin x+2\cos x+C$.
 
 **(3)** With $x\to\frac{\pi}{2}-x$, $\sin x$ and $\cos x$ swap, so the same integral $I$ has $\sqrt{\cos x}$ on top. Adding the two, the tops make the bottom: $2I=\int_0^{\pi/2}dx=\frac{\pi}{2}$, so $I=\frac{\pi}{4}$.` },
+  ],
+  u4: [
+    { src: 'Area between two curves', added: NOV13,
+      stem: R`Find the area of the region between the two curves.`,
+      parts: [R`$y=2x$ and $y=x^2$`, R`$y=\cos x$ and $y=\sin x$ for $0\le x\le\frac{\pi}{4}$`],
+      hint: R`Solve $f(x)=g(x)$ for the limits, check which curve is on top, then integrate top minus bottom.`,
+      answer: [R`(1) $\frac{4}{3}$`, R`(2) $\sqrt2-1$`],
+      sol: R`
+**(1)** The curves meet where $x^2=2x$, at $x=0$ and $x=2$. Between them $2x\ge x^2$ (at $x=1$: $2>1$), so
+$$\begin{aligned}A&=\int_0^2(2x-x^2)\,dx=\left[x^2-\frac{x^3}{3}\right]_0^2\\[4pt]&=4-\frac{8}{3}=\frac{4}{3}\end{aligned}$$
+
+**(2)** On $\left[0,\frac{\pi}{4}\right]$, $\cos x\ge\sin x$; they meet at $x=\frac{\pi}{4}$. So
+$$A=\int_0^{\pi/4}(\cos x-\sin x)\,dx=\Big[\sin x+\cos x\Big]_0^{\pi/4}$$
+which is $\left(\frac{\sqrt2}{2}+\frac{\sqrt2}{2}\right)-(0+1)=\sqrt2-1$.` },
+    { src: 'Volumes from slices', added: NOV13,
+      stem: R`Find each volume as $\displaystyle\int S(x)\,dx$, where $S(x)$ is the area of the slice at $x$.`,
+      parts: [R`A cone of radius $3$ and height $4$`, R`A sphere of radius $2$`, R`A solid on $0\le x\le2$ whose slice at $x$ is a square of side $x$`],
+      hint: R`(1) With the tip at $x=0$, the radius at $x$ is $\frac{3x}{4}$. (2) The slice at $x$ is a circle of radius $\sqrt{4-x^2}$. (3) $S(x)=x^2$.`,
+      answer: [R`(1) $12\pi$`, R`(2) $\frac{32\pi}{3}$`, R`(3) $\frac{8}{3}$`],
+      sol: R`
+**(1)** With the tip at $x=0$, the slice at $x$ is a circle of radius $\frac{3x}{4}$:
+$$V=\int_0^4\pi\frac{9x^2}{16}\,dx=\frac{9\pi}{16}\cdot\frac{64}{3}=12\pi$$
+the same as $\frac{1}{3}\pi r^2h=\frac{1}{3}\pi\cdot9\cdot4$.
+
+**(2)** The slice at $x$, for $-2\le x\le2$, is a circle of radius $\sqrt{4-x^2}$:
+$$V=\pi\int_{-2}^{2}(4-x^2)\,dx=\pi\left(16-\frac{16}{3}\right)=\frac{32\pi}{3}$$
+Check: $\frac{4}{3}\pi\cdot2^3=\frac{32\pi}{3}$.
+
+**(3)** $S(x)=x^2$, so $V=\int_0^2x^2\,dx=\frac{8}{3}$. The solid is a pyramid with a $2\times2$ base and height $2$, and $\frac{1}{3}\cdot4\cdot2=\frac{8}{3}$ as well.` },
+    { src: 'Class exercise (1): solids of revolution', added: NOV13,
+      stem: R`Calculate the volume of the solid of revolution generated by $f(x)$ within $D$.`,
+      parts: [R`$f(x)=\frac{1}{\cos x}$;  $D:\ \left[\frac{\pi}{6},\frac{\pi}{3}\right]$`, R`$f(x)=\sqrt{x}\,e^{-x^2/2}$;  $D:\ \left[0,\frac{1}{2}\right]$`],
+      hint: R`Square $f$ first. (1) $\frac{1}{\cos^2x}$ has the primitive $\tan x$. (2) $f(x)^2=xe^{-x^2}$: put $u=-x^2$ and move the limits to $u$.`,
+      answer: [R`(1) $\frac{2\sqrt3}{3}\pi$`, R`(2) $\frac{\pi}{2}\left(1-e^{-1/4}\right)$`],
+      sol: R`
+**(1)** $f(x)^2=\frac{1}{\cos^2x}$, whose primitive is $\tan x$:
+$$\begin{aligned}V&=\pi\Big[\tan x\Big]_{\pi/6}^{\pi/3}\\[4pt]&=\pi\left(\sqrt3-\frac{\sqrt3}{3}\right)=\frac{2\sqrt3}{3}\pi\end{aligned}$$
+Upper limit minus lower limit: the other order gives a negative number, which can't be a volume.
+
+**(2)** $f(x)^2=xe^{-x^2}$. With $u=-x^2$: $du=-2x\,dx$, so $x\,dx=-\frac{du}{2}$. The limits: $x=0$ gives $u=0$, and $x=\frac{1}{2}$ gives $u=-\frac{1}{4}$.
+$$\begin{aligned}V&=\pi\int_0^{-1/4}e^u\left(-\frac{du}{2}\right)=\frac{\pi}{2}\int_{-1/4}^{0}e^u\,du\\[4pt]&=\frac{\pi}{2}\left(1-e^{-1/4}\right)\end{aligned}$$
+Once everything is in $u$, $\int e^u\,du=e^u$, with nothing to divide by.` },
+    { src: 'Solids of revolution with a hole', added: NOV13,
+      stem: R`Turn each region around the $x$-axis and find the volume of the solid.`,
+      parts: [R`The region between $y=x$ and $y=x^2$`, R`The region between $y=2$ and $y=x^2+1$`],
+      hint: R`Find where the curves meet. The upper curve is the outer radius and the lower one the inner radius; square each radius on its own.`,
+      answer: [R`(1) $\frac{2\pi}{15}$`, R`(2) $\frac{64\pi}{15}$`],
+      sol: R`
+**(1)** The curves meet at $x=0$ and $x=1$, with $x\ge x^2$ between them. Outer radius $x$, inner radius $x^2$:
+$$\begin{aligned}V&=\pi\int_0^1(x^2-x^4)\,dx\\[4pt]&=\pi\left(\frac{1}{3}-\frac{1}{5}\right)=\frac{2\pi}{15}\end{aligned}$$
+
+**(2)** $x^2+1=2$ at $x=\pm1$, and $2\ge x^2+1$ between. Outer radius $2$, inner radius $x^2+1$:
+$$\begin{aligned}V&=\pi\int_{-1}^{1}\big(4-(x^2+1)^2\big)\,dx\\[4pt]&=\pi\int_{-1}^{1}(3-2x^2-x^4)\,dx\end{aligned}$$
+which is $\pi\left(6-\frac{4}{3}-\frac{2}{5}\right)=\frac{64\pi}{15}$.
+
+Squaring the difference instead, $\pi\int_{-1}^{1}\big(2-(x^2+1)\big)^2\,dx=\frac{16\pi}{15}$, gives the volume of a different solid.` },
+    { src: 'Two types of averages', added: NOV13,
+      stem: R`Find the averages.`,
+      parts: [R`The average of $f(x)=\sin x$ in $0\le x\le\pi$`, R`The average of $f(x)=x^2$ in $0\le x\le3$`,
+              R`The average of $x$ with the probability $\frac{f(x)}{P}$, for $f(x)=x^2$ in $0\le x\le1$`, R`The average of $x$ with the probability $\frac{f(x)}{P}$, for $f(x)=e^{-x}$ in $0\le x\le1$`],
+      hint: R`(1) and (2): divide the integral by the width $b-a$. (3) and (4): $\bar x=\frac{\int x\,f(x)\,dx}{\int f(x)\,dx}$; in (4), $\int xe^{-x}\,dx$ needs integration by parts.`,
+      answer: [R`(1) $\frac{2}{\pi}$`, R`(2) $3$`, R`(3) $\frac{3}{4}$`, R`(4) $\frac{e-2}{e-1}$`],
+      sol: R`
+**(1)** $\frac{1}{\pi}\int_0^{\pi}\sin x\,dx=\frac{1}{\pi}\Big[-\cos x\Big]_0^{\pi}=\frac{2}{\pi}$, about $0.64$: between the smallest value $0$ and the largest $1$.
+
+**(2)** $\frac{1}{3}\int_0^3x^2\,dx=\frac{1}{3}\cdot9=3$. The curve reaches the height $3$ at $x=\sqrt3$.
+
+**(3)** $P=\int_0^1x^2\,dx=\frac{1}{3}$ and $\int_0^1x\cdot x^2\,dx=\frac{1}{4}$, so $\bar x=\frac{1/4}{1/3}=\frac{3}{4}$. The weight $x^2$ grows with $x$, so the average lies right of the middle.
+
+**(4)** $P=\int_0^1e^{-x}\,dx=1-e^{-1}$. By parts, $\int xe^{-x}\,dx=-xe^{-x}-e^{-x}+C$, so $\int_0^1xe^{-x}\,dx=-2e^{-1}-(-1)=1-2e^{-1}$.
+
+Then $\bar x=\frac{1-2e^{-1}}{1-e^{-1}}=\frac{e-2}{e-1}$ (multiply the top and the bottom by $e$), about $0.42$: left of the middle, since $e^{-x}$ gives the small values of $x$ more weight.` },
+    { src: 'Length of a curve', added: NOV13,
+      stem: R`Find the length of each curve.`,
+      parts: [R`$y=\frac{2}{3}x^{3/2}$ on $[0,3]$`, R`$y=x^{3/2}$ on $\left[0,\frac{4}{3}\right]$`, R`$y=\frac{e^x+e^{-x}}{2}$ on $[0,1]$`],
+      hint: R`Find $f'$, square it, add $1$ and simplify before you take the root. In (3), $1+f'(x)^2$ is a perfect square.`,
+      answer: [R`(1) $\frac{14}{3}$`, R`(2) $\frac{56}{27}$`, R`(3) $\frac{e-e^{-1}}{2}$`],
+      sol: R`
+**(1)** $f'=\sqrt x$, so $1+f'^2=1+x$:
+$$\begin{aligned}\ell&=\int_0^3\sqrt{1+x}\,dx=\frac{2}{3}\Big[(1+x)^{3/2}\Big]_0^3\\[4pt]&=\frac{2}{3}(8-1)=\frac{14}{3}\end{aligned}$$
+
+**(2)** $f'=\frac{3}{2}\sqrt x$, so $1+f'^2=1+\frac{9x}{4}$. Divide by the number inside, $\frac{9}{4}$:
+$$\begin{aligned}\ell&=\int_0^{4/3}\sqrt{1+\tfrac{9x}{4}}\,dx=\frac{8}{27}\Big[\left(1+\tfrac{9x}{4}\right)^{3/2}\Big]_0^{4/3}\\[4pt]&=\frac{8}{27}(8-1)=\frac{56}{27}\end{aligned}$$
+
+**(3)** $f'=\frac{e^x-e^{-x}}{2}$, and
+$$1+f'^2=\frac{e^{2x}+2+e^{-2x}}{4}=\left(\frac{e^x+e^{-x}}{2}\right)^2$$
+so $\ell=\int_0^1\frac{e^x+e^{-x}}{2}\,dx=\Big[\frac{e^x-e^{-x}}{2}\Big]_0^1=\frac{e-e^{-1}}{2}$.` },
+    { src: 'Length: a perfect square under the root', added: NOV13,
+      stem: R`Find the length of each curve. In both, $1+f'(x)^2$ is a perfect square.`,
+      parts: [R`$y=\frac{x^2}{2}-\frac{\ln x}{4}$ on $[1,e]$`, R`$y=\frac{x^3}{6}+\frac{1}{2x}$ on $[1,2]$`],
+      hint: R`(1) $f'=x-\frac{1}{4x}$. (2) $f'=\frac{x^2}{2}-\frac{1}{2x^2}$. In both, the middle term of $f'^2$ is $-\frac{1}{2}$, and adding $1$ turns it into $+\frac{1}{2}$.`,
+      answer: [R`(1) $\frac{2e^2-1}{4}$`, R`(2) $\frac{17}{12}$`],
+      sol: R`
+**(1)** $f'=x-\frac{1}{4x}$, so $f'^2=x^2-\frac{1}{2}+\frac{1}{16x^2}$ and
+$$1+f'^2=x^2+\frac{1}{2}+\frac{1}{16x^2}=\left(x+\frac{1}{4x}\right)^2$$
+
+Then
+$$\begin{aligned}\ell&=\int_1^e\left(x+\frac{1}{4x}\right)dx=\left[\frac{x^2}{2}+\frac{\ln x}{4}\right]_1^e\\[4pt]&=\frac{e^2}{2}+\frac{1}{4}-\frac{1}{2}=\frac{2e^2-1}{4}\end{aligned}$$
+
+**(2)** $f'=\frac{x^2}{2}-\frac{1}{2x^2}$, so $1+f'^2=\frac{x^4}{4}+\frac{1}{2}+\frac{1}{4x^4}=\left(\frac{x^2}{2}+\frac{1}{2x^2}\right)^2$ and
+$$\ell=\int_1^2\left(\frac{x^2}{2}+\frac{1}{2x^2}\right)dx=\left[\frac{x^3}{6}-\frac{1}{2x}\right]_1^2$$
+which is $\left(\frac{4}{3}-\frac{1}{4}\right)-\left(\frac{1}{6}-\frac{1}{2}\right)=\frac{17}{12}$.` },
+    { src: 'Length of a circular arc', added: NOV13,
+      stem: R`Use the length formula on the circle $y=\sqrt{r^2-x^2}$.`,
+      parts: [R`Show that $\sqrt{1+f'(x)^2}=\frac{r}{\sqrt{r^2-x^2}}$.`, R`Find the length of the arc of $y=\sqrt{4-x^2}$ from $x=0$ to $x=1$.`, R`Find the length of the quarter circle from $x=0$ to $x=r$.`],
+      hint: R`$f'(x)=-\frac{x}{\sqrt{r^2-x^2}}$. For the integral, put $u=\frac{x}{r}$: it becomes $\int\frac{r\,du}{\sqrt{1-u^2}}$.`,
+      answer: [R`(1) $1+f'(x)^2=\frac{r^2}{r^2-x^2}$`, R`(2) $\frac{\pi}{3}$`, R`(3) $\frac{\pi r}{2}$`],
+      sol: R`
+**(1)** $f'(x)=\frac{-2x}{2\sqrt{r^2-x^2}}=-\frac{x}{\sqrt{r^2-x^2}}$, so $1+f'(x)^2=\frac{r^2-x^2+x^2}{r^2-x^2}=\frac{r^2}{r^2-x^2}$, whose root is $\frac{r}{\sqrt{r^2-x^2}}$.
+
+**(2)** Here $r=2$. With $u=\frac{x}{2}$ and $dx=2\,du$, the limits become $0$ and $\frac{1}{2}$:
+$$\int_0^1\frac{2\,dx}{\sqrt{4-x^2}}=2\int_0^{1/2}\frac{du}{\sqrt{1-u^2}}=2\arcsin\frac{1}{2}=\frac{\pi}{3}$$
+It is $r\theta$ with $r=2$ and $\theta=\frac{\pi}{6}$, the angle between the radii to $(0,2)$ and $(1,\sqrt3)$.
+
+**(3)** $r\Big[\arcsin\frac{x}{r}\Big]_0^r=r\cdot\frac{\pi}{2}=\frac{\pi r}{2}$, a quarter of $2\pi r$.` },
+    { src: 'Powers of cos and sin: the reduction formula', added: NOV13,
+      stem: R`Use $C_n=\frac{1}{n}\cos^{n-1}x\sin x+\frac{n-1}{n}C_{n-2}$ and the matching formula for $\sin^nx$.`,
+      parts: [R`$\displaystyle\int\cos^2x\,dx$`, R`$\displaystyle\int\sin^3x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\cos^4x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\sin^5x\,dx$`],
+      hint: R`Lower the power by $2$ until you reach $C_0=x$ or $S_1=-\cos x$. On $\left[0,\frac{\pi}{2}\right]$, $I_n=\frac{n-1}{n}I_{n-2}$ with $I_0=\frac{\pi}{2}$ and $I_1=1$.`,
+      answer: [R`(1) $\frac{1}{2}\sin x\cos x+\frac{x}{2}+C$`, R`(2) $-\frac{1}{3}\sin^2x\cos x-\frac{2}{3}\cos x+C$`, R`(3) $\frac{3\pi}{16}$`, R`(4) $\frac{8}{15}$`],
+      sol: R`
+**(1)** $n=2$: $C_2=\frac{1}{2}\cos x\sin x+\frac{1}{2}C_0$, and $C_0=\int1\,dx=x$. So $\int\cos^2x\,dx=\frac{1}{2}\sin x\cos x+\frac{x}{2}+C$. The half-angle formula, $\cos^2x=\frac{1+\cos2x}{2}$, gives $\frac{x}{2}+\frac{\sin2x}{4}+C$, the same, because $\sin2x=2\sin x\cos x$.
+
+**(2)** $n=3$: $S_3=-\frac{1}{3}\sin^2x\cos x+\frac{2}{3}S_1$, and $S_1=-\cos x$. So $\int\sin^3x\,dx=-\frac{1}{3}\sin^2x\cos x-\frac{2}{3}\cos x+C$.
+
+**(3)** $I_4=\frac{3}{4}I_2=\frac{3}{4}\cdot\frac{1}{2}I_0=\frac{3}{4}\cdot\frac{1}{2}\cdot\frac{\pi}{2}=\frac{3\pi}{16}$.
+
+**(4)** $I_5=\frac{4}{5}I_3=\frac{4}{5}\cdot\frac{2}{3}I_1=\frac{8}{15}$. An odd power ends at $I_1=1$, so there is no $\pi$.` },
+    { src: 'Products of sines and cosines', added: NOV13,
+      stem: R`Compute the integrals. Turn each product into a sum first.`,
+      parts: [R`$\displaystyle\int_0^{\pi}\sin2x\sin3x\,dx$`, R`$\displaystyle\int_0^{\pi}\sin^22x\,dx$`, R`$\displaystyle\int_{-\pi/2}^{\pi/2}\cos2x\cos3x\,dx$`],
+      hint: R`$\sin A\sin B=\frac{1}{2}\big(\cos(A-B)-\cos(A+B)\big)$ and $\cos A\cos B=\frac{1}{2}\big(\cos(A-B)+\cos(A+B)\big)$. In (2) the two factors are the same: use $\sin^2\theta=\frac{1-\cos2\theta}{2}$.`,
+      answer: [R`(1) $0$`, R`(2) $\frac{\pi}{2}$`, R`(3) $\frac{6}{5}$`],
+      sol: R`
+**(1)** $\sin2x\sin3x=\frac{1}{2}(\cos x-\cos5x)$, so the integral is $\frac{1}{2}\Big[\sin x-\frac{\sin5x}{5}\Big]_0^{\pi}=0$, since $\sin k\pi=0$.
+
+**(2)** $\sin^22x=\frac{1-\cos4x}{2}$, so the integral is $\Big[\frac{x}{2}-\frac{\sin4x}{8}\Big]_0^{\pi}=\frac{\pi}{2}$. With $m=n$ the product is a square, and its integral is not $0$.
+
+**(3)** $\cos2x\cos3x=\frac{1}{2}(\cos x+\cos5x)$, so the integral is $\frac{1}{2}\Big[\sin x+\frac{\sin5x}{5}\Big]_{-\pi/2}^{\pi/2}$. Both sines are odd, so this is $\sin\frac{\pi}{2}+\frac{1}{5}\sin\frac{5\pi}{2}=1+\frac{1}{5}=\frac{6}{5}$: not $0$ on this interval.` },
+    { src: 'Shortcut: the reduction formula in one line', added: NOV13,
+      stem: R`Use the shortcuts; no reduction steps are needed.`,
+      parts: [R`$\displaystyle\int_0^{\pi/2}\sin^6x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\cos^7x\,dx$`, R`$\displaystyle\int_0^{\pi}\sin^2x\,dx$`],
+      hint: R`Multiply $\frac{n-1}{n}\cdot\frac{n-3}{n-2}\cdots$; an even power ends with $\frac{1}{2}\cdot\frac{\pi}{2}$, an odd one with $\frac{2}{3}$. For (3), $\sin^2x$ and $\cos^2x$ add up to $1$.`,
+      answer: [R`(1) $\frac{5\pi}{32}$`, R`(2) $\frac{16}{35}$`, R`(3) $\frac{\pi}{2}$`],
+      sol: R`
+**(1)** An even power: $\frac{5\cdot3\cdot1}{6\cdot4\cdot2}\cdot\frac{\pi}{2}=\frac{15}{48}\cdot\frac{\pi}{2}=\frac{5\pi}{32}$.
+
+**(2)** An odd power: $\frac{6\cdot4\cdot2}{7\cdot5\cdot3}=\frac{48}{105}=\frac{16}{35}$.
+
+**(3)** On $\left[0,\frac{\pi}{2}\right]$, $\sin^2x$ and $\cos^2x$ have the same integral and add up to $1$, so each gives $\frac{\pi}{4}$. Since $\sin(\pi-x)=\sin x$, the half from $\frac{\pi}{2}$ to $\pi$ gives the same again: $\frac{\pi}{4}+\frac{\pi}{4}=\frac{\pi}{2}$.` },
   ],
 };

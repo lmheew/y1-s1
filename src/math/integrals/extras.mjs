@@ -4,6 +4,7 @@ const NOV2 = '2026-11-02';
 const NOV6 = '2026-11-06';
 const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
+const NOV13 = '2026-11-13';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -41,6 +42,17 @@ export const tags = {
   '2.11': 'shortcut trick odd even function symmetric interval half circle known shape area',
   '3.14': 'shortcut trick guess and adjust derivative on top numerator cover-up partial fractions',
   '3.15': "shortcut trick DI table tabular integration by parts repeated King's rule a - x",
+  '4.1': 'area between two curves top minus bottom where they cross intersection 2x x^2 sin cos',
+  '4.2': 'volume from slices cross-section S(x) cone cylinder sphere ball pyramid square slice',
+  '4.3': 'class exercise solid of revolution volume pi f^2 1/cos x tan sqrt(x) e^(-x^2/2) substitution new limits',
+  '4.4': 'solid of revolution with a hole washer ring outer inner radius f^2 - g^2',
+  '4.5': 'average value mean two types of averages probability weighted average x bar f bar',
+  '4.6': "length of a curve arc length sqrt(1 + f'^2) x^(3/2) e^x + e^-x perfect square",
+  '4.7': 'length of a curve perfect square under the root ln x x^3/6 + 1/(2x)',
+  '4.8': 'length of a circular arc circle arcsin r theta quarter circle',
+  '4.9': 'reduction formula integration by parts cos^n sin^n powers of sine cosine C_n S_n I_n half-angle',
+  '4.10': 'products of sines and cosines product to sum orthogonal sin mx sin nx cos mx cos nx power-reducing',
+  '4.11': 'shortcut trick reduction formula in one line Wallis sin^2 cos^2 quarter turn',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -119,9 +131,47 @@ export const formulas = [
     ['x sin x', R`\int x\sin x\,dx=-x\cos x+\sin x+C`],
     ['ln x', R`\int\ln x\,dx=x\ln x-x+C`],
   ]},
+  { id: 'g4', title: 'Area and volume', quiz: 'Day 20 & 21 · Quiz 08', added: NOV13, rows: [
+    ['Between two curves (f ≥ g)', R`A=\int_a^b\big(f(x)-g(x)\big)\,dx`],
+    ['Volume from slices', R`V=\int_a^b S(x)\,dx`],
+    ['Cylinder', R`V=\pi r^2h`],
+    ['Cone', R`V=\frac{1}{3}\pi r^2h`],
+    ['Sphere', R`V=\frac{4}{3}\pi r^3`],
+    ['Solid of revolution', R`V=\pi\int_a^b f(x)^2\,dx`],
+    ['With a hole (f ≥ g ≥ 0)', R`V=\pi\int_a^b\big(f(x)^2-g(x)^2\big)\,dx`],
+  ]},
+  { id: 'g4b', title: 'Averages and the length of a curve', quiz: 'Day 20 & 21 · Quiz 08', added: NOV13, rows: [
+    ['Average value', R`\bar f=\frac{1}{b-a}\int_a^b f(x)\,dx`],
+    ['Average of x with the probability f/P', R`\bar x=\frac{\int_a^b x\,f(x)\,dx}{\int_a^b f(x)\,dx}`],
+    ['The probability', R`P=\int_a^b f(x)\,dx,\quad p(x)=\frac{f(x)}{P}`],
+    ['A straight piece', R`\Delta\ell=\Delta x\sqrt{1+c^2}`],
+    ['Length of a curve', R`\ell=\int_a^b\sqrt{1+f'(x)^2}\,dx`],
+    ['Circle: under the root', R`y=\sqrt{r^2-x^2}\ \Rightarrow\ 1+f'^2=\frac{r^2}{r^2-x^2}`],
+    ['Circular arc', R`\ell=r\theta`],
+  ]},
+  { id: 'g4c', title: 'Powers of sine and cosine', quiz: 'Day 20 & 21 · Quiz 08', added: NOV13, rows: [
+    ['Reduction: cosⁿ', R`C_n=\frac{1}{n}\cos^{n-1}x\sin x+\frac{n-1}{n}C_{n-2}`],
+    ['Reduction: sinⁿ', R`S_n=-\frac{1}{n}\sin^{n-1}x\cos x+\frac{n-1}{n}S_{n-2}`],
+    ['On [0, π/2]', R`I_n=\frac{n-1}{n}I_{n-2},\quad I_0=\frac{\pi}{2},\ I_1=1`],
+    ['Values', R`I_2=\frac{\pi}{4},\ I_3=\frac{2}{3},\ I_4=\frac{3\pi}{16},\ I_5=\frac{8}{15}`],
+  ]},
+  { id: 'g4d', title: 'Trig identities for integrals', quiz: 'Day 20 & 21 · Quiz 08', added: NOV13, rows: [
+    ['Double angle', R`\cos2x=1-2\sin^2x=2\cos^2x-1`],
+    ['Power-reducing: sin²', R`\sin^2x=\frac{1-\cos2x}{2}`],
+    ['Power-reducing: cos²', R`\cos^2x=\frac{1+\cos2x}{2}`],
+    ['sin x cos x', R`\sin x\cos x=\frac{\sin2x}{2}`],
+    ['∫ sin² x', R`\int\sin^2x\,dx=\frac{x}{2}-\frac{\sin2x}{4}+C`],
+    ['∫ cos² x', R`\int\cos^2x\,dx=\frac{x}{2}+\frac{\sin2x}{4}+C`],
+    ['Product to sum: sin · sin', R`\sin A\sin B=\tfrac{1}{2}\big(\cos(A-B)-\cos(A+B)\big)`],
+    ['Product to sum: cos · cos', R`\cos A\cos B=\tfrac{1}{2}\big(\cos(A-B)+\cos(A+B)\big)`],
+    ['Product to sum: sin · cos', R`\sin A\cos B=\tfrac{1}{2}\big(\sin(A+B)+\sin(A-B)\big)`],
+    ['Whole m, n with |m| ≠ |n|: sines', R`\int_0^{\pi}\sin mx\sin nx\,dx=0`],
+    ['Whole m, n with |m| ≠ |n|: cosines', R`\int_0^{\pi}\cos mx\cos nx\,dx=0`],
+  ]},
   // extras from outside the lectures, added at the user's request; its label matches no lesson, so the night-before
   // sheet lists it with the values to know
-  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV10, rows: [
+  // added moved to 13 Nov with the Day 20 & 21 rows (the reduction formula in one line, sin² and cos², a perfect square)
+  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV13, rows: [
     ['Odd function on [−a, a]', R`f(-x)=-f(x)\ \Rightarrow\ \int_{-a}^{a}f(x)\,dx=0`],
     ['Even function on [−a, a]', R`f(-x)=f(x)\ \Rightarrow\ \int_{-a}^{a}f\,dx=2\int_0^{a}f\,dx`],
     ['Half a circle', R`\int_{-r}^{r}\sqrt{r^2-x^2}\,dx=\frac{\pi r^2}{2}`],
@@ -129,6 +179,10 @@ export const formulas = [
     ['Cover-up', R`A=\Big[(x-\alpha)\,f(x)\Big]_{x=\alpha}`],
     ['DI table: x²eˣ', R`\int x^2e^x\,dx=e^x(x^2-2x+2)+C`],
     ["King's rule", R`\int_0^{a}f(x)\,dx=\int_0^{a}f(a-x)\,dx`],
+    ['Reduction in one line, even n', R`I_n=\frac{(n-1)(n-3)\cdots1}{n(n-2)\cdots2}\cdot\frac{\pi}{2}`],
+    ['Reduction in one line, odd n', R`I_n=\frac{(n-1)(n-3)\cdots2}{n(n-2)\cdots3}`],
+    ['sin² and cos² on a quarter turn', R`\int_0^{\pi/2}\sin^2x\,dx=\int_0^{\pi/2}\cos^2x\,dx=\frac{\pi}{4}`],
+    ['A perfect square in a length', R`f'=A-B,\ AB=\tfrac{1}{4}\ \Rightarrow\ \sqrt{1+f'^2}=A+B`],
   ]},
 ];
 
