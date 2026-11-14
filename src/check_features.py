@@ -1105,6 +1105,29 @@ with sync_playwright() as p:
                 pg.evaluate("window.scrollTo(0, 0)")
                 pg.wait_for_timeout(250)
                 check(f'{label} {path}: at the top it has the app bar colour', rgb(pg.evaluate(EDGE)['bg']) == rgb(pg.evaluate(bg_of, '.appbar')))
+                # The bottom edge: Safari on iOS 26 draws the page under its address bar but ends fixed boxes above it,
+                # so on phones a twin strip sits on the bottom edge (Safari fills the area under its bar with its colour)
+                # and the fade under the floating tab bar goes on, solid, below the edge.
+                FOOT = """(() => { const e = document.querySelector('.sb-foot'), c = getComputedStyle(e), r = e.getBoundingClientRect(),
+                  m = getComputedStyle(document.querySelector('.tabbar + main'), '::after');
+                  return { disp: c.display, pos: c.position, bottom: r.bottom, vh: innerHeight, w: r.width, vw: document.documentElement.clientWidth, h: r.height,
+                    z: c.zIndex, pe: c.pointerEvents, bg: c.backgroundColor, clip: c.backgroundClip || c.webkitBackgroundClip,
+                    next: e.nextElementSibling ? e.nextElementSibling.className : '', fade: m.bottom, fadeDisp: m.display }; })()"""
+                f = pg.evaluate(FOOT)
+                if label == 'phone':
+                    check(f"{label} {path}: the bottom-edge strip before the tab bar: fixed, full width, 12 px, topmost, tap-through, the bars' colour, painting nothing",
+                          f['disp'] != 'none' and f['pos'] == 'fixed' and f['bottom'] == f['vh'] and abs(f['w'] - f['vw']) < 1 and f['h'] == 12
+                          and f['z'] == '2147483647' and f['pe'] == 'none' and f['clip'] == 'text' and rgb(f['bg']) == rgb(pg.evaluate(bg_of, '.appbar'))
+                          and f['next'].split()[0] == 'tabbar', f)
+                    check(f"{label} {path}: the fade under the tab bar goes on 200 px below the bottom edge", f['fade'] == '-200px', f)
+                    area = {'x': 0, 'y': vp['height'] - 120, 'width': vp['width'], 'height': 120}
+                    shown = pg.screenshot(clip=area, animations='disabled')
+                    pg.evaluate("document.querySelector('.sb-foot').style.display = 'none'")
+                    gone = pg.screenshot(clip=area, animations='disabled')
+                    pg.evaluate("document.querySelector('.sb-foot').style.display = ''")
+                    check(f'{label} {path}: the bottom strip changes nothing on screen', shown == gone)
+                else:
+                    check(f'{label} {path}: no bottom strip or fade on wide screens (the tab bar is at the top)', f['disp'] == 'none' and f['fadeDisp'] == 'none', f)
         ctx.close()
     b.close()
 srv.shutdown()

@@ -33,7 +33,7 @@ import * as INTX from './integrals/extras.mjs';
 import * as INTF from './integrals/followups.mjs';
 import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
-  THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, KATEX_DIR } from '../shared/build-lib.mjs';
+  THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, SB_FOOT, KATEX_DIR } from '../shared/build-lib.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
@@ -510,6 +510,7 @@ ${onExam.map((u) => `<section class="nsec" id="nt-${u.id}"><h2><span class="kick
   </div>
 </div></header>
 
+${SB_FOOT}
 <nav class="tabbar" aria-label="Sections" data-updated="${P.updated}"><div class="tabbar-row" role="tablist">
   ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === 'summary'}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>

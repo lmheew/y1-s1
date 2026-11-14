@@ -272,6 +272,9 @@ export async function openBox(key, box) {
 
 // first in every page's body: the strip iOS takes the status bar's colour from (.sb-edge in page.css)
 export const SB_EDGE = '<div class="sb-edge" aria-hidden="true"></div>';
+// just before an exam page's tab bar: its twin on the bottom edge, which Safari takes the colour under its address bar
+// from (.sb-foot in page.css). Not between the tab bar and <main>: the fade is .tabbar + main::after.
+export const SB_FOOT = '<div class="sb-foot" aria-hidden="true"></div>';
 
 export const PICKER_CSS = `
 /* the exam picker: one glass card per exam, like the home page's subject cards; there is no tab bar on this page */

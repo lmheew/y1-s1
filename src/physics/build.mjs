@@ -20,7 +20,7 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { fmtDate, esc, tex, inline, items, blocks, plain, entry, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, band, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS,
   indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged, THEME_EARLY, HEAD_COMMON, ogTags, unb64, normalize, readJSON, deriveKey,
-  sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, ring, MARU } from '../shared/build-lib.mjs';
+  sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, SB_FOOT, ring, MARU } from '../shared/build-lib.mjs';
 import { TAB_ICONS, UI_ICONS, subjectSwitch } from '../shared/icons.mjs';
 import { chapters, EXAMS, BADGE, CH_ICONS, EXAM_ICONS } from './content.mjs';
 import { sets } from './quizzes.mjs';
@@ -482,6 +482,7 @@ ${chapters.map((c) => {
   </div>
 </div></header>
 
+${SB_FOOT}
 <nav class="tabbar" aria-label="Sections" data-updated="${LAST_UPDATED}"><div class="tabbar-row" role="tablist">
   ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === PAGE_CONF.home}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>

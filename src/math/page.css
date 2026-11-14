@@ -158,9 +158,17 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 @media (max-width: 359px) { .tab { font-size: 10px; } }
 
 /* under the floating tab bar the page fades into the bars' colour, so no half line of text shows around it
-   (phones only: the wide tab bar is at the top) */
-.tabbar + main::after { content: ""; position: fixed; z-index: 29; left: 0; right: 0; bottom: 0; height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 26px); pointer-events: none;
-  background: linear-gradient(to bottom, rgba(var(--bar-rgb), 0), rgba(var(--bar-rgb), .86) 62%, rgb(var(--bar-rgb))); }
+   (phones only: the wide tab bar is at the top).
+   Safari on iOS 26 lays its address bar over the page: the page goes on under it, but fixed boxes end above it,
+   about 100 px above the screen's edge, so the page used to show between the tab bar and Safari's bar. Two things
+   cover that: the fade goes on, solid, for 200 px below the edge (off the screen anywhere else), and .sb-foot, a
+   fixed, full-width box on the bottom edge like .sb-edge on the top one, has Safari fill the area under its bar
+   with the bars' colour. The strip paints nothing itself, so it never covers the tab bar's lower edge. */
+.tabbar + main::after { content: ""; position: fixed; z-index: 29; left: 0; right: 0; bottom: -200px; height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 226px); pointer-events: none;
+  background: linear-gradient(to bottom, rgba(var(--bar-rgb), 0), rgba(var(--bar-rgb), .86) calc(62% - 124px), rgb(var(--bar-rgb)) calc(100% - 200px)); }
+.sb-foot { position: fixed; bottom: 0; left: 0; right: 0; height: 12px; z-index: 2147483647; pointer-events: none;
+  background-color: rgb(var(--bar-rgb)); -webkit-background-clip: text; background-clip: text; }
+@media print { .sb-foot { display: none; } }
 
 /* a view's title: large, on the page itself, with its Japanese name beside it */
 .band .wrap { padding-block: 24px 2px; }
@@ -457,7 +465,7 @@ details[open] .when-open { display: inline; }
   .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   :root { --anchor-top: 72px; }
   .appbar { position: static; border-bottom: 0; }
-  .tabbar + main::after { display: none; }
+  .tabbar + main::after, .sb-foot { display: none; }
   .tabbar { position: sticky; top: env(safe-area-inset-top, 0px); left: auto; right: auto; bottom: auto; padding: 5px max(16px, env(safe-area-inset-right, 0px)) 5px max(16px, env(safe-area-inset-left, 0px));
     border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
   .tabbar-row { max-width: 728px; } /* as wide as the text column */
