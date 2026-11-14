@@ -182,7 +182,12 @@
     const at = tabs.findIndex((t) => t.dataset.view === view);
     tabRow.style.setProperty('--tab-i', String(Math.max(at, 0)));
     tabRow.classList.toggle('no-tab', at < 0);
-    VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
+    // the tab left goes back to skipping its long lists (page.css; they keep the size they had, contain-intrinsic-size:
+    // auto), so coming back to a long tab shows it at once, and drawAll draws it for good again
+    VIEWS.forEach((v) => {
+      if (v !== view && !panels[v].hidden) $$('.drawn', panels[v]).forEach((c) => c.classList.remove('drawn'));
+      panels[v].hidden = v !== view;
+    });
     paintToc();
     drawAll(view);
     remember({ tab: view, at: '', label: '' });
@@ -202,14 +207,14 @@
     p.classList.add('view-in');
   }
 
-  // ----- long tabs: Practice cards, questions, formula rows and Physics Summary modules away from the screen skip
-  // layout at first (content-visibility: auto in page.css), so a tab with a hundred of them shows at once. Right after,
-  // they are drawn for good (.drawn), from the top, while the page is idle (about 10 ms at a time, so scrolling and
-  // taps stay smooth), and the page is whole a moment later. A card the browser draws itself as it comes near takes
-  // its real height then, and scroll anchoring doesn't make up for that, so scrolling back up past such cards would
-  // jump: a jump draws everything above its target first (drawAbove), and a scroll past cards not drawn yet draws
-  // them at once. -----
-  const CV = ['.prob', '.rq', '.frow', '.smod'].map((s) => s + ':not(.drawn)').join(', ');
+  // ----- long tabs: Practice cards, questions, formula rows, Math's Summary key ideas and Physics' Summary modules away
+  // from the screen skip layout at first (content-visibility: auto in page.css), so a tab with a hundred of them shows
+  // at once. Right after, they are drawn for good (.drawn), from the top, while the page is idle (about 10 ms at a
+  // time, so scrolling and taps stay smooth), and the page is whole a moment later. A card the browser draws itself as
+  // it comes near takes its real height then, and scroll anchoring doesn't make up for that, so scrolling back up past
+  // such cards would jump: a jump draws everything above its target first (drawAbove), and a scroll past cards not
+  // drawn yet draws them at once. -----
+  const CV = ['.prob', '.rq', '.frow', '.smod', '.unit > .ideas > li'].map((s) => s + ':not(.drawn)').join(', ');
   const drawing = {};
   const whenIdle = window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 400 }) : (f) => setTimeout(() => f(null), 40);
   function drawAll(view) {
@@ -1423,6 +1428,22 @@
       if (!target || !target.compareDocumentPosition) return;
       figs.forEach((f) => { if (!f.dataset.drawn && (f.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING)) { io.unobserve(f); build(f); } });
     });
+    // a fast scroll can pass a graph between two frames without it ever coming near (a fling to the end), and drawing
+    // it later, as the page scrolls back up to it, would move everything under it. So a scroll draws every graph that
+    // is wholly above the screen at once, in the scroll event, before the page is laid out: the browser then holds the
+    // reader's place (scroll anchoring). The ones on or near the screen are the observer's, as before.
+    const onScroll = () => {
+      let left = 0;
+      for (const f of figs) {
+        if (f.dataset.drawn) continue;
+        left++;
+        if (!f.getClientRects().length) continue; // in a tab that isn't open
+        if (f.getBoundingClientRect().bottom > 0) break; // graphs are in page order: this one and the rest are lower
+        io.unobserve(f); build(f); left--;
+      }
+      if (!left) window.removeEventListener('scroll', onScroll);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
   } else {
     window.addEventListener('load', () => figs.forEach(build));
   }

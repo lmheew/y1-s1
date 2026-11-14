@@ -1,6 +1,8 @@
 // Offline copy of the study site. Pages and data (HTML, JSON): network first, so changes show as soon as you're
 // online, with the saved copy when the network is down or slow. Files named with a version (math.css?v=…,
 // locked.json?v=…): saved copy first, since a new version comes with a new name. Images and fonts: saved copy first.
+// Whatever comes from the network goes to the page as soon as it starts to arrive; the copy is saved alongside (the
+// worker stays up for that, waitUntil), so the page never waits for a whole file to be saved first.
 // Bump CACHE when the list below changes, or when every page changes at once (a new look), so a device swaps its
 // whole saved copy in one go; old caches are deleted on activate.
 const CACHE = 'study-notes-v8';
@@ -30,66 +32,77 @@ function withTimeout(promise, ms) {
     promise.then((v) => { clearTimeout(t); resolve(v); }, (err) => { clearTimeout(t); reject(err); });
   });
 }
-async function networkFirst(req) {
-  const cache = await caches.open(CACHE);
-  const fromNet = fetch(req).then(async (res) => {
-    if (res && res.ok) await cache.put(req, res.clone());
-    return res;
-  });
-  fromNet.catch(() => { /* offline: handled below */ });
-  try {
-    return await withTimeout(fromNet, TIMEOUT);
-  } catch (err) {
+// Each way of answering gives [the answer for the page, the saving of a copy]. The copy is taken (res.clone()) before
+// the answer goes to the page, which then reads it while it arrives.
+// Pages and data: the saved copy stands in when the network is down, or sends nothing back within TIMEOUT.
+function networkFirst(req) {
+  const net = fetch(req);
+  const saving = net.then((res) => {
+    if (!res || !res.ok) return undefined;
+    const copy = res.clone();
+    return caches.open(CACHE).then((c) => c.put(req, copy));
+  }).catch(() => { /* offline, or the copy couldn't be saved */ });
+  const answer = withTimeout(net, TIMEOUT).catch(async () => {
+    const cache = await caches.open(CACHE);
     const hit = (await cache.match(req)) || (await cache.match(req, { ignoreSearch: true }));
     if (hit) return hit;
     if (req.mode === 'navigate') {
       const home = await cache.match('./');
       if (home) return home;
     }
-    return fromNet; // nothing saved: wait for the network after all
-  }
+    return net; // nothing saved: wait for the network after all
+  });
+  return [answer, saving];
 }
 // a file named with its version (?v=…): the saved copy is that exact file. Only the newest version of each is kept,
 // beside the plain copy saved at install, which stands in offline when a page asks for a version not saved yet.
-async function versioned(req) {
-  const cache = await caches.open(CACHE);
-  const hit = await cache.match(req);
-  if (hit) return hit;
-  const url = new URL(req.url);
-  try {
-    const res = await fetch(req);
-    if (res && res.ok) {
+function versioned(req) {
+  const hit = caches.open(CACHE).then((c) => c.match(req));
+  const net = hit.then((h) => (h ? null : fetch(req)));
+  const saving = net.then((res) => {
+    if (!res || !res.ok) return undefined;
+    const copy = res.clone();
+    return caches.open(CACHE).then(async (cache) => {
+      const url = new URL(req.url);
       for (const k of await cache.keys()) {
         const u = new URL(k.url);
         if (u.pathname === url.pathname && u.search && u.search !== url.search) await cache.delete(k);
       }
-      await cache.put(req, res.clone());
-    }
-    return res;
-  } catch (err) {
-    const saved = await cache.matchAll(req, { ignoreSearch: true });
+      await cache.put(req, copy);
+    });
+  }).catch(() => { /* offline, or the copy couldn't be saved */ });
+  const answer = Promise.all([hit, net]).then(([h, res]) => h || res).catch(async (err) => {
+    const saved = await (await caches.open(CACHE)).matchAll(req, { ignoreSearch: true });
     if (saved.length) return saved[saved.length - 1];
     throw err;
-  }
+  });
+  return [answer, saving];
 }
-async function cacheFirst(req, name = CACHE) {
-  const cache = await caches.open(name);
-  const hit = await cache.match(req);
-  if (hit) return hit;
-  const res = await fetch(req);
-  if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
-  return res;
+function cacheFirst(req, name = CACHE) {
+  const hit = caches.open(name).then((c) => c.match(req));
+  const net = hit.then((h) => (h ? null : fetch(req)));
+  const saving = net.then((res) => {
+    if (!res || !(res.ok || res.type === 'opaque')) return undefined;
+    const copy = res.clone();
+    return caches.open(name).then((c) => c.put(req, copy));
+  }).catch(() => { /* offline, or the copy couldn't be saved */ });
+  return [Promise.all([hit, net]).then(([h, res]) => h || res), saving];
 }
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  let way = null;
   if (url.origin === self.location.origin) {
-    if (url.searchParams.has('v')) e.respondWith(versioned(req));
-    else if (/\.(png|svg|jpg|webp|woff2?)$/.test(url.pathname)) e.respondWith(cacheFirst(req));
-    else e.respondWith(networkFirst(req));
+    if (url.searchParams.has('v')) way = versioned(req);
+    else if (/\.(png|svg|jpg|webp|woff2?)$/.test(url.pathname)) way = cacheFirst(req);
+    else way = networkFirst(req);
   } else if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) {
-    e.respondWith(cacheFirst(req, FONTS));
+    way = cacheFirst(req, FONTS);
   }
+  if (!way) return;
+  const [answer, saving] = way;
+  e.respondWith(answer);
+  e.waitUntil(saving);
 });

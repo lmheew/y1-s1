@@ -62,10 +62,11 @@ def serve(directory):
 srv, BASE = serve(REPO)
 srv2, BASE2 = serve(SITE)
 STUB = re.compile(r'^https?://(?!localhost[:/])')
-# Cards, questions, formula rows and Summary modules skip drawing while away from the screen, and clip what overflows
-# them (content-visibility in page.css). Sideways scroll is measured with that off, so too-wide content anywhere shows.
+# Cards, questions, formula rows, Summary modules and Math's key ideas skip drawing while away from the screen, and clip
+# what overflows them (content-visibility in page.css). Sideways scroll is measured with that off, so too-wide content
+# anywhere shows.
 WIDE_JS = """() => { const s = document.createElement('style');
-  s.textContent = '.prob, .rq, .frow, .smod { content-visibility: visible !important; }';
+  s.textContent = '.prob, .rq, .frow, .smod, .unit > .ideas > li { content-visibility: visible !important; }';
   document.head.append(s);
   const w = document.documentElement.scrollWidth - document.documentElement.clientWidth;
   s.remove(); return w; }"""
@@ -119,6 +120,11 @@ with sync_playwright() as p:
             check(f'{label}: the next exam links to its page, its Practice and its night-before sheet, and Practice has not started here yet',
                   pg.locator('#next-exam .nx-btns a').count() == 3 and pg.locator('#next-exam a[href$="#night"]').count() == 1
                   and 'not started yet' in pg.locator('#next-exam').inner_text() and pg.locator('#resume').is_hidden())
+            # a first visit keeps the card's room while site.json loads (index.html: #next > .wait), so nothing jumps
+            room = pg.evaluate("""(() => { const n = document.querySelector('#next'), card = n.innerHTML, h = n.getBoundingClientRect().height;
+              n.innerHTML = '<p class="up-when wait">Loading…</p>'; const w = n.getBoundingClientRect().height; n.innerHTML = card;
+              return [Math.round(h), Math.round(w)]; })()""")
+            check(f'{label}: while the exams load on a first visit, the next exam\'s room is kept', abs(room[0] - room[1]) <= 16, room)
         check(f'{label}: the subjects sit side by side, each card a link to its exams', pg.evaluate("""(() => {
           const [a, b] = ['#card-math', '#card-physics'].map((s) => document.querySelector(s).getBoundingClientRect());
           return Math.abs(a.top - b.top) < 1 && a.right < b.left && a.width >= 150; })()"""))
@@ -523,6 +529,11 @@ with sync_playwright() as p:
         pg.wait_for_timeout(300)
         cur = pg.locator('#view-summary .toc a[aria-current="true"]')
         check('side menu: highlights the lesson being read', cur.count() == 1 and 'Day 5 & 6' in cur.inner_text(), cur.all_inner_texts())
+        held = pg.evaluate("""async () => { const u = document.getElementById('su-u3'), t0 = u.getBoundingClientRect().top;
+          const frame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50)));
+          const d = document.createElement('div'); d.style.height = '300px'; document.getElementById('su-u1').append(d); await frame();
+          const t1 = u.getBoundingClientRect().top; d.remove(); await frame(); return [Math.round(t0), Math.round(t1)]; }""")
+        check('side menu: the text holds its place when something above it grows (the menu is never the scroll anchor)', abs(held[0] - held[1]) <= 2, held)
         toc.locator('a', has_text='Infinite series').click()
         pg.wait_for_timeout(1500)
         top = pg.evaluate("document.getElementById('su-u7').getBoundingClientRect().top")
@@ -554,11 +565,19 @@ with sync_playwright() as p:
     pg.wait_for_function(UNDRAWN.format('practice') + ' === 0', timeout=15000)
     check('speed: a moment later every card is drawn for good',
           pg.evaluate("getComputedStyle(document.querySelector('#prob-8-14')).contentVisibility") == 'visible')
+    tall = pg.evaluate("document.getElementById('view-practice').getBoundingClientRect().height")
+    done = []
     for v in ['formulas', 'quizzes', 'exams']:
         pg.click(f'#tab-{v}')
-        pg.wait_for_function(UNDRAWN.format(v) + ' === 0', timeout=15000)
-    check('speed: formula rows, quiz and exam questions and Summary modules are drawn too',
-          all(pg.evaluate(UNDRAWN.format(v)) == 0 for v in ['summary', 'formulas', 'quizzes', 'exams']))
+        pg.wait_for_function(UNDRAWN.format(v) + ' === 0', timeout=15000)  # times out if they aren't
+        done.append(v)
+    check('speed: formula rows, quiz and exam questions and Summary modules are drawn too', done == ['formulas', 'quizzes', 'exams'])
+    # a tab left goes back to skipping its cards, which keep their size, so it shows at once when it is opened again
+    # (the same height, nothing to lay out but what is on screen); a moment later it is drawn for good again
+    back = pg.evaluate("""() => { document.getElementById('tab-practice').click();
+      return [document.querySelectorAll('#view-practice .prob:not(.drawn)').length, document.getElementById('view-practice').getBoundingClientRect().height]; }""")
+    check('speed: a tab opened again skips its cards at first, at the height it had', back[0] == 103 and abs(back[1] - tall) < 2, (back, tall))
+    pg.wait_for_function(UNDRAWN.format('practice') + ' === 0', timeout=15000)
     pg.evaluate("document.querySelector('#prob-8-14').classList.remove('drawn')")
     pg.emulate_media(media='print')
     check('speed: printing draws a card that is not drawn yet', pg.evaluate("getComputedStyle(document.querySelector('#prob-8-14')).contentVisibility") == 'visible')
@@ -604,6 +623,32 @@ with sync_playwright() as p:
         pg.wait_for_selector('#view-summary .smod')
         jumps = pg.evaluate(FLING, v)
         check(f'speed: {v}: a fling to the end right after it opens, then back up, never jumps', not jumps, jumps[:5])
+    # Math's Summary skips its key ideas the same way (Physics skips whole modules): drawn a moment after the page
+    # shows, a search hit in the last lesson lands on its key idea, and a fling to the end and back never jumps
+    for page in ['/math/integrals/', '/math/derivatives/']:
+        pg.goto(BASE + page + '#summary')
+        pg.wait_for_selector('#view-summary .unit')
+        pg.wait_for_function("!document.querySelector('#view-summary .unit > .ideas > li:not(.drawn)')", timeout=15000)
+        state = pg.evaluate("""() => { const l = [...document.querySelectorAll('#view-summary .unit > .ideas > li')], last = l.at(-1);
+          const drawn = getComputedStyle(last).contentVisibility;
+          last.classList.remove('drawn'); const skipped = getComputedStyle(last).contentVisibility; last.classList.add('drawn');
+          return [l.length > 30, drawn, skipped]; }""")
+        check(f'speed: {page}: Summary\'s key ideas skip layout until drawn, and are all drawn a moment after the page shows',
+              state == [True, 'visible', 'auto'], state)
+        jumps = pg.evaluate(FLING, 'summary')
+        check(f'speed: {page}: Summary: a fling to the end right after it opens, then back up, never jumps', not jumps, jumps[:5])
+    pg.goto(BASE + '/math/integrals/#summary')
+    pg.wait_for_selector('#view-summary .unit')
+    li, label, title = pg.evaluate("""() => { const u = [...document.querySelectorAll('#view-summary .unit')].at(-1);
+      const name = (e) => ((e.querySelector('strong, b') || {}).textContent || '').trim().replace(/[:.]$/, '');
+      const li = [...u.querySelectorAll('.ideas > li')].reverse().find((e) => /^[A-Za-z ]+$/.test(name(e)));
+      const h = u.querySelector('h2').cloneNode(true); h.querySelectorAll('.new-pill, .kicker').forEach((x) => x.remove());
+      return [li.id, name(li), h.textContent.trim()]; }""")
+    pg.click('#search-btn')
+    pg.fill('#search-input', label)
+    pg.locator('#search-results .s-hit', has_text=f'{label} — {title}').first.click()
+    pg.wait_for_timeout(1800)
+    check('speed: a search hit in the last lesson of Calculus midterm 2 lands on its key idea', abs(landed('#' + li)) <= 8, (li, label, landed('#' + li)))
     ctx.close()
     ctx = b.new_context(viewport={'width': 1280, 'height': 900})
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -863,6 +908,29 @@ with sync_playwright() as p:
     check('home: the button shows the older days and goes', pg2.locator('#news .n-day:visible').count() == n_days and pg2.locator('#news-more').is_hidden())
     ctx.close()
 
+    # ---- the home page keeps a copy of site.json on the device (study-site): a later visit draws the next exam, the
+    # exam list and What's new from it before the page first shows, so nothing moves when the network's copy comes in,
+    # and they are there even when site.json can't be fetched ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, service_workers='block')
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news li')
+    site_text = open(os.path.join(REPO, 'site.json'), encoding='utf-8').read()
+    check('home: it keeps a copy of site.json on the device', pg.evaluate("localStorage.getItem('study-site')") == site_text)
+    exams_all = json.loads(site_text)['exams']
+    rows = sum(1 for x in exams_all if x['date']) + (1 if any(not x['date'] for x in exams_all) else 0)
+    coming = [x for x in exams_all if x['date'] and x['date'] >= str(today)]
+    ctx.route('**/site.json', lambda r: r.fulfill(status=503, body=''))
+    pg.reload(wait_until='domcontentloaded')
+    state = pg.evaluate("[document.querySelectorAll('#next-exam').length, document.querySelectorAll('#exam-list .tl-row').length, document.querySelectorAll('#news details').length]")
+    pg.wait_for_timeout(600)
+    shift = pg.evaluate("""new Promise((r) => { new PerformanceObserver((l) => r(l.getEntries().reduce((a, e) => a + e.value, 0)))
+      .observe({type: 'layout-shift', buffered: true}); setTimeout(() => r(0), 400); })""")
+    check('home: a later visit draws its exams and What\'s new from that copy before the page shows, even with site.json out of reach, and nothing moves',
+          state == [1 if coming else 0, rows, 6] and "Couldn't" not in pg.locator('#next').inner_text() and shift < 0.01, (state, shift))
+    ctx.close()
+
     # ---- search results write formulas the way they look: Δx, v₀, x², lim(h → 0) ----
     idx = lambda page: json.loads(re.search(r'<script type="application/json" id="search-index">(.*?)</script>', open(os.path.join(REPO, page), encoding='utf-8').read(), re.S).group(1))
     phys_p = ' '.join(e['p'] for e in idx('physics/midterm/index.html'))
@@ -1030,6 +1098,13 @@ with sync_playwright() as p:
     pg.wait_for_timeout(800)
     controlled = pg.evaluate("Boolean(navigator.serviceWorker.controller)")
     check('offline: the service worker takes over', controlled)
+    # the page gets the network's answer as it arrives, and the copy is saved alongside: a file the first visit didn't
+    # save is in the cache a moment after it was fetched, the same as what the page got
+    got = pg.evaluate("""async () => { const t = await (await fetch('README.md')).text(), url = new URL('README.md', location.href).href;
+      for (let i = 0; i < 30; i++) { const hit = await caches.match(url); if (hit) return [t.length > 100, (await hit.text()) === t];
+        await new Promise((ok) => setTimeout(ok, 100)); }
+      return [t.length > 100, false]; }""")
+    check('offline: a file fetched online is saved for offline use alongside the answer', got == [True, True], got)
     ctx.set_offline(True)
     # Calculus midterm 1 was never opened online here: its page, style, script and fonts come from what the first visit saved
     pg.goto(BASE + '/math/derivatives/#exams')

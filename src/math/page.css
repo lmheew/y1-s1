@@ -672,13 +672,15 @@ details[open] .when-open { display: inline; }
 }
 
 /* ---------- speed: a long tab shows before all of it is drawn ----------
-   Practice cards, quiz and exam questions and formula rows away from the screen skip layout and painting at first
-   (content-visibility), so a tab with a hundred of them shows at once; the size here is only a first guess (a phone's
-   typical height). page.js then draws them for good (.drawn) while the page is idle, and draws everything above a
-   jump's target, or above where a fling ends, at once, so scrolling never meets a card that changes height. */
+   Practice cards, quiz and exam questions, formula rows and the key ideas of Math's Summary (Physics' Summary skips
+   whole modules instead: physics.css) away from the screen skip layout and painting at first (content-visibility),
+   so a tab with a hundred of them shows at once; the size here is only a first guess (a phone's typical height).
+   page.js then draws them for good (.drawn) while the page is idle, and draws everything above a jump's target, or
+   above where a fling ends, at once, so scrolling never meets a card that changes height. */
 .prob, .rq { content-visibility: auto; contain-intrinsic-size: auto 320px; }
 .frow { content-visibility: auto; contain-intrinsic-size: auto 90px; }
-.prob.drawn, .rq.drawn, .frow.drawn, .smod.drawn { content-visibility: visible; }
+.unit > .ideas > li { content-visibility: auto; contain-intrinsic-size: auto 200px; }
+.prob.drawn, .rq.drawn, .frow.drawn, .smod.drawn, .unit > .ideas > li.drawn { content-visibility: visible; }
 
 /* ---------- moving between pages ----------
    A tap on a link to another page of the site cross-fades to it (a view transition: Safari 18.2+, Chrome 126+; other
@@ -709,7 +711,7 @@ details[open] .when-open { display: inline; }
     --glass-shine: 0 0 0 0 transparent; --glass-shadow: 0 0 0 0 transparent; color-scheme: light; }
   body { background: #FFFFFF; color: var(--ink); padding: 0; }
   body::before, body::after, main::after, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
-  .prob, .rq, .frow, .smod { content-visibility: visible !important; } /* printing draws them all */
+  .prob, .rq, .frow, .smod, .unit > .ideas > li { content-visibility: visible !important; } /* printing draws them all */
   .night-tools, .night-link, .ov-btns, .ssetup, .sbar, .sdone { display: none !important; }
   .nrows { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
   .nrow, .nsec .watch li, .nhabits li { break-inside: avoid; }
@@ -739,8 +741,10 @@ details[open] .when-open { display: inline; }
 
 /* ---------- side menu: wide screens only (1100 px and up: computers, iPads held sideways) ----------
    The whole layout widens so the menu fits on the left and the text keeps its usual width. The menu stays in view
-   while the tab scrolls, and highlights the section being read; it ends above the calculator button's corner. */
-.toc { display: none; }
+   while the tab scrolls, and highlights the section being read; it ends above the calculator button's corner.
+   The menu is never what the browser holds in place when something above the reader grows (scroll anchoring): it is
+   always on screen and first in the tab, so it would be picked, and since it doesn't move the text would. */
+.toc { display: none; overflow-anchor: none; }
 @media (min-width: 1100px) {
   .wrap { max-width: 1040px; }
   .tabbar-row { max-width: 1008px; }

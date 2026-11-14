@@ -368,6 +368,22 @@
       if (!target || !target.compareDocumentPosition) return;
       figs.forEach((f) => { if (!f.dataset.drawn && (f.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING)) { io.unobserve(f); build(f); } });
     });
+    // a fast scroll can pass a graph between two frames without it ever coming near (a fling to the end), and drawing
+    // it later, as the page scrolls back up to it, would move everything under it. So a scroll draws every graph that
+    // is wholly above the screen at once, in the scroll event, before the page is laid out: the browser then holds the
+    // reader's place (scroll anchoring). The ones on or near the screen are the observer's, as before.
+    const onScroll = () => {
+      let left = 0;
+      for (const f of figs) {
+        if (f.dataset.drawn) continue;
+        left++;
+        if (!f.getClientRects().length) continue; // in a tab that isn't open
+        if (f.getBoundingClientRect().bottom > 0) break; // graphs are in page order: this one and the rest are lower
+        io.unobserve(f); build(f); left--;
+      }
+      if (!left) window.removeEventListener('scroll', onScroll);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
   } else {
     window.addEventListener('load', () => figs.forEach(build));
   }

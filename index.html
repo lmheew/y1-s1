@@ -151,6 +151,13 @@
   .nx-btns .alt { border: 1px solid rgba(255, 255, 255, .42); background: rgba(255, 255, 255, .17); color: #FFFFFF; }
   @media (hover: hover) { .nx-btns .go:hover { background: #FFFFFF; } .nx-btns .alt:hover { background: rgba(255, 255, 255, .26); } }
   #next > .up-when { font-size: 14px; color: var(--ink-soft); }
+  /* While site.json loads on a first visit, a quiet panel keeps the card's room, so the subjects under it don't jump
+     when it comes in (later visits draw the card before the page shows, from the copy kept on the device). Its height
+     is the card's, which depends on how the card's buttons wrap. */
+  #next > .wait { display: grid; place-items: center; min-height: 334px; margin: 0; border: 1px solid var(--glass-edge); border-radius: 26px;
+    background: var(--glass); box-shadow: var(--glass-shine), var(--glass-shadow); }
+  @media (min-width: 438px) { #next > .wait { min-height: 282px; } }
+  @media (min-width: 476px) { #next > .wait { min-height: 249px; } }
 
   /* where the reading was left */
   .resume { display: flex; align-items: center; gap: 12px; margin-top: 12px; min-height: 60px; padding: 10px 14px 10px 16px; border-radius: 20px; color: var(--ink); text-decoration: none; transition: transform .15s ease; }
@@ -268,7 +275,7 @@
 <main class="wrap">
   <section aria-labelledby="next-title">
     <h2 class="sr" id="next-title">Next exam</h2>
-    <div id="next"><p class="up-when">Loading…</p></div>
+    <div id="next"><p class="up-when wait">Loading…</p></div>
     <a class="resume" id="resume" href="./" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.2h3.2"/><path d="M12 8.5V12l2.5 2"/></svg><span class="rs-main"><b>Pick up where you left off</b><small id="resume-where"></small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg></a>
   </section>
 
@@ -436,11 +443,9 @@
       }).join('');
       const older = days.slice(shown).reduce((n, g) => n + g.items.length, 0);
       const more = $('#news-more');
-      if (older) {
-        more.textContent = `Show ${older} older update${older === 1 ? '' : 's'}`;
-        more.hidden = false;
-        more.addEventListener('click', () => { $('#news').classList.remove('clip'); more.hidden = true; });
-      }
+      more.hidden = !older || !$('#news').classList.contains('clip');
+      more.textContent = `Show ${older} older update${older === 1 ? '' : 's'}`;
+      more.onclick = () => { $('#news').classList.remove('clip'); more.hidden = true; };
       const newest = latest.length ? latest[0].date : '';
       if (newest) {
         const t = $('#updated time');
@@ -458,11 +463,33 @@
       const keyOf = (n, subj) => { const p = PAGE_KEYS[subj].find(([pre]) => (n.link || '').startsWith(pre)); return p ? p[1] : subj; };
       for (const subj of ['math', 'physics']) {
         const mine = list.filter((n) => n.subject === subj || n.subject === 'all');
-        if (mine.some((n) => unseen(n.date, keyOf(n, subj), seen))) $('#card-' + subj + ' .s-kicker').insertAdjacentHTML('beforeend', PILL);
+        const kicker = $('#card-' + subj + ' .s-kicker'), pill = kicker.querySelector('.new-pill');
+        const isNew = mine.some((n) => unseen(n.date, keyOf(n, subj), seen));
+        if (isNew && !pill) kicker.insertAdjacentHTML('beforeend', PILL);
+        if (!isNew && pill) {
+          const space = pill.previousSibling; // PILL's space before the label
+          pill.remove();
+          if (space && space.nodeType === Node.TEXT_NODE && space.textContent === ' ') space.remove();
+        }
       }
     }
-    fetch('site.json').then((r) => r.json()).then((d) => { exams(d.exams || []); news(d.news || []); })
-      .catch(() => { $('#next').innerHTML = '<p class="up-when">Couldn\'t load the exam list. Check your connection.</p>'; });
+
+    // site.json: the exams and What's new. The device keeps a copy of it (study-site), so a visit draws them from that
+    // at once, before the page first shows, and nothing moves when the network's copy comes in: it is drawn again
+    // only if it differs (a first visit waits for the network, with the card's room kept).
+    const SITE_KEY = 'study-site';
+    let drawn = '';
+    function draw(text) {
+      if (!text || text === drawn) return;
+      const d = JSON.parse(text);
+      exams(d.exams || []); news(d.news || []);
+      drawn = text;
+    }
+    try { draw(storage('localStorage').getItem(SITE_KEY)); } catch (e) { /* no copy yet, or one that doesn't read */ }
+    fetch('site.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); }).then((text) => {
+      draw(text);
+      try { storage('localStorage').setItem(SITE_KEY, text); } catch (e) { /* ignore */ }
+    }).catch(() => { if (!drawn) $('#next').innerHTML = '<p class="up-when">Couldn\'t load the exam list. Check your connection.</p>'; });
 
     // offline and install
     const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
