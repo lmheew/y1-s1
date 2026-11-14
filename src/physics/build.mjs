@@ -1,8 +1,9 @@
 // Builds the Physics section (Engineering Physics 1) of the study site, the way src/math/build.mjs builds Math. All
 // math is pre-rendered with KaTeX (vendored), so the build needs no network and no npm install.
 //
-//   node src/physics/build.mjs site     writes physics/index.html (the exam picker), physics/midterm/index.html and
-//                                       physics/assets/, and physics/midterm/locked.json when SITE_PASSWORD is set
+//   node src/physics/build.mjs site     writes physics/index.html (the exam picker), each exam page (PAGES: the
+//                                       midterm and the final), physics/assets/, and physics/midterm/locked.json when
+//                                       SITE_PASSWORD is set
 //   node src/physics/build.mjs open     decrypts src/physics/private.sealed.json into src/physics/private/
 //   node src/physics/build.mjs seal     encrypts src/physics/private/ into src/physics/private.sealed.json
 //   node src/physics/build.mjs rekey    re-encrypts with NEW_SITE_PASSWORD; run it right after Math's `rekey`
@@ -29,6 +30,10 @@ import { fgroups, constants, trig, FORMULAS_ADDED } from './formulas.mjs';
 import { practice, TIERS, PRACTICE_ADDED } from './practice.mjs';
 import { mocks, MOCKS_ADDED } from './mocks.mjs';
 import { figHTML } from './figures.mjs';
+import * as FIN from './final/content.mjs';
+import * as FIN_SUMMARY from './final/summary.mjs';
+import * as FIN_FORMULAS from './final/formulas.mjs';
+import * as FIN_PRACTICE from './final/practice.mjs';
 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
@@ -43,13 +48,65 @@ const MATH_FONTS = path.join(ROOT, 'math', 'assets', 'fonts');
 const rel = (p) => path.relative(ROOT, p);
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
-// "Last updated": the newest What's new date for Physics (site.json) or `added` date on this page
-const LAST_UPDATED = [...SITE.news.filter((n) => n.subject === 'physics' || n.subject === 'all').map((n) => n.date), ...sets.map((s) => s.added),
-  SUMMARY_ADDED, FORMULAS_ADDED, PRACTICE_ADDED, MOCKS_ADDED]
-  .filter(Boolean).sort().pop() || '2026-11-01';
-// the page's settings for page.js (see the top of src/math/page.js)
-const PAGE_CONF = { name: 'Physics midterm', store: 'ep1-midterm-review', seen: 'physics', home: 'summary', scores: 'ep1-mock-scores',
-  suggest: ['projectile', 'friction', 'cross product', 'work', 'potential energy', 'mock'], tryWords: '"friction" or "vector"' };
+
+// ---------- the exam pages ----------
+// Each page has its own chapters, Summary, Formulas and Practice, its band texts and its settings for page.js (`conf`,
+// see the top of src/math/page.js: `store` keeps its practice marks and open tab, `seen` its key in study-seen).
+// The midterm also has the quiz sheets (practice sets, and the exercise days and past midterms, locked) and the mocks;
+// the final has none yet, so its Quizzes and Exams say what is coming (`soon`).
+const MIDTERM = {
+  id: 'midterm', dir: 'midterm', exam: 'Physics midterm', span: 'Chapters 1–8', spanHTML: '<span class="nw">Chapters 1–8</span>',
+  chapters, summary, habits, SUMMARY_ADDED, fgroups, constants, trig, FORMULAS_ADDED, practice, TIERS, PRACTICE_ADDED, sets, mocks, MOCKS_ADDED,
+  added: [...sets.map((s) => s.added), SUMMARY_ADDED, FORMULAS_ADDED, PRACTICE_ADDED, MOCKS_ADDED],
+  conf: { name: 'Physics midterm', store: 'ep1-midterm-review', seen: 'physics', home: 'summary', scores: 'ep1-mock-scores',
+    suggest: ['projectile', 'friction', 'cross product', 'work', 'potential energy', 'mock'], tryWords: '"friction" or "vector"' },
+  brand: 'Midterm · Chapters 1–8', brandLabel: 'EP1 Review, Physics midterm, go to Summary', title: 'EP1 Midterm Review',
+  description: 'Review for the Engineering Physics 1 midterm (Chapters 1–8): a summary of every module with worked examples, practice problems in three tiers, the formulas, the exercise-day sheets and practice sets with worked answers, mock midterms and past midterms.',
+  og: {
+    title: 'EP1 Review · Physics midterm (Chapters 1–8)',
+    description: 'Unofficial review notes for the Engineering Physics 1 midterm: module summaries with worked examples, practice problems, formulas, quiz sheets and mock midterms.',
+    image: 'og-physics-midterm.png',
+    alt: 'EP1 Review, Engineering Physics 1 midterm, Chapters 1 to 8: summary, practice, formulas, quizzes and exams',
+  },
+  practiceLede: (n) => `${n} problems, chapter by chapter, in three tiers: Foundation, Application and Advanced, the exam-style ones in the manner of the exercise days. Try each on paper, open the worked answer, then mark how it went.`,
+  nightLede: 'One page for the night before the midterm: the exam-day habits, then each chapter’s core formulas (★★★) and common mistakes, and the values to know without a calculator. Read it once more, or print it.',
+};
+const FINAL = {
+  id: 'final', dir: 'final', exam: 'Physics final', span: 'Chapters 15–20', spanHTML: '<span class="nw">Chapters 15–20</span>',
+  chapters: FIN.chapters, summary: FIN_SUMMARY.summary, habits: FIN_SUMMARY.habits, SUMMARY_ADDED: FIN_SUMMARY.SUMMARY_ADDED,
+  fgroups: FIN_FORMULAS.fgroups, constants: FIN_FORMULAS.constants, trig: FIN_FORMULAS.trig, FORMULAS_ADDED: FIN_FORMULAS.FORMULAS_ADDED,
+  practice: FIN_PRACTICE.practice, TIERS: FIN_PRACTICE.TIERS, PRACTICE_ADDED: FIN_PRACTICE.PRACTICE_ADDED, sets: [], mocks: [], MOCKS_ADDED: '',
+  added: [FIN_SUMMARY.SUMMARY_ADDED, FIN_FORMULAS.FORMULAS_ADDED, FIN_PRACTICE.PRACTICE_ADDED],
+  conf: { name: 'Physics final', store: 'ep1-final-review', seen: 'physics-final', home: 'summary', scores: 'ep1-final-mock-scores',
+    suggest: ['simple harmonic motion', 'standing wave', 'Doppler', 'decibel', 'first law', 'entropy'], tryWords: '"pendulum" or "entropy"' },
+  brand: 'Final · Chapters 15–20', brandLabel: 'EP1 Review, Physics final, go to Summary', title: 'EP1 Final Review',
+  description: 'Review for the Engineering Physics 1 final (Chapters 15–20): a summary of every module with worked examples and the date of its class, practice problems in three tiers and the formulas.',
+  og: {
+    title: 'EP1 Review · Physics final (Chapters 15–20)',
+    description: 'Unofficial review notes for the Engineering Physics 1 final: module summaries with worked examples, practice problems and formulas.',
+    image: 'og-physics-final.png',
+    alt: 'EP1 Review, Engineering Physics 1 final, Chapters 15 to 20: summary, practice and formulas',
+  },
+  summaryLede: 'Every module of <span class="nw">Chapters 15–20</span> in a few short points, each with a worked example that opens one step at a time and the date of its class, and the common mistakes of each chapter. The modules the class schedule leaves out are marked.',
+  practiceLede: (n) => `${n} problems, chapter by chapter, in three tiers: Foundation, Application and Advanced, the Advanced ones closest to an exam. Try each on paper, open the worked answer, then mark how it went.`,
+  nightLede: 'One page for the night before the final: the exam-day habits, then each chapter’s core formulas (★★★) and common mistakes, and the values to know without a calculator. Read it once more, or print it.',
+  quizzesLede: 'The exercise-day sheets from class, retyped with worked answers, once they are handed out.',
+  examsLede: 'Upcoming exams with a countdown, and the night-before sheet. Mock finals follow once the exam’s format is known.',
+  soon: {
+    quizzes: `The class schedule has exercise days on ${FIN.EX_DAYS.map(([, d]) => new Date(d + 'T12:00:00+09:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' })).join(' and ')}. Their sheets come here after class.`,
+    mocks: 'Mock finals come here once the exam’s format is known.',
+  },
+};
+const PAGES = [MIDTERM, FINAL];
+// "Last updated": the newest of the page's `added` dates and the Physics (or all) What's new dates, except entries that
+// link to another Physics page (the midterm, the first page, takes the entries that link nowhere in particular)
+const OTHER_PAGES = (P) => PAGES.filter((Q) => Q !== P).map((Q) => `physics/${Q.dir}/`);
+for (const P of PAGES) {
+  P.updated = [...SITE.news.filter((n) => (n.subject === 'physics' || n.subject === 'all') && !OTHER_PAGES(P).some((o) => (n.link || '').startsWith(o))
+    && (P === MIDTERM || (n.link || '').startsWith(`physics/${P.dir}/`))).map((n) => n.date), ...P.added]
+    .filter(Boolean).sort().pop() || '2026-11-01';
+}
+const LAST_UPDATED = PAGES.map((P) => P.updated).sort().pop(); // the picker's
 
 // ---------- markup ----------
 // plain text for search (the shared texPlain knows Greek letters, unit vectors and vector arrows)
@@ -131,17 +188,24 @@ function exampleHTML(c, no, title, ex, index) {
 }
 // a bold label at the start of a point, as plain text for search
 const pointLabel = (it) => (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => plainP(m));
-function moduleHTML(c, [no, title], index) {
-  const m = summary[c.id].mods.find((x) => x.no === no);
+// A module's class on the schedule (the final's chapters): [class number, date], or null when the schedule leaves the
+// module out; the midterm's modules have no third entry and show no line.
+const classDay = ([n, d]) => `Class ${n} · ` + new Date(`${d}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' });
+const NOT_SCHEDULED = 'Not on the class schedule';
+function moduleHTML(S, c, [no, title, when], index) {
+  const m = S[c.id].mods.find((x) => x.no === no);
   if (!m) throw new Error(`summary.mjs has no module ${no}`);
+  const keys = when === null ? `${c.keys} not on the class schedule` : when ? `${c.keys} ${classDay(when)}` : c.keys;
   const ideas = items(m.ideas).map((it, i) => {
     const id = `su-${c.id}-${no.replace('-', '')}-k${i + 1}`;
-    index.push(entry('Summary', 'summary', id, `${pointLabel(it) || 'Key idea'} — ${no} ${title}`, plainP(it.replace(/^\*\*.+?\*\*\s*/, '')), c.keys));
+    index.push(entry('Summary', 'summary', id, `${pointLabel(it) || 'Key idea'} — ${no} ${title}`, plainP(it.replace(/^\*\*.+?\*\*\s*/, '')), keys));
     return `<li id="${id}">${inline(it, false)}</li>`;
   }).join('');
+  const whenHTML = when === undefined ? '' : `
+    <p class="smod-when${when ? '' : ' off'}">${when ? `${UI_ICONS.calendar}<span>${esc(classDay(when))}</span>` : `<span class="xtag">${NOT_SCHEDULED}</span><span>The schedule doesn’t list it; it may come up in a class marked TBD.</span>`}</p>`;
   return `
-  <div class="smod" id="su-${c.id}-m${no.replace('-', '')}">
-    <h3 class="smod-h"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3>
+  <div class="smod${when === null ? ' unlisted' : ''}" id="su-${c.id}-m${no.replace('-', '')}">
+    <h3 class="smod-h"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3>${whenHTML}
     <ul class="ideas">${ideas}</ul>
     ${exampleHTML(c, no, title, m.ex, index)}
   </div>`;
@@ -236,7 +300,8 @@ const lockPanel = (x, seg, visible) => `
 // exercises: the exercise days (src/physics/private/exercises.mjs), or null when they aren't available, in which case
 // exList (from locked.json) says what to draw password panels for; past and pastLocked the same for the past midterms
 // (src/physics/private/past.mjs). locked: true for the site.
-function render({ exercises, past = null, locked, exList, pastLocked = [] }) {
+function render(P, { exercises = null, past = null, locked = false, exList = [], pastLocked = [] } = {}) {
+  const { chapters, summary, habits, SUMMARY_ADDED, fgroups, constants, trig, FORMULAS_ADDED, practice, TIERS, PRACTICE_ADDED, sets, mocks, MOCKS_ADDED } = P;
   const INDEX = [], PRIV = [], sheets = {};
 
   // Summary: a tile per chapter; for each chapter, every module's key ideas and worked example, then "Watch out"
@@ -254,8 +319,8 @@ function render({ exercises, past = null, locked, exList, pastLocked = [] }) {
     }).join('');
     return `
 <section class="unit" id="su-${c.id}" data-added="${SUMMARY_ADDED}">
-  <header class="unit-head">${CH_ICONS[c.id]}<div><p class="kicker">${meta([`Chapter ${c.no}`, c.mods])}</p><h2>${esc(c.title)}</h2></div></header>
-  ${c.modules.map((mod) => moduleHTML(c, mod, INDEX)).join('')}
+  <header class="unit-head">${CH_ICONS[c.id]}<div><p class="kicker">${meta([`Chapter ${c.no}`, c.mods, c.dates].filter(Boolean))}</p><h2>${esc(c.title)}</h2></div></header>
+  ${c.modules.map((mod) => moduleHTML(summary, c, mod, INDEX)).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${watch}</ul></div>
 </section>`;
   }).join('') + `
@@ -382,9 +447,14 @@ ${practiceHTML}
     } else exSheets += lockPanel(x, String(i), i === 0);
   });
   const lockMark = locked && list.length ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : '';
+  const soonBox = (text) => `<p class="soon-box">${UI_ICONS.calendar}<span>${esc(text)}</span></p>`;
   const segBtns = (items, mark) => items.map((x, i) => `<button type="button" class="seg-btn" role="tab" data-seg="${i}" aria-controls="${x.id}" aria-selected="${i === 0}">${esc(x.seg)}${mark}</button>`).join('');
   const setSheets = sets.map((sh, i) => sheetHTML(sh, String(i), i === 0, INDEX, 'practice set new problems')).join('');
-  const quizzesHTML = `
+  const quizzesHTML = P.soon ? `
+<section class="qgroup" id="qg-soon">
+  <header class="qg-head"><p class="kicker">From class, retyped with worked answers</p><h2>Exercise days</h2></header>
+  ${soonBox(P.soon.quizzes)}
+</section>` : `
 <nav class="qjump" aria-label="Jump to a group"><button type="button" class="chip" data-goto="quizzes" data-target="ex">Exercise days</button><button type="button" class="chip" data-goto="quizzes" data-target="sets">Practice sets</button></nav>
 <section class="qgroup mockgroup" id="ex">
   <header class="qg-head"><p class="kicker">From class, retyped with worked answers</p><h2>Exercise days</h2></header>
@@ -424,6 +494,9 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
         <span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${x.date ? '' : 'Date to be announced'}</span></span>
         <span class="up-left" aria-live="off"></span>
       </li>`).join('');
+  const mocksInner = mocks.length ? `<div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
+    `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">${esc(m.seg)}<span class="seg-score"></span></button>`).join('')}</div>
+      ${mockSheets}` : soonBox(P.soon.mocks);
   const examsHTML = `
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
@@ -431,10 +504,8 @@ ${locked && list.length ? '<div class="reset-row lockrow" id="lockrow" hidden><b
       ${nightLink('The core formulas, the common mistakes and the exam-day habits on one page')}
     </section>
     <section class="qgroup mockgroup" id="mocks">
-      <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
-      <div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
-    `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">${esc(m.seg)}<span class="seg-score"></span></button>`).join('')}</div>
-      ${mockSheets}
+      <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>${P.soon ? 'Mock finals' : 'Mock midterms'}</h2></header>
+      ${mocksInner}
     </section>${pastHTML}`;
 
   const TABS = [['summary', 'Summary'], ['practice', 'Practice'], ['formulas', 'Formulas'], ['quizzes', 'Quizzes'], ['exams', 'Exams']];
@@ -474,7 +545,7 @@ ${chapters.map((c) => {
   const nSets = sets.length, nEx = list.length;
   const body = `
 <header class="appbar"><div class="wrap appbar-row">
-  <a class="brand" href="#summary" aria-label="EP1 Review, Physics midterm, go to Summary">${BADGE}<span class="brand-text"><b>EP1 Review</b><small>Midterm · Chapters 1–8</small></span></a>
+  <a class="brand" href="#summary" aria-label="${esc(P.brandLabel)}">${BADGE}<span class="brand-text"><b>EP1 Review</b><small>${esc(P.brand)}</small></span></a>
   <div class="appbar-actions">
     ${subjectSwitch('math', '../../math/')}
     <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system">${UI_ICONS.system}</span><span class="t-light">${UI_ICONS.light}</span><span class="t-dark">${UI_ICONS.dark}</span></button>
@@ -483,13 +554,13 @@ ${chapters.map((c) => {
 </div></header>
 
 ${SB_FOOT}
-<nav class="tabbar" aria-label="Sections" data-updated="${LAST_UPDATED}"><div class="tabbar-row" role="tablist">
-  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === PAGE_CONF.home}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
+<nav class="tabbar" aria-label="Sections" data-updated="${P.updated}"><div class="tabbar-row" role="tablist">
+  ${TABS.map(([v, l]) => `<button type="button" class="tab" role="tab" id="tab-${v}" data-view="${v}" aria-controls="view-${v}" aria-selected="${v === P.conf.home}"${NEWEST[v] ? ` data-newest="${NEWEST[v]}"` : ''}>${TAB_ICONS[v]}<span>${l}</span></button>`).join('')}
 </div></nav>
 
 <main%MAIN_ATTRS%>
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
-    ${band('Summary', 'まとめ', 'Every module of <span class="nw">Chapters 1–8</span> in a few short points, each with a worked example that opens one step at a time, and the common mistakes of each chapter.')}
+    ${band('Summary', 'まとめ', P.summaryLede || `Every module of ${P.spanHTML} in a few short points, each with a worked example that opens one step at a time, and the common mistakes of each chapter.`)}
     <div class="wrap content">
       <nav class="tiles" aria-label="Chapters">${tilesHTML}</nav>
       ${summaryHTML}
@@ -497,27 +568,27 @@ ${SB_FOOT}
   </section>
 
   <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
-    ${band('Practice', '練習問題', `${nPractice} problems, chapter by chapter, in three tiers: Foundation, Application and Advanced, the exam-style ones in the manner of the exercise days. Try each on paper, open the worked answer, then mark how it went.`)}
+    ${band('Practice', '練習問題', P.practiceLede(nPractice))}
     ${lazyBox('practice')}
   </section>
 
   <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
-    ${band('Formulas', '公式集', 'The formulas of <span class="nw">Chapters 1–8</span>, module by module and marked by importance, with helpful extras the book doesn’t print and the values to know without a calculator.')}
+    ${band('Formulas', '公式集', `The formulas of ${P.spanHTML}, module by module and marked by importance, with helpful extras the book doesn’t print and the values to know without a calculator.`)}
     ${lazyBox('formulas')}
   </section>
 
   <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
-    ${band('Quizzes', '小テスト', `The ${word(nEx)} exercise-day sheets from class${locked && nEx ? ' <span class="nw">(password needed)</span>' : ''} and ${word(nSets)} practice sets in the same format, each with worked answers that open one step at a time. Start the timer and work on paper, without notes or a calculator.`)}
+    ${band('Quizzes', '小テスト', P.quizzesLede || `The ${word(nEx)} exercise-day sheets from class${locked && nEx ? ' <span class="nw">(password needed)</span>' : ''} and ${word(nSets)} practice sets in the same format, each with worked answers that open one step at a time. Start the timer and work on paper, without notes or a calculator.`)}
     ${lazyBox('quizzes')}
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', `Upcoming exams with a countdown, ${pList.length ? '' : 'and '}${word(mocks.length)} mock midterms in the exam’s format (<span class="nw">six problems</span> in <span class="nw">60 minutes</span>)${pList.length ? `, and ${word(pList.length)} past midterms${locked ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', P.examsLede || `Upcoming exams with a countdown, ${pList.length ? '' : 'and '}${word(mocks.length)} mock midterms in the exam’s format (<span class="nw">six problems</span> in <span class="nw">60 minutes</span>)${pList.length ? `, and ${word(pList.length)} past midterms${locked ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 
   <section id="view-night" class="view night" aria-label="Night-before sheet" hidden>
-    ${band('Night before', '直前チェック', 'One page for the night before the midterm: the exam-day habits, then each chapter’s core formulas (★★★) and common mistakes, and the values to know without a calculator. Read it once more, or print it.')}
+    ${band('Night before', '直前チェック', P.nightLede)}
     ${lazyBox('night')}
   </section>
 </main>
@@ -526,13 +597,13 @@ ${lazyScripts}
   return { body, INDEX, PRIV, sheets, exList: list, pastList: pList, hasLocks: locked && (list.length > 0 || pList.length > 0), nSets, nEx, nPast: pList.length, nFormulas, nPractice, nMocks: mocks.length };
 }
 
-function foot() {
+function foot(P) {
   return `
 <footer class="site-foot"><div class="wrap">
   <p class="deco cheer">Good luck in your studies!</p>
   <p class="foot-links"><a href="../">← All exams</a> <a href="../../">All subjects</a></p>
   <p class="fine">Study notes for Engineering Physics 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
-  <p class="fine">Last updated <time datetime="${LAST_UPDATED}">${fmtDate(LAST_UPDATED)}</time>.</p>
+  <p class="fine">Last updated <time datetime="${P.updated}">${fmtDate(P.updated)}</time>.</p>
   <p class="fine">Math typeset with KaTeX (<a href="../../src/vendor/katex/LICENSE.txt">MIT License</a>).</p>
 </div></footer>
 
@@ -623,7 +694,7 @@ async function buildSite(pw = PASSWORD) {
   if (ring && !exercises) fail('the exercise sheets are missing: src/physics/private/exercises.mjs (or the sealed copy).');
   const past = ring ? await loadPrivate(pw, 'past.mjs', 'past') : null;
   let box = readJSON(LOCKED);
-  const r = render({ exercises, past, locked: true, exList: box ? box.ex : [], pastLocked: (box && box.past) || [] });
+  const r = render(MIDTERM, { exercises, past, locked: true, exList: box ? box.ex : [], pastLocked: (box && box.past) || [] });
   if (exercises) {
     const payload = { sheets: r.sheets, index: r.PRIV };
     let same = false;
@@ -644,21 +715,32 @@ async function buildSite(pw = PASSWORD) {
   if (r.hasLocks && !box) fail(`exercise sheets are listed but ${rel(LOCKED)} is missing; build with SITE_PASSWORD.`);
   const lockedSrc = r.hasLocks ? 'locked.json?v=' + hash(fs.readFileSync(LOCKED)) : '';
   const a = writeAssets();
-  const PRELOAD = ['KaTeX_Main-Regular', 'KaTeX_Math-Italic'];
+  const pages = { midterm: r };
+  writePage(MIDTERM, a, r, lockedSrc);
+  console.log('   · exercise days:', r.nEx, '· past midterms:', r.nPast, r.hasLocks ? '(locked)' : '', '· practice sets:', r.nSets);
+  for (const P of PAGES.filter((Q) => Q !== MIDTERM)) {
+    const rp = render(P);
+    pages[P.id] = rp;
+    writePage(P, a, rp, '');
+  }
+  const picker = pickerHTML(a, pages);
+  writeIfChanged(path.join(PHYS, 'index.html'), picker);
+  console.log('wrote', rel(path.join(PHYS, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
+    '· shared files:', a.css, a.js);
+}
+
+// one exam page: physics/<dir>/index.html
+const PRELOAD = ['KaTeX_Main-Regular', 'KaTeX_Math-Italic'];
+function writePage(P, a, r, lockedSrc) {
   if (!PRELOAD.every((f) => a.fonts.includes(f))) fail('a preloaded KaTeX font is not among the fonts');
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>EP1 Midterm Review</title>
-<meta name="description" content="Review for the Engineering Physics 1 midterm (Chapters 1–8): a summary of every module with worked examples, practice problems in three tiers, the formulas, the exercise-day sheets and practice sets with worked answers, mock midterms and past midterms.">
-${ogTags({
-    title: 'EP1 Review · Physics midterm (Chapters 1–8)',
-    description: 'Unofficial review notes for the Engineering Physics 1 midterm: module summaries with worked examples, practice problems, formulas, quiz sheets and mock midterms.',
-    url: 'physics/midterm/', image: 'og-physics-midterm.png',
-    alt: 'EP1 Review, Engineering Physics 1 midterm, Chapters 1 to 8: summary, practice, formulas, quizzes and exams',
-  })}
+<title>${esc(P.title)}</title>
+<meta name="description" content="${esc(P.description)}">
+${ogTags({ ...P.og, url: `physics/${P.dir}/` })}
 ${HEAD_COMMON('../../', 'physics')}
 ${THEME_EARLY}
 ${FONT_LINKS}
@@ -666,26 +748,24 @@ ${PRELOAD.map((f) => `<link rel="preload" href="../../math/assets/fonts/${f}.wof
 <link rel="preload" href="../assets/${a.js}" as="script">
 <link rel="stylesheet" href="../assets/${a.css}">
 </head>
-<body data-page="${esc(JSON.stringify(PAGE_CONF))}">
+<body data-page="${esc(JSON.stringify(P.conf))}">
 ${SB_EDGE}
 ${r.body.replace('%MAIN_ATTRS%', lockedSrc ? ` data-locked="${lockedSrc}"` : '')}
-${foot()}
+${foot(P)}
 ${indexScript(r.INDEX)}
 <script src="../assets/${a.js}"></script>
 </body>
 </html>
 `;
-  writeIfChanged(path.join(PAGE_DIR, 'index.html'), html);
-  console.log('wrote', rel(path.join(PAGE_DIR, 'index.html')), (html.length / 1024).toFixed(0) + ' KB · public index entries:', r.INDEX.length,
-    '· exercise days:', r.nEx, '· past midterms:', r.nPast, r.hasLocks ? '(locked)' : '', '· practice sets:', r.nSets);
-  const picker = pickerHTML(a, r);
-  writeIfChanged(path.join(PHYS, 'index.html'), picker);
-  console.log('wrote', rel(path.join(PHYS, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
-    '· shared files:', a.css, a.js);
+  const dir = path.join(PHYS, P.dir);
+  fs.mkdirSync(dir, { recursive: true });
+  writeIfChanged(path.join(dir, 'index.html'), html);
+  console.log('wrote', rel(path.join(dir, 'index.html')), (html.length / 1024).toFixed(0) + ' KB · public index entries:', r.INDEX.length,
+    '· practice:', r.nPractice, '· formulas:', r.nFormulas);
 }
 
 // ---------- the exam picker (physics/index.html), like Math's ----------
-function pickerHTML(a, r) {
+function pickerHTML(a, pages) {
   const cards = EXAMS.map((x) => {
     const ex = SITE.exams.find((e) => e.name === x.exam);
     if (!ex) fail(`site.json has no exam named "${x.exam}" (the picker's ${x.id} card)`);
@@ -693,12 +773,15 @@ function pickerHTML(a, r) {
     if ((ex.page || null) !== page) fail(`site.json: "${x.exam}" needs "page": ${JSON.stringify(page)}, like the picker's card`);
     const day = ex.date ? new Date(`${ex.date}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (ex.time ? ' · ' + ex.time : '') : 'Date to be announced';
     const when = `<span class="e-when"${ex.date ? ` data-date="${esc(ex.date)}"` : ''}>${UI_ICONS.calendar}<span class="nw">${esc(day)}</span><span class="e-left" aria-live="off"></span></span>`;
-    const stats = x.page ? `<p class="e-stats">${meta([`${chapters.length} chapters`, `${r.nPractice} practice problems`, `${r.nFormulas} formulas`, `${r.nEx} exercise days`, `${r.nSets} practice sets`, `${r.nMocks} mocks`, r.nPast ? `${r.nPast} past midterms` : ''].filter(Boolean))}</p>` : '';
+    const P = PAGES.find((Q) => Q.dir === x.page), r = x.page && pages[P.id];
+    if (x.page && !r) fail(`the picker's ${x.id} card names page "${x.page}", which isn't in PAGES`);
+    const n = (k, one, many) => (k ? `${k} ${k === 1 ? one : many}` : '');
+    const stats = x.page ? `<p class="e-stats">${meta([`${P.chapters.length} chapters`, `${r.nPractice} practice problems`, `${r.nFormulas} formulas`, n(r.nEx, 'exercise day', 'exercise days'), n(r.nSets, 'practice set', 'practice sets'), n(r.nMocks, 'mock', 'mocks'), n(r.nPast, 'past midterm', 'past midterms')].filter(Boolean))}</p>` : '';
     const inner = `${EXAM_ICONS[x.id]}<span class="e-head"><span class="kicker">${esc(x.kicker)}</span><span class="e-title">${esc(x.title)}</span></span>
       <p class="e-text">${esc(x.text)}</p>${stats}
       <span class="e-foot">${when}${x.page ? `<span class="pill">Open${UI_ICONS.arrow}</span>` : '<span class="e-soon">Coming soon</span>'}</span>`;
     return x.page
-      ? `<a class="exam" id="exam-${x.id}" href="${x.page}/" data-updated="${LAST_UPDATED}" data-seen="physics">${inner}</a>`
+      ? `<a class="exam" id="exam-${x.id}" href="${x.page}/" data-updated="${P.updated}" data-seen="${P.conf.seen}">${inner}</a>`
       : `<div class="exam soon" id="exam-${x.id}">${inner}</div>`;
   }).join('\n    ');
   return `<!doctype html>
@@ -712,7 +795,7 @@ ${ogTags({
     title: 'EP1 Review · Engineering Physics 1',
     description: 'Unofficial review notes for each exam: module summaries with worked examples, practice problems, formulas, quiz sheets and mock midterms.',
     url: 'physics/', image: 'og-physics.png',
-    alt: 'EP1 Review, Engineering Physics 1: the midterm (Chapters 1 to 8), with the final coming later',
+    alt: 'EP1 Review, Engineering Physics 1: the midterm (Chapters 1 to 8) and the final (Chapters 15 to 20)',
   })}
 ${HEAD_COMMON('../', 'physics')}
 ${THEME_EARLY}
@@ -729,7 +812,7 @@ ${SB_EDGE}
   <div class="appbar-actions">${subjectSwitch('math', '../math/')}</div>
 </div></header>
 <main>
-  ${band('Exams', '試験', 'One page of notes for each exam. The midterm page has a summary of every module with worked examples, practice problems in three tiers, the formulas, quiz sheets with worked answers and mock midterms.')}
+  ${band('Exams', '試験', 'One page of notes for each exam: a summary of every module with worked examples, practice problems in three tiers and the formulas. The midterm page also has quiz sheets with worked answers and mock midterms.')}
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
     ${cards}

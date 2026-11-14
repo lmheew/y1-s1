@@ -424,9 +424,31 @@ with sync_playwright() as p:
         check(f'{label}: home has the Physics card', page.locator('a.subject[href="physics/"]').count() == 1)
         page.click('a.subject[href="physics/"]')
         page.wait_for_selector('.exams')
-        check(f'{label}: Physics picker has the midterm card and the final coming soon',
-              page.locator('a.exam[href="midterm/"]').count() == 1 and page.locator('.exam.soon .e-soon').count() == 1)
+        check(f'{label}: Physics picker has the midterm and final cards, both open',
+              page.locator('a.exam[href="midterm/"]').count() == 1 and page.locator('a.exam[href="final/"]').count() == 1 and page.locator('.exam.soon').count() == 0)
         check(f'{label}: Physics picker has no sideways scroll', overflow(page) <= 0, overflow(page))
+        # the final page: Chapters 15-20, every module with a worked example and its class, the unlisted ones marked
+        page.click('a.exam[href="final/"]')
+        page.wait_for_selector('#view-summary .wex')
+        page.wait_for_load_state('load')
+        check(f'{label}: Physics final Summary has Chapters 15–20, 40 modules, each with a worked example',
+              page.locator('#view-summary section.unit').count() == 6 and page.locator('#view-summary .smod').count() == 40
+              and page.locator('#view-summary .smod .wex').count() == 40 and page.locator('#view-summary .tile').count() == 7,
+              (page.locator('#view-summary .smod').count(), page.locator('#view-summary .wex').count()))
+        check(f'{label}: Physics final: 36 modules show their class, 4 are marked not on the schedule',
+              page.locator('.smod-when:not(.off)').count() == 36 and page.locator('.smod.unlisted .smod-when.off').count() == 4
+              and sorted(page.locator('.smod.unlisted').evaluate_all('els => els.map(e => e.id)')) == ['su-c15-m153', 'su-c18-m186', 'su-c19-m199', 'su-c20-m203'])
+        check(f'{label}: Physics final Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
+        shot(page, f'{label}-physics-final-summary')
+        for tab, sel in (('practice', '#view-practice .prob'), ('formulas', '#view-formulas .frow'), ('quizzes', '#view-quizzes .soon-box'), ('exams', '#view-exams .soon-box')):
+            page.click(f'#tab-{tab}')
+            page.wait_for_selector(sel)
+            check(f'{label}: Physics final {tab} builds, with no sideways scroll', overflow(page) <= 0, overflow(page))
+        check(f'{label}: Physics final has 82 practice problems and 178 formulas',
+              page.locator('#view-practice .prob').count() == 82 and page.locator('#view-formulas .frow').count() == 178)
+        shot(page, f'{label}-physics-final-exams')
+        page.goto(BASE + '/physics/')
+        page.wait_for_selector('.exams')
         check(f'{label}: Physics picker switches to Math, and Math to Physics', page.locator('a.subj-btn[href="../math/"]').count() == 1)
         shot(page, f'{label}-physics-picker')
         page.click('a.exam[href="midterm/"]')

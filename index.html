@@ -454,7 +454,7 @@
       }
       // each exam page keeps its own key in study-seen (page.js); an entry belongs to the page it links to, and the
       // rest to its subject's key. A subject's card is New while any of its entries is new to that key.
-      const PAGE_KEYS = { math: [['math/integrals/', 'math-integrals']], physics: [] };
+      const PAGE_KEYS = { math: [['math/integrals/', 'math-integrals']], physics: [['physics/final/', 'physics-final']] };
       const keyOf = (n, subj) => { const p = PAGE_KEYS[subj].find(([pre]) => (n.link || '').startsWith(pre)); return p ? p[1] : subj; };
       for (const subj of ['math', 'physics']) {
         const mine = list.filter((n) => n.subject === subj || n.subject === 'all');

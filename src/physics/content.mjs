@@ -27,7 +27,8 @@ export const chapters = [
 export const EXAMS = [
   { id: 'midterm', page: 'midterm', exam: 'Physics midterm', kicker: 'Midterm', title: 'Chapters 1–8',
     text: 'Measurement, motion in one and two dimensions, vectors, Newton’s laws, friction and circular motion, work and energy.' },
-  { id: 'final', exam: 'Physics final', kicker: 'Final', title: 'Final exam', text: 'Notes will appear here later in the course.' },
+  { id: 'final', page: 'final', exam: 'Physics final', kicker: 'Final', title: 'Chapters 15–20',
+    text: 'Oscillations, waves and sound, temperature and heat, the kinetic theory of gases, and entropy.' },
 ];
 
 // ---------- original icons (no university marks) ----------
@@ -45,6 +46,13 @@ export const CH_ICONS = {
   c7: big('<path d="M5 38h38"/><rect x="7" y="25" width="13" height="13" rx="1"/><path d="M14 18h22M32 14l4 4-4 4" class="lime-stroke"/><rect x="31" y="25" width="13" height="13" rx="1" stroke-dasharray="2.5 2.5"/>'),
   habits: big('<rect x="10" y="6" width="28" height="36" rx="3"/><path d="M15.5 16l3 3 6-6M15.5 28l3 3 6-6" class="lime-stroke"/><path d="M28 16h5M28 28h5"/>'),
   c8: big('<path d="M4 40C13 40 15 11 24 11S35 40 44 40"/><circle cx="14.5" cy="22" r="3.2" class="lime-fill"/><path d="M19 30l5 6" class="lime-stroke"/>'),
+  // the final's chapters (src/physics/final): a block on a spring, a wave, a speaker, a thermometer, a gas in a box, an engine
+  c15: big('<path d="M10 5h28"/><path d="M24 5v4l-7 2.5 14 5-14 5 14 5-7 2.5v3"/><rect x="15" y="32" width="18" height="11" rx="1.5" class="lime-fill"/>'),
+  c16: big('<path d="M4 24C9 10 15 10 20 24S31 38 36 24" class="lime-stroke"/><path d="M36 24c2-5 4-8 6-9"/><path d="M8 40h32M36 36l4 4-4 4"/>'),
+  c17: big('<path d="M7 19h7l10-8v26l-10-8H7z"/><path d="M30 18a8 8 0 0 1 0 12M35 13a15 15 0 0 1 0 22" class="lime-stroke"/>'),
+  c18: big('<path d="M20 31V9a4 4 0 0 1 8 0v22a8 8 0 1 1-8 0z"/><circle cx="24" cy="37" r="4.2" class="lime-fill"/><path d="M24 33V17" class="lime-stroke"/><path d="M31 13h5M31 19h5M31 25h5"/>'),
+  c19: big('<rect x="6" y="8" width="36" height="32" rx="2"/><circle cx="16" cy="19" r="3" class="lime-fill"/><circle cx="31" cy="30" r="3" class="lime-fill"/><circle cx="32" cy="15" r="3" class="lime-fill"/><path d="M19 17l6-4M28 31l-8 3M34 18l4 5" class="lime-stroke"/>'),
+  c20: big('<rect x="9" y="4" width="30" height="8" rx="2"/><rect x="9" y="36" width="30" height="8" rx="2"/><circle cx="24" cy="24" r="6"/><path d="M24 12v6M24 30v6" class="lime-stroke"/><path d="M30 24h11M37 20l4 4-4 4" class="lime-stroke"/>'),
 };
 export const EXAM_ICONS = {
   midterm: big('<path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/>'),

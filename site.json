@@ -55,10 +55,17 @@
       "name": "Physics final",
       "date": null,
       "time": null,
-      "page": null
+      "page": "physics/final/"
     }
   ],
   "news": [
+    {
+      "date": "2026-11-14",
+      "subject": "physics",
+      "title": "Physics final: Chapters 15–20, ready ahead of class",
+      "text": "The Physics final has its own page: every module of Chapters 15–20 (oscillations, waves and sound, temperature and heat, the kinetic theory of gases, entropy) with key ideas, a worked example and the date of its class on the schedule. The four modules the schedule leaves out (15-3, 18-6, 19-9 and 20-3) are there too, marked. Practice has 82 problems in three tiers and Formulas 178 rows with the values to know. Quizzes and Exams fill in once the exercise days and the exam's format are known.",
+      "link": "physics/final/"
+    },
     {
       "date": "2026-11-14",
       "subject": "all",

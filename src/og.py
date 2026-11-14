@@ -2,7 +2,8 @@
 is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/),
 og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/), og-math-integrals.png for the Calculus
 midterm 2 page (math/integrals/, with a Riemann sum in place of the tangent), og-physics.png for the Physics exam picker
-(physics/) and og-physics-midterm.png for the Physics midterm page (physics/midterm/). Physics cards are drawn in the
+(physics/), og-physics-midterm.png for the Physics midterm page (physics/midterm/) and og-physics-final.png for the
+Physics final page (physics/final/, with a standing wave in place of the projectile). Physics cards are drawn in the
 Physics blue, with its pendulum badge and a projectile in place of the curve and its tangent.
 
     python3 src/og.py                  # all of them
@@ -72,6 +73,16 @@ GRAPH_PHYS = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
               + ARROW
               + f'<circle cx="{PX(TB):.1f}" cy="{PY(TB):.1f}" r="13" class="dot"/></svg>')
 
+# the Physics final: a string fixed at both ends in its third harmonic (the curve and, dashed, its other extreme)
+_SW = lambda sgn: ' '.join(f'{30 + 360 * i / 120:.1f},{165 - sgn * 95 * math.sin(3 * math.pi * i / 120):.1f}' for i in range(121))
+GRAPH_WAVE = ('<svg class="graph" viewBox="0 0 420 330" aria-hidden="true">'
+              + ''.join(f'<path d="M{x} 0V330" class="grid"/>' for x in range(0, 421, 42))
+              + ''.join(f'<path d="M0 {y}H420" class="grid"/>' for y in range(0, 331, 42))
+              + '<path d="M30 60V270M390 60V270" class="ground"/>'
+              + f'<polyline points="{_SW(1)}" class="curve"/>'
+              + f'<polyline points="{_SW(-1)}" class="curve" stroke-dasharray="14 16"/>'
+              + ''.join(f'<circle cx="{30 + 120 * i}" cy="165" r="12" class="dot"/>' for i in range(4)) + '</svg>')
+
 CSS = """
 * { box-sizing: border-box; margin: 0; }
 html, body { width: 1200px; height: 630px; }
@@ -137,19 +148,24 @@ CARDS = {
     'og-physics.png': dict(
         phys=True, title='EP1 Review', kicker='Engineering Physics 1',
         lede='Review notes for each exam: summaries, practice problems, formulas and mock midterms.',
-        pills='<span class="pill on">Midterm · Chapters 1–8</span><span class="pill later">Final · later</span>'),
+        pills='<span class="pill on">Midterm · Chapters 1–8</span><span class="pill on">Final · Chapters 15–20</span>'),
     'og-physics-midterm.png': dict(
         phys=True, title='EP1 Review', kicker='Physics midterm · Chapters 1–8',
         lede='Summaries, practice problems, formulas, quizzes and mock midterms.',
         pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
               '<span class="pill">Quizzes</span><span class="pill">Exams</span>'),
+    'og-physics-final.png': dict(
+        phys=True, graph='wave', title='EP1 Review', kicker='Physics final · Chapters 15–20',
+        lede='Oscillations, waves and sound, heat, gases and entropy: summaries, practice problems and formulas.',
+        pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
+              '<span class="pill later">Quizzes · later</span><span class="pill later">Exams · later</span>'),
 }
 
 
 def page(c):
     phys = c.get('phys')
     return (f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body{" class=phys" if phys else ""}>'
-            f'<div class="band"></div>{GRAPH_PHYS if phys else GRAPH_INT if c.get("graph") == "int" else GRAPH}'
+            f'<div class="band"></div>{GRAPH_WAVE if c.get("graph") == "wave" else GRAPH_PHYS if phys else GRAPH_INT if c.get("graph") == "int" else GRAPH}'
             f'<div class="main"><div class="brand">{BADGE_PHYS if phys else BADGE}<div><div class="title">{c["title"]}</div><div class="kicker">{c["kicker"]}</div></div></div>'
             f'<p class="lede">{c["lede"]}</p></div>'
             f'<div class="pills">{c["pills"]}</div>'

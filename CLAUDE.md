@@ -19,7 +19,7 @@ A static site on GitHub Pages (branch `main`, folder `/`), live at https://lmhee
 - `sw.js` and `manifest.webmanifest` make the site installable and usable offline.
 - The app icon is a picture, and each subject's pages keep their badge in the browser tab. `python3 src/app_icon.py` makes all the icon files; see "App icon" below.
 - `404.html` is the page GitHub Pages shows for any address that doesn't exist. It is hand-written in the home page's style, and its links are absolute (`/y1-s1/…`) because it is served at the missing address.
-- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-math-integrals.png`, `og-physics.png` (the Physics picker) and `og-physics-midterm.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
+- Link previews (what LINE, Discord and others show when a link is shared): `og-home.png`, `og-math.png` (the exam picker), `og-math-derivatives.png`, `og-math-integrals.png`, `og-physics.png` (the Physics picker), `og-physics-midterm.png` and `og-physics-final.png` (1200 × 630) are drawn by `python3 src/og.py` (or `python3 src/og.py og-math.png` for one) and named in each page's `<head>` by their address on the live site (`SITE_URL` in `build-lib.mjs`; written out in `index.html`). Redraw them when a card's text changes, such as when an exam page arrives. Physics cards are drawn in the Physics blue. They use the site's own badges, never the KUAS logo.
 
 ## Rules
 
@@ -80,7 +80,10 @@ These modules are the Calculus midterm 2 page (`math/integrals/`). They use the 
 
 ## Physics (src/physics)
 
-The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the midterm, and the final as "Coming soon") and `/physics/midterm/` the midterm page (Chapters 1–8 of Fundamentals of Physics; the exam is on 13 Nov 2026: six questions in 60 minutes).
+The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the midterm and the final), `/physics/midterm/` the midterm page (Chapters 1–8 of Fundamentals of Physics; the exam was on 13 Nov 2026: six questions in 60 minutes) and `/physics/final/` the final page (Chapters 15–20; see "The final page" below).
+
+- Each exam page is an entry in `PAGES` in `build.mjs` (`MIDTERM`, `FINAL`), and one `render(P)` builds them all: its chapters, Summary, Formulas and Practice, its band texts, what an empty tab says (`soon`) and its settings for `page.js` (`conf`: the midterm's `store` is `ep1-midterm-review` and `seen` is `physics`; the final's are `ep1-final-review` and `physics-final`). A page's Last updated is the newest of its `added` dates and of the Physics (and all) What's new dates, leaving out entries that link to the other Physics page; the picker's card for it carries the same date and its `seen` key.
+- A new exam page needs its content modules, a `PAGES` entry, `page` in its `EXAMS` card and the same `page` in `site.json`, its address in `CORE` in `sw.js` (bump `CACHE`), its `seen` key in `PAGE_KEYS` in `index.html`, and a link preview in `og.py`.
 
 - The pages run on Math's page script and style (`src/math/page.js` and `page.css`, with the calculator and back-to-top) in Physics colours (`physics.css`). `<body data-page>` gives `page.js` the page's own settings (its storage keys, `physics` in `study-seen`, the search suggestions); Math uses the defaults. The theme is shared: it is kept in Math's store. `physics/assets/` holds `physics.css` and `physics.js`, named by version like Math's; the KaTeX fonts are Math's (`math/assets/fonts`), so build Math first.
 - **Summary** (`summary.mjs`, the tab the page opens on): per chapter, each of the book's modules (`modules` in `content.mjs`: number and title, such as 3-1 Vectors and their components) with its key ideas and one worked example (`ex`: `stem`, optional `fig`, `parts`, `answer`, `sol`, marked up like a problem), then the chapter's "Watch out" list; `habits` is the exam-day list. Keep the ideas short; every worked example is checked in `verify_summary.py`.
@@ -96,6 +99,15 @@ The EP1 review: `/physics/` is its exam picker (`EXAMS` in `content.mjs`: the mi
 - `figures.mjs`: every figure is an original line drawing in inline SVG (nothing copied from the textbook or the class sheets), in the page's colours so it follows dark mode. `plot()` draws graphs. The exercise days' figures (`d1-…`, `d2-…`, and `d3-…`: Day 2's drawings under the captions Day 3 gives them, made by `again`) and the past midterms' (`p21-…`, `p22-…`) only ever travel in the locked file.
 - `verify_sets.py` checks every practice-set answer numerically (with `verify_lib.py`: force sums, step-by-step integration of the motion, work integrals); `private/verify_exercises.py` does the same for the exercise days. `leakcheck.mjs` fails if text, a formula, a figure or a problem id of the exercise days is on a public page (wording the public sources print on purpose, such as a textbook formula, doesn't count).
 - Commands: `node src/physics/build.mjs site` (with `SITE_PASSWORD` it re-seals `private/` and rebuilds `physics/midterm/locked.json`; without it, it keeps them), `open` (decrypts into `src/physics/private/`), `seal`, and `rekey` (run it right after Math's `rekey`, with `SITE_PASSWORD` the old password and `NEW_SITE_PASSWORD` the new one).
+
+### The final page (src/physics/final)
+
+The Physics final page (`physics/final/`), added on 14 Nov 2026 at the user's request: every module of Chapters 15–20, built the way the midterm page is, with the same markup and tabs.
+
+- `content.mjs`: the chapters and their modules from the book, each as `[number, title, class]`, where `class` is `[class number, date]` from the EP1 class schedule (the 2026 handout, classes 30–60) or `null` for a module the schedule doesn't list. Every module of the book is on the page (the user's choice): the four the schedule leaves out, 15-3, 18-6, 19-9 and 20-3, show a "Not on the class schedule" tag under their heading (`.smod-when.off`), the others "Class 30 · Mon 16 Nov" (`.smod-when`), and the chapter's kicker gives its dates. The schedule teaches 16-7 before 16-6; the page keeps the book's order. Practice problems on a module that isn't on the schedule say so in their stem. `EX_DAYS` are the exercise days on the schedule after the midterm (15 Dec and 18 Jan).
+- `summary.mjs`, `formulas.mjs` (with the values to know for these chapters: gas constants, logarithms and exponentials, sound and water; the special angles are the midterm's) and `practice.mjs` (ids `15.1` …, in the page's own store) are shaped like the midterm's files. The Summary's figures are in `../figures.mjs` (`f15-…` to `f20-…`).
+- Quizzes and Exams have no content yet: each shows a `soon-box` (`soon` in `FINAL` in `build.mjs`), Quizzes naming the exercise days. When the exercise-day sheets or the exam's format arrive, fill them in the way the midterm's are.
+- `verify.py` checks everything numerically: every worked example (oscillators integrated with RK4, strings run as chains of beads, Doppler shifts timed crest by crest, p-V work and entropy integrated, microstates counted), every formula row in the form the page prints it (the TeX reader of `../verify_formulas.py`, which it extends with `\ln`, `\log`, `\lambda`, `\gamma`, `\kappa` and `\varepsilon`), and every Practice answer. It fails on a module, row or problem without a check. It takes about 40 s.
 
 ### A new exercise day (needs the password)
 
@@ -118,6 +130,7 @@ python3 src/math/verify_practice.py && python3 src/math/verify_formulas.py && py
 python3 src/math/integrals/verify.py
 python3 src/physics/verify_sets.py && python3 src/physics/verify_summary.py && python3 src/physics/verify_formulas.py
 python3 src/physics/verify_practice.py && python3 src/physics/verify_mocks.py
+python3 src/physics/final/verify.py
 node src/shared/calculator_test.js
 python3 src/check_site.py
 python3 src/check_features.py

@@ -118,6 +118,10 @@
 .rq { contain-intrinsic-size: auto 600px; }
 .frow { contain-intrinsic-size: auto 100px; }
 .smod + .smod { margin-top: 12px; border-top: 1px dashed var(--line); }
+/* the final's modules: the date of the module's class on the schedule, or a tag for one the schedule leaves out */
+.smod-when { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; margin: 4px 0 4px; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.smod-when .ic { flex: none; width: 15px; height: 15px; color: var(--green-text); }
+.smod-when .xtag { margin-left: 0; }
 .smod-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px; font-size: 17px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
 .mod-no { flex: none; padding: 1px 8px; border-radius: 8px; background: linear-gradient(var(--tint), var(--tint)), var(--under); color: var(--green-text); font-size: 13px; font-weight: 700;
   font-variant-numeric: tabular-nums; letter-spacing: .02em; }

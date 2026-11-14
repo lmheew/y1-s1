@@ -128,7 +128,7 @@ with sync_playwright() as p:
         check(f'{label}: a tapped headline opens its note and link', pg.locator('#news .n-text').first.is_visible() and pg.locator('#news .n-open').first.is_visible())
         if label == 'phone':
             # link previews: both pages name a 1200 x 630 image that is in the repository, by its address on the live site
-            for url in ['/', '/math/', '/math/derivatives/', '/physics/', '/physics/midterm/']:
+            for url in ['/', '/math/', '/math/derivatives/', '/physics/', '/physics/midterm/', '/physics/final/']:
                 pg.goto(BASE + url)
                 og = pg.evaluate("Object.fromEntries([...document.querySelectorAll('meta[property^=\"og:\"], meta[name=\"twitter:card\"]')].map((m) => [m.getAttribute('property') || m.getAttribute('name'), m.content]))")
                 img = og.get('og:image', '')
@@ -147,7 +147,7 @@ with sync_playwright() as p:
                     head = fh.read(24)
                 return '%dx%d' % (int.from_bytes(head[16:20], 'big'), int.from_bytes(head[20:24], 'big'))
             tabs = {'/': 'favicon.png', '/math/': 'favicon-math.svg', '/math/derivatives/': 'favicon-math.svg', '/math/integrals/': 'favicon-math.svg',
-                    '/physics/': 'favicon-physics.svg', '/physics/midterm/': 'favicon-physics.svg'}
+                    '/physics/': 'favicon-physics.svg', '/physics/midterm/': 'favicon-physics.svg', '/physics/final/': 'favicon-physics.svg'}
             for url, want in tabs.items():
                 pg.goto(BASE + url)
                 got = pg.evaluate("['icon', 'apple-touch-icon'].map((r) => new URL(document.querySelector(`link[rel=\"${r}\"]`).getAttribute('href'), location.href).pathname)")
@@ -1016,7 +1016,7 @@ with sync_playwright() as p:
     pg.evaluate("navigator.serviceWorker.ready")
     pg.wait_for_timeout(1500)
     saved = pg.evaluate("""async () => {
-      const want = ['./', './math/', './math/derivatives/', './math/integrals/', './physics/', './physics/midterm/', 'site.json', 'src/shared/totop.css',
+      const want = ['./', './math/', './math/derivatives/', './math/integrals/', './physics/', './physics/midterm/', './physics/final/', 'site.json', 'src/shared/totop.css',
         'src/shared/totop.js', 'math/assets/math.css', 'math/assets/math.js', 'physics/assets/physics.css', 'physics/assets/physics.js',
         'math/assets/fonts/KaTeX_Main-Regular.woff2'].map((u) => new URL(u, location.href).href);
       for (const name of await caches.keys()) {
@@ -1081,7 +1081,7 @@ with sync_playwright() as p:
         ctx = b.new_context(viewport=vp)
         ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
         pg = ctx.new_page()
-        for path in ('/', '/404.html', '/math/', '/physics/', '/math/derivatives/', '/math/integrals/', '/physics/midterm/'):
+        for path in ('/', '/404.html', '/math/', '/physics/', '/math/derivatives/', '/math/integrals/', '/physics/midterm/', '/physics/final/'):
             pg.goto(BASE + path)
             pg.wait_for_load_state('load')
             e = pg.evaluate(EDGE)

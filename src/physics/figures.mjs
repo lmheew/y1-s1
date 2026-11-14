@@ -808,6 +808,66 @@ def('c-44', 360, 205, 'Block of mass M on a rough horizontal table, tied by a st
   def('m3-6', 300, 210, 'A smooth hemispherical dome of radius R; a block starts at the top with speed v0 and is shown further down, where the line from the centre to it makes angle φ with the vertical', 'Figure M3-6', s);
 }
 
+// ===== the final (Chapters 15–20): Summary figures =====
+{ // 15-1: a block on a spring, pulled out to x = x_m on a frictionless floor
+  const y = 118, eq = 150, xm = 66, bx = eq + xm;
+  let s = ground(30, 292, y);
+  s += line(30, y - 66, 30, y);
+  for (let yy = y - 62; yy <= y - 6; yy += 9) s += line(30, yy, 22, yy + 7, 'thin soft');
+  s += spring(30, bx - 23, y - 18, { coils: 8, amp: 9 }) + box(bx, y - 18, 46, 36, '{m}');
+  s += line(eq, y - 58, eq, y + 4, 'thin dot') + T(eq, y + 20, '{x} = 0', { c: 'ts' });
+  s += dim(eq, y - 50, bx, y - 50, '{x_m}', { dy: -7 });
+  s += T(bx, y + 20, 'frictionless', { c: 'ts' });
+  def('f15-spring', 300, 140, 'A block of mass m on a frictionless floor, joined to a wall by a spring, pulled a distance x_m to the right of its equilibrium position x = 0', '', s);
+}
+{ // 15-4: a simple pendulum at a small angle
+  const px = 150, py = 26, L = 150, th = 22;
+  let s = ground(90, 210, py, { up: true });
+  const [bx, by] = at(px, py, L, -90 + th);
+  s += line(px, py, px, py + L + 18, 'thin dot') + line(px, py, bx, by) + dot(px, py, 'pt');
+  s += arc(px, py, 46, -90, -90 + th, '{θ}', { lr: 60 });
+  const [lx, ly] = at(px, py, L * 0.55, -90 + th);
+  s += T(lx + 14, ly, '{L}', { anchor: 'start' });
+  s += circ(bx, by, 11, 'body') + T(bx + 18, by + 5, '{m}', { anchor: 'start' });
+  def('f15-pendulum', 300, 200, 'A simple pendulum: a bob of mass m on a string of length L, swung an angle θ from the vertical', '', s);
+}
+{ // 16-1: the wave y = 0.020 sin(4.0πx − 20πt) at t = 0, in centimetres
+  const pts = [];
+  for (let i = 0; i <= 200; i++) { const x = i / 200; pts.push([x, 2 * Math.sin(4 * Math.PI * x)]); }
+  const { s: body, px, py } = plot({ w: 310, h: 200, xr: [0, 1], yr: [-2.8, 2.8], xt: 0.25, yt: 1, xlab: '{x} [m]', ylab: '{y} [cm]', lines: [{ pts, c: 'ans' }], L: 44, R: 34 });
+  let s = body + dim(px(0.125), py(2.45), px(0.625), py(2.45), '{λ}', { dy: -6 });
+  s += dim(px(0.375), py(0), px(0.375), py(-2), '{y_m}', { dx: -10, dy: 6, anchor: 'end' });
+  s += arrow(px(0.76), py(2.45), px(0.96), py(2.45), 'vel') + T(px(0.86), py(2.45) - 8, '{v}', { c: 'vel-t' });
+  def('f16-snap', 310, 200, 'The string at t = 0: a sine curve of amplitude 2.0 cm and wavelength 0.50 m, travelling toward +x', 'The string at t = 0', s);
+}
+{ // 16-7: the third harmonic on a string fixed at both ends
+  const x0 = 34, x1 = 266, y = 70, A = 30, n = 3, Lp = x1 - x0;
+  const env = (sgn) => { const pts = []; for (let i = 0; i <= 120; i++) { const u = i / 120; pts.push([x0 + u * Lp, y - sgn * A * Math.sin(n * Math.PI * u)]); } return pts; };
+  let s = poly(env(1), 'vel') + poly(env(-1), 'vel dash');
+  for (const xx of [x0, x1]) s += line(xx, y - 40, xx, y + 40) + circ(xx, y, 3.4, 'pt');
+  for (let i = 1; i < n; i++) s += circ(x0 + (i * Lp) / n, y, 3.4, 'pt');
+  s += T(x0 + Lp / 6, y - A - 9, 'antinode', { c: 'ts' }) + T(x0 + (2 * Lp) / 3, y - A - 9, 'node', { c: 'ts' });
+  s += dim(x0, y + 50, x1, y + 50, '{L} = 0.80 m', { dy: 16 });
+  def('f16-standing', 300, 150, 'A string fixed at both ends vibrating in its third harmonic: three loops, with four nodes counting the ends', 'The third harmonic', s);
+}
+{ // 18-5: the cycle ABCDA on a p-V diagram
+  const { s: body, px, py } = plot({ w: 300, h: 220, xr: [0, 4], yr: [0, 4], xt: 1, yt: 1, xlab: '{V} [L]', ylab: '{p} [10⁵ Pa]',
+    lines: [{ pts: [[1, 3], [3, 3], [3, 1], [1, 1], [1, 3]], c: 'ans' }], dots: [[1, 3], [3, 3], [3, 1], [1, 1]], L: 40, R: 40 });
+  let s = body;
+  s += arrow(px(1.8), py(3), px(2.3), py(3), 'vel') + arrow(px(3), py(2.2), px(3), py(1.7), 'vel') + arrow(px(2.2), py(1), px(1.7), py(1), 'vel') + arrow(px(1), py(1.8), px(1), py(2.3), 'vel');
+  s += T(px(1) - 10, py(3) - 8, 'A', { c: 'tb' }) + T(px(3) + 10, py(3) - 8, 'B', { c: 'tb' }) + T(px(3) + 10, py(1) + 18, 'C', { c: 'tb' }) + T(px(1) - 10, py(1) + 18, 'D', { c: 'tb' });
+  def('f18-cycle', 300, 220, 'A p-V diagram with a rectangular cycle: A (1.0 L, 3.0) to B (3.0 L, 3.0) at constant pressure, down to C (3.0 L, 1.0), left to D (1.0 L, 1.0), and up to A, pressures in units of 10⁵ Pa', 'The cycle ABCDA', s);
+}
+{ // 20-2: a heat engine between two reservoirs
+  const cx = 130, cy = 112;
+  let s = box(cx, 30, 170, 34, '') + T(cx, 35, 'hot reservoir, {T_H}') + box(cx, 194, 170, 34, '') + T(cx, 199, 'cold reservoir, {T_L}');
+  s += circ(cx, cy, 24, 'body') + T(cx, cy + 5, 'engine', { c: 'ts' });
+  s += arrow(cx, 48, cx, cy - 26, 'acc') + T(cx + 10, 72, '{Q_H}', { anchor: 'start', c: 'acc-t' });
+  s += arrow(cx, cy + 26, cx, 176, 'acc') + T(cx + 10, 156, '{Q_L}', { anchor: 'start', c: 'acc-t' });
+  s += arrow(cx + 26, cy, 246, cy, 'vel') + T(250, cy + 5, '{W}', { anchor: 'start', c: 'vel-t' });
+  def('f20-engine', 290, 214, 'A heat engine: heat Q_H flows from a hot reservoir at T_H into the engine, which does work W and gives heat Q_L to a cold reservoir at T_L', '', s);
+}
+
 export const FIGS = F;
 export const figHTML = (id) => {
   const f = F[id];

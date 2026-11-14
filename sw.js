@@ -3,11 +3,11 @@
 // locked.json?v=…): saved copy first, since a new version comes with a new name. Images and fonts: saved copy first.
 // Bump CACHE when the list below changes, or when every page changes at once (a new look), so a device swaps its
 // whole saved copy in one go; old caches are deleted on activate.
-const CACHE = 'study-notes-v7';
+const CACHE = 'study-notes-v8';
 const FONTS = 'study-notes-fonts';
 const KATEX = ['AMS-Regular', 'Main-Bold', 'Main-BoldItalic', 'Main-Italic', 'Main-Regular', 'Math-BoldItalic', 'Math-Italic',
   'Size1-Regular', 'Size2-Regular', 'Size3-Regular', 'Size4-Regular'].map((f) => `./math/assets/fonts/KaTeX_${f}.woff2`);
-const CORE = ['./', './math/', './math/derivatives/', './math/integrals/', './physics/', './physics/midterm/', './site.json', './manifest.webmanifest',
+const CORE = ['./', './math/', './math/derivatives/', './math/integrals/', './physics/', './physics/midterm/', './physics/final/', './site.json', './manifest.webmanifest',
   './apple-touch-icon.png', './icon-192.png', './favicon.png', './logo.png', // the app icon, the home page's tab icon and logo
   './favicon-math.svg', './favicon-physics.svg', // each subject's tab icon: its badge
   './src/shared/totop.css', './src/shared/totop.js', // the home page and the exam pickers link these; exam pages have them in their script
