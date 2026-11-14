@@ -458,6 +458,9 @@ with sync_playwright() as p:
         hidden = page.evaluate("getComputedStyle(document.querySelector('#fg-c4 .frow .fmath > .katex')).visibility")
         check(f'{label}: Physics Test me hides formulas and their notes', hidden == 'hidden'
               and page.evaluate("getComputedStyle(document.querySelector('#view-formulas .frow .fnote')).visibility") == 'hidden')
+        # the rows are still being drawn for good (drawAll in page.js), which moves the ones below them: wait until
+        # they are all in place, so the tap lands on the row it aims at
+        page.wait_for_function("!document.querySelector('#view-formulas .frow:not(.drawn)')")
         page.locator('#fg-c4 .frow').first.click()
         check(f'{label}: tapping a Physics formula shows it', page.evaluate("getComputedStyle(document.querySelector('#fg-c4 .frow .fmath > .katex')).visibility") == 'visible')
         page.click('#test-btn')

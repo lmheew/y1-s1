@@ -658,7 +658,7 @@ ${ogTags({
     url: 'physics/midterm/', image: 'og-physics-midterm.png',
     alt: 'EP1 Review, Engineering Physics 1 midterm, Chapters 1 to 8: summary, practice, formulas, quizzes and exams',
   })}
-${HEAD_COMMON('../../', '#131A25', 'physics')}
+${HEAD_COMMON('../../', 'physics')}
 ${THEME_EARLY}
 ${FONT_LINKS}
 ${PRELOAD.map((f) => `<link rel="preload" href="../../math/assets/fonts/${f}.woff2" as="font" type="font/woff2" crossorigin>`).join('\n')}
@@ -713,7 +713,7 @@ ${ogTags({
     url: 'physics/', image: 'og-physics.png',
     alt: 'EP1 Review, Engineering Physics 1: the midterm (Chapters 1 to 8), with the final coming later',
   })}
-${HEAD_COMMON('../', '#131A25', 'physics')}
+${HEAD_COMMON('../', 'physics')}
 ${THEME_EARLY}
 ${FONT_LINKS}
 <link rel="stylesheet" href="assets/${a.css}">

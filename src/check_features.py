@@ -86,26 +86,42 @@ with sync_playwright() as p:
         # ---- home page ----
         pg.goto(BASE + '/')
         pg.wait_for_selector('#news li')
-        # Next up: the soonest exam with a date, then the others with a date; the rest under Other exams
+        # The soonest exam with a date is the card on top (none once every dated exam is done). Under Subjects, one list
+        # has every exam: those to come (soonest first), the ones without a date in one row, then the ones done (latest first).
         exams_all = json.load(open(os.path.join(REPO, 'site.json')))['exams']
-        check(f'{label}: home shows all 7 exams: the next one, the others coming, then the rest, dates to be announced',
-              pg.locator('#next-exam').count() == 1 and 1 + pg.locator('#up-list .up-item').count() + pg.locator('#later-list .up-item').count() == len(exams_all) == 7
-              and 'Date to be announced' in pg.locator('#later-list').inner_text())
-        days = sorted({n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'][:6]})
-        check(f'{label}: home shows What\'s new grouped by day, one New label per day', pg.locator('#news .n-items li').count() == 6
-              and pg.locator('#news .n-day').count() == len(days) and pg.locator('#news .new-pill').count() == len(days), days)
-        newest = max(n['date'] for n in json.load(open(os.path.join(REPO, 'site.json')))['news'])
+        dated, undated = [x for x in exams_all if x['date']], [x for x in exams_all if not x['date']]
+        coming = sorted([x for x in dated if x['date'] >= str(today)], key=lambda x: x['date'])
+        done = sorted([x for x in dated if x['date'] < str(today)], key=lambda x: x['date'], reverse=True)
+        want = [x['name'] for x in coming] + (['No date yet'] if undated else []) + [x['name'] for x in done]
+        nodate = pg.locator('#exam-list .tl-row.nodate')
+        check(f'{label}: home shows all 7 exams: the next one on top, then one list (to come, no date yet, done)',
+              len(exams_all) == 7 and pg.locator('#next-exam').count() == (1 if coming else 0)
+              and pg.locator('#exam-list .tl-name').all_inner_texts() == want
+              and nodate.count() == (1 if undated else 0) and all(x['name'] in nodate.inner_text() for x in undated)
+              and pg.locator('#exam-list .tl-row.done').count() == len(done), pg.locator('#exam-list .tl-name').all_inner_texts())
+        all_news = json.load(open(os.path.join(REPO, 'site.json')))['news']
+        days = sorted({n['date'] for n in all_news[:6]})
+        # a day is New for 14 days (and from a day ahead), on a device that hasn't seen it
+        new_days = [d for d in days if -1 <= (today - datetime.date.fromisoformat(d)).days < 14]
+        check(f'{label}: home shows What\'s new grouped by day, one New label per new day', pg.locator('#news .n-items li').count() == 6
+              and pg.locator('#news .n-day').count() == len(days) and pg.locator('#news .new-pill').count() == len(new_days), (days, new_days))
+        newest = max(n['date'] for n in all_news)
         check(f'{label}: home footer says when the site was last updated', pg.locator('#updated').is_visible()
               and pg.locator('#updated time').get_attribute('datetime') == newest)
         check(f'{label}: Math and Physics cards have a New label', pg.locator('#card-math .new-pill').count() == 1 and pg.locator('#card-physics .new-pill').count() == 1)
-        lists = pg.locator('#up-list').inner_text() + pg.locator('#later-list').inner_text()
-        check(f'{label}: home exams name their course now that there are two, and dates stay whole',
-              'Linear Algebra 1 ·' in lists and 'Engineering Physics 1' in lists + pg.locator('#next-exam').inner_text()
-              and pg.evaluate("[...document.querySelectorAll('#up-list .up-when .nw, #later-list .up-when .nw')].every((e) => e.getClientRects().length === 1)"))
-        check(f'{label}: the Physics midterm links to its page', pg.locator('#next-exam a[href="physics/midterm/"], #up-list a[href="physics/midterm/#exams"]').count() == 1)
-        check(f'{label}: the next exam links to its page, its Practice and its night-before sheet, and Practice has not started here yet',
-              pg.locator('#next-exam .nx-btns a').count() == 3 and pg.locator('#next-exam a[href$="#night"]').count() == 1
-              and 'not started yet' in pg.locator('#next-exam').inner_text() and pg.locator('#resume').is_hidden())
+        subs = pg.locator('#exam-list .tl-row:not(.nodate) .tl-sub').all_inner_texts()
+        check(f'{label}: home exams name their subject (the next exam its course), and dates stay whole',
+              len(subs) == len(dated) and all('Math · CLA1' in t or 'Physics · EP1' in t for t in subs)
+              and (not coming or coming[0]['course'] in pg.locator('#next-exam').inner_text())
+              and pg.evaluate("[...document.querySelectorAll('#exam-list .tl-sub .nw')].every((e) => e.getClientRects().length === 1)"), subs)
+        check(f'{label}: the Physics midterm links to its page', pg.locator('#exam-list a[href="physics/midterm/#exams"]').count() == 1)
+        if coming and coming[0].get('page'):  # the same with fixed dates: "countdowns", below
+            check(f'{label}: the next exam links to its page, its Practice and its night-before sheet, and Practice has not started here yet',
+                  pg.locator('#next-exam .nx-btns a').count() == 3 and pg.locator('#next-exam a[href$="#night"]').count() == 1
+                  and 'not started yet' in pg.locator('#next-exam').inner_text() and pg.locator('#resume').is_hidden())
+        check(f'{label}: the subjects sit side by side, each card a link to its exams', pg.evaluate("""(() => {
+          const [a, b] = ['#card-math', '#card-physics'].map((s) => document.querySelector(s).getBoundingClientRect());
+          return Math.abs(a.top - b.top) < 1 && a.right < b.left && a.width >= 150; })()"""))
         check(f'{label}: What\'s new shows a headline per entry, its text a tap away', pg.locator('#news details').count() == 6
               and pg.locator('#news details[open]').count() == 0 and not pg.locator('#news .n-text').first.is_visible())
         pg.locator('#news details summary').first.click()
@@ -150,7 +166,10 @@ with sync_playwright() as p:
             pg.wait_for_function("document.querySelector('.brand img').complete")
             logo = pg.evaluate("(() => { const i = document.querySelector('.brand img'); return [i.naturalWidth, Math.round(i.getBoundingClientRect().width)]; })()")
             check('home: the logo is the app icon, drawn 36 px wide', logo == [108, 36], logo)
-        check(f'{label}: home offline card is there', pg.locator('#offline').is_visible())
+        check(f'{label}: home offline row is there, closed', pg.locator('#offline').is_visible() and not pg.locator('#offline .off-body').is_visible())
+        pg.locator('#offline > summary').click()
+        check(f'{label}: a tap on it says how to install the site', pg.locator('#offline .off-body').is_visible()
+              and pg.locator('#offline .off-body p:visible').count() >= 2)
         check(f'{label}: home has no sideways scroll', overflow(pg) <= 0)
         shot('home', True)
 
@@ -173,12 +192,14 @@ with sync_playwright() as p:
         # ---- math page: deferred tabs, shared files ----
         pg.goto(BASE + '/math/derivatives/')
         pg.wait_for_selector('.calc-fab')
+        # (the one inline style is the rule that lets pages cross-fade, which has to come before the linked sheets)
         files = pg.evaluate("""() => ({ css: [...document.querySelectorAll('link[rel=stylesheet]')].map((l) => l.getAttribute('href')),
-          js: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')), styles: document.querySelectorAll('style').length,
+          js: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')),
+          styles: [...document.querySelectorAll('style')].filter((s) => !/^@media [(]prefers-reduced-motion: no-preference[)] [{] @view-transition [{] navigation: auto; [}] [}]$/.test(s.textContent)).length,
           fonts: [...document.fonts].filter((f) => f.status === 'loaded' && /^KaTeX/.test(f.family)).length })""")
         import hashlib
         ver = lambda f: hashlib.sha256(open(os.path.join(REPO, 'math', 'assets', f), 'rb').read()).hexdigest()[:10]
-        check(f'{label}: the page uses the shared files, named by their version, and nothing inline', f'../assets/math.css?v={ver("math.css")}' in files['css']
+        check(f'{label}: the page uses the shared files, named by their version, and no styles of its own', f'../assets/math.css?v={ver("math.css")}' in files['css']
               and files['js'] == [f'../assets/math.js?v={ver("math.js")}'] and files['styles'] == 0 and 'data:font' not in open(os.path.join(REPO, 'math', 'derivatives', 'index.html')).read(), files)
         check(f'{label}: math fonts load from the shared files', files['fonts'] >= 2, files)
         check(f'{label}: heavy tabs wait as text until opened', pg.locator('#lazy-exams').count() == 1 and pg.locator('#view-exams .sheet').count() == 0)
@@ -383,7 +404,7 @@ with sync_playwright() as p:
     # a day dated after the page's moment (13 Nov at noon on 11 Nov) isn't New yet: count the days up to 12 Nov
     fresh_days = pg.evaluate("[...document.querySelectorAll('#news .n-day time')].filter((t) => t.getAttribute('datetime') <= '2026-11-12').length")
     check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1
-          and fresh_days >= 3 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
+          and fresh_days >= 2 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
     # Calculus midterm 2 was last updated on 13 Nov, more than a day after this moment, so its card waits (see 13 Nov below)
@@ -449,8 +470,8 @@ with sync_playwright() as p:
     pg = ctx.new_page()
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new (13 Nov): the day Quiz 08 arrived is New on the home page', pg.locator('#news .n-day').first.locator('.new-pill').count() == 1
-          and pg.locator('#news .n-day time').first.get_attribute('datetime') == '2026-11-13')
+    check('new (13 Nov): the day Quiz 08 arrived is New on the home page',
+          pg.locator('#news .n-day:has(time[datetime="2026-11-13"]) .new-pill').count() == 1)
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
     check('new (13 Nov): the picker marks Calculus midterm 2 New, and midterm 1 no longer', pg.locator('#exam-integrals .new-pill').count() == 1
@@ -704,6 +725,108 @@ with sync_playwright() as p:
     check('phone: at rest the calculator is a 22 px tab on the left edge with its icon whole', fab[0] < 0 and fab[1] == 22 and fab[2] >= 0 and fab[3] <= 22, fab)
     ctx.close()
 
+    # ---- the glass look: a colour wash behind the page, the bars real glass (they blur what scrolls under them), the
+    # cards see-through panels without a blur of their own; the tab bar floats on phones and its pill slides to the open
+    # tab; a tab opened by hand fades in ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/physics/midterm/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    pg.wait_for_timeout(300)
+    look = pg.evaluate("""(() => { const cs = (s, p) => getComputedStyle(document.querySelector(s), p || null);
+      const blur = (c) => (c.backdropFilter || c.webkitBackdropFilter || 'none') !== 'none';
+      const bar = document.querySelector('.tabbar').getBoundingClientRect();
+      return { wash: cs('body', '::after').position === 'fixed' && cs('body', '::after').backgroundImage.includes('radial-gradient'),
+        bars: blur(cs('.appbar')) && blur(cs('.tabbar')), seeThrough: [cs('.appbar').backgroundColor, cs('.prob').backgroundColor].every((c) => c.startsWith('rgba(')),
+        cards: [...document.querySelectorAll('.prob, .overview')].every((e) => !blur(getComputedStyle(e))),
+        floats: cs('.tabbar').position === 'fixed' && bar.left >= 8 && innerWidth - bar.right >= 8 && innerHeight - bar.bottom >= 6 && parseFloat(cs('.tabbar').borderTopLeftRadius) >= 20 }; })()""")
+    check('glass: a wash behind the page, glass bars that blur, see-through cards without a blur, a floating tab bar on phones', all(look.values()), look)
+    pill = """(() => { const row = document.querySelector('.tabbar-row'), on = document.querySelector('.tab[aria-selected="true"]');
+      const m = new DOMMatrix(getComputedStyle(row, '::before').transform), w = parseFloat(getComputedStyle(row, '::before').width);
+      return { i: row.style.getPropertyValue('--tab-i'), off: on ? Math.round(m.m41 - on.offsetLeft) : null, wide: on ? Math.round(w - on.offsetWidth) : null,
+        hidden: row.classList.contains('no-tab'), live: document.querySelector('.tabbar').classList.contains('live') }; })()"""
+    at = pg.evaluate(pill)
+    check('glass: the pill starts under the tab the page opens on (Practice)', at['i'] == '1' and abs(at['off']) <= 1 and abs(at['wide']) <= 1 and at['live'] and not at['hidden'], at)
+    pg.click('#tab-exams')
+    fading = pg.evaluate("document.getElementById('view-exams').classList.contains('view-in')")
+    pg.wait_for_timeout(700)
+    at = pg.evaluate(pill)
+    check('glass: a tap on a tab slides the pill under it and fades the tab in', at['i'] == '4' and abs(at['off']) <= 1 and fading
+          and not pg.evaluate("document.querySelector('.view.view-in')"), (at, fading))
+    pg.locator('#view-exams .night-link').click()
+    pg.wait_for_selector('#view-night .nsec')
+    check('glass: the night-before sheet has no tab, so the pill goes; Back brings it back', pg.evaluate(pill)['hidden'])
+    pg.locator('[data-night-back]').click()
+    check('glass: after Back the pill is under Exams again', not pg.evaluate(pill)['hidden'] and pg.evaluate(pill)['i'] == '4')
+    ctx.close()
+    ctx = b.new_context(viewport={'width': 1280, 'height': 900})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/math/derivatives/#formulas')
+    pg.wait_for_selector('#view-formulas .frow')
+    pg.evaluate('scrollTo(0, 600)')
+    pg.wait_for_timeout(300)
+    wide = pg.evaluate("""(() => { const t = document.querySelector('.tabbar'), r = t.getBoundingClientRect(), c = getComputedStyle(t);
+      return [c.position, Math.round(r.top), Math.round(r.width) === document.documentElement.clientWidth, (c.backdropFilter || c.webkitBackdropFilter) !== 'none']; })()""")
+    at = pg.evaluate(pill)
+    check('glass: on a wide screen the tab bar is a strip of glass that stays at the top, its pill under the open tab',
+          wide == ['sticky', 0, True, True] and at['i'] == '2' and abs(at['off']) <= 1, (wide, at))
+    ctx.close()
+
+    # ---- moving between pages: a link to another page of the site cross-fades to it (a view transition), and the
+    # subject's badge glides between its places on the two pages; each name is on a page once, or the browser skips the
+    # move. With reduced motion there is none, and a tab doesn't fade in. ----
+    VT_NAMES = """(() => { const at = {}; document.querySelectorAll('.appbar *, main a *, #next *').forEach((e) => {
+      const n = getComputedStyle(e).viewTransitionName; if (n && n !== 'none') (at[n] = at[n] || []).push(e.closest('[id]') ? e.closest('[id]').id : e.parentElement.className); });
+      return at; })()"""
+    SEEN_VT = "window.__vt = null; addEventListener('pagereveal', (e) => { window.__vt = Boolean(e.viewTransition); });"
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    ctx.add_init_script(SEEN_VT)
+    pg = ctx.new_page()
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news li')
+    can = pg.evaluate("'onpagereveal' in window && typeof CSSViewTransitionRule !== 'undefined'")  # this Chromium does cross-page transitions
+    names = pg.evaluate(VT_NAMES)
+    check('moves: the home page names each subject card\'s badge, once', names == {'badge-math': ['card-math'], 'badge-physics': ['card-physics']}, names)
+    pg.evaluate("document.documentElement.classList.add('from-next')")
+    names = pg.evaluate(VT_NAMES)
+    hero = pg.evaluate("(document.querySelector('#next-exam') || { className: '' }).className")
+    want = {'badge-math': ['next-exam']} if ' math' in hero else {'badge-physics': ['next-exam']} if ' physics' in hero else {}
+    check('moves: after a tap inside the next-exam card, its badge is the one named', names == want, (names, hero))
+    pg.evaluate("document.documentElement.classList.remove('from-next')")
+    pg.click('a.subject[href="physics/"]')
+    pg.wait_for_selector('.exams')
+    names = pg.evaluate(VT_NAMES)
+    check('moves: home → Physics picker cross-fades, and the picker names its badge and the Math switch', (not can or pg.evaluate('window.__vt') is True)
+          and sorted(names) == ['badge-math', 'badge-physics'] and all(len(v) == 1 for v in names.values()), (can, pg.evaluate('window.__vt'), names))
+    pg.click('a.exam[href="midterm/"]')
+    pg.wait_for_selector('#view-summary .wex')
+    pg.wait_for_load_state('load')
+    names = pg.evaluate(VT_NAMES)
+    check('moves: picker → exam page cross-fades too, with the same two names', (not can or pg.evaluate('window.__vt') is True)
+          and sorted(names) == ['badge-math', 'badge-physics'] and all(len(v) == 1 for v in names.values()), (pg.evaluate('window.__vt'), names))
+    pg.click('a.subj-btn')
+    pg.wait_for_selector('.exams')
+    check('moves: the switch to Math swaps the two badges: Math\'s is the app bar\'s there, Physics\' the switch button\'s', pg.url.endswith('/math/')
+          and (not can or pg.evaluate('window.__vt') is True)
+          and pg.evaluate("['.brand .badge', '.subj-btn svg'].map((s) => getComputedStyle(document.querySelector(s)).viewTransitionName)") == ['badge-math', 'badge-physics'])
+    ctx.close()
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    ctx.add_init_script(SEEN_VT)
+    pg = ctx.new_page()
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.exams')
+    pg.click('a.exam[href="integrals/"]')
+    pg.wait_for_selector('#view-summary .unit')
+    pg.wait_for_load_state('load')
+    pg.click('#tab-practice')
+    check('moves: with reduced motion pages open without a cross-fade and a tab without a fade', pg.evaluate('window.__vt') in (False, None)
+          and pg.locator('#view-practice').is_visible() and not pg.evaluate("document.querySelector('.view.view-in')"), pg.evaluate('window.__vt'))
+    ctx.close()
+
     # ---- the home page: progress and "Pick up where you left off" from the exam pages ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -718,7 +841,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1000)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li')
-    phys = pg.locator('#next-exam.physics, #up-list .up-item.physics')
+    phys = pg.locator('#exam-list .tl-row.physics').first
     check('home: the Physics midterm shows its Practice progress', '2 of 103 got it' in phys.inner_text() and '1 to review' in phys.inner_text(), phys.inner_text())
     check('home: "Pick up where you left off" names the page, tab and problem', pg.locator('#resume').is_visible()
           and pg.locator('#resume-where').inner_text().startswith('Physics midterm · Practice · Chapter 4 · Q.7'), pg.locator('#resume-where').inner_text())
@@ -726,6 +849,18 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1800)
     top = pg.evaluate("Math.round(document.getElementById('prob-4-7').getBoundingClientRect().top - parseFloat(getComputedStyle(document.getElementById('prob-4-7')).scrollMarginTop))")
     check('home: it opens that page at that problem', pg.url.endswith('/physics/midterm/#practice') and abs(top) <= 8, (pg.url, top))
+    # What's new on a later visit (a new browser tab: nothing is New any more): the two newest days show, the older ones
+    # wait behind a button
+    pg2 = ctx.new_page()
+    pg2.goto(BASE + '/')
+    pg2.wait_for_selector('#news li')
+    n_days = pg2.locator('#news .n-day').count()
+    hidden = sum(pg2.locator('#news .n-day').nth(i).locator('details').count() for i in range(2, n_days))
+    check('home: on a later visit What\'s new shows its two newest days, the older ones behind a button', pg2.locator('#news .new-pill').count() == 0
+          and pg2.locator('#news .n-day:visible').count() == 2 and n_days > 2 and pg2.locator('#news-more').is_visible()
+          and pg2.locator('#news-more').inner_text() == f'Show {hidden} older update' + ('' if hidden == 1 else 's'), pg2.locator('#news-more').inner_text())
+    pg2.locator('#news-more').click()
+    check('home: the button shows the older days and goes', pg2.locator('#news .n-day:visible').count() == n_days and pg2.locator('#news-more').is_hidden())
     ctx.close()
 
     # ---- search results write formulas the way they look: Δx, v₀, x², lim(h → 0) ----
@@ -823,14 +958,18 @@ with sync_playwright() as p:
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     pg.goto(BASE2 + '/')
-    pg.wait_for_selector('#up-list a.up-item')
+    pg.wait_for_selector('#exam-list .tl-row')
     hero = pg.locator('#next-exam').inner_text()
-    texts = pg.locator('#up-list .up-item').all_inner_texts()
-    check('countdown: the next exam is the soonest (Tomorrow), then in 3 days and in 10 days', 'Tomorrow' in hero and 'Calculus midterm 2' in hero
-          and 'in 3 days' in texts[0] and 'in 10 days' in texts[1], (hero, texts))
-    check('countdown: time shown with the date', '10:40' in texts[0], texts[0])
-    check('countdown: past exam says Done, under Other exams', 'Done' in pg.locator('#later-list').inner_text())
-    check('countdown: exams within a week are highlighted', pg.locator('#next-exam.soon').count() == 1 and pg.locator('#up-list .up-item.soon').count() == 1)
+    texts = pg.locator('#exam-list .tl-row').all_inner_texts()
+    check('countdown: the next exam is the soonest (Tomorrow); the list has it first, then in 3 days and in 10 days', 'Tomorrow' in hero and 'Calculus midterm 2' in hero
+          and 'Tomorrow' in texts[0] and 'Calculus midterm 2' in texts[0] and 'in 3 days' in texts[1] and 'in 10 days' in texts[2], (hero, texts))
+    check('countdown: time shown with the day', '10:40' in texts[1], texts[1])
+    check('countdown: the exams without a date share one row, and a past exam says Done at the end', 'No date yet' in texts[3] and 'Physics final' in texts[3]
+          and 'Done' in texts[4] and 'Linear Algebra midterm' in texts[4] and len(texts) == 5, texts[3:])
+    check('countdown: exams within a week are highlighted', pg.locator('#next-exam.soon').count() == 1 and pg.locator('#exam-list .tl-row.soon').count() == 2)
+    check('countdown: the next exam links to its page, its Practice and its night-before sheet', pg.locator('#next-exam .nx-btns a').count() == 3
+          and pg.locator('#next-exam a[href="math/integrals/"]').count() == 1 and pg.locator('#next-exam a[href$="#practice"]').count() == 1
+          and pg.locator('#next-exam a[href$="#night"]').count() == 1)
     pg.screenshot(path=f'{SHOTS}/home-countdowns.png', full_page=True)
     pg.goto(BASE2 + '/math/')
     pg.wait_for_selector('.exams')
@@ -922,19 +1061,22 @@ with sync_playwright() as p:
     check('offline: the Physics picker opens with no network', pg.locator('.exam').count() == 2)
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news li', timeout=5000)
-    check('offline: the home page opens with its exam list and news', pg.locator('#next-exam').count() == 1
-          and 1 + pg.locator('#up-list .up-item').count() + pg.locator('#later-list .up-item').count() == 7)
+    n_dated = sum(1 for x in json.load(open(os.path.join(REPO, 'site.json')))['exams'] if x['date'])
+    check('offline: the home page opens with its exam list and news', pg.locator('#exam-list .tl-row').count() == n_dated + 1
+          and pg.locator('#news details').count() == 6)
     check('offline: the home page keeps its back-to-top button', pg.evaluate("(() => { const b = document.querySelector('.totop'); return Boolean(b) && getComputedStyle(b).position === 'fixed'; })()"))
     ctx.set_offline(False)
     ctx.close()
 
     # The status-bar strip: iOS and iPadOS 26+ blur the page under the Home Screen app's status bar unless a fixed,
     # full-width box more than 10 px tall sits at the top edge. Every page starts with one (.sb-edge) that paints nothing
-    # and has the colour of the bar at the top: the app bar's, or on wide exam pages the tab bar's once that has stuck.
+    # and has the colour of the bar at the top (the app bar, or on wide exam pages the tab bar once that has stuck):
+    # the bars are glass, so the strip has their colour without the see-through part.
     EDGE = """(() => { const e = document.body.firstElementChild, c = getComputedStyle(e), r = e.getBoundingClientRect();
       return { cls: e.className, pos: c.position, top: r.top, w: r.width, vw: document.documentElement.clientWidth, h: r.height,
         z: c.zIndex, pe: c.pointerEvents, bg: c.backgroundColor, clip: c.backgroundClip || c.webkitBackgroundClip }; })()"""
     bg_of = "s => getComputedStyle(document.querySelector(s)).backgroundColor"
+    rgb = lambda colour: [round(float(v)) for v in re.findall(r'[\d.]+', colour)[:3]]  # without the alpha of a glass bar
     for label, vp in (('iPad', {'width': 1180, 'height': 820}), ('phone', {'width': 390, 'height': 844})):
         ctx = b.new_context(viewport=vp)
         ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
@@ -958,10 +1100,11 @@ with sync_playwright() as p:
                 pg.evaluate("window.scrollTo(0, 900)")
                 pg.wait_for_timeout(250)
                 bar = '.tabbar' if label == 'iPad' else '.appbar'
-                check(f'{label} {path}: scrolled, the strip has the colour of the bar at the top ({bar[1:]})', pg.evaluate(EDGE)['bg'] == pg.evaluate(bg_of, bar))
+                check(f'{label} {path}: scrolled, the strip has the colour of the bar at the top ({bar[1:]})', rgb(pg.evaluate(EDGE)['bg']) == rgb(pg.evaluate(bg_of, bar)),
+                      (pg.evaluate(EDGE)['bg'], pg.evaluate(bg_of, bar)))
                 pg.evaluate("window.scrollTo(0, 0)")
                 pg.wait_for_timeout(250)
-                check(f'{label} {path}: at the top it has the app bar colour', pg.evaluate(EDGE)['bg'] == pg.evaluate(bg_of, '.appbar'))
+                check(f'{label} {path}: at the top it has the app bar colour', rgb(pg.evaluate(EDGE)['bg']) == rgb(pg.evaluate(bg_of, '.appbar')))
         ctx.close()
     b.close()
 srv.shutdown()

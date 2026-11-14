@@ -1,8 +1,9 @@
 // Offline copy of the study site. Pages and data (HTML, JSON): network first, so changes show as soon as you're
 // online, with the saved copy when the network is down or slow. Files named with a version (math.css?v=…,
 // locked.json?v=…): saved copy first, since a new version comes with a new name. Images and fonts: saved copy first.
-// Bump CACHE when the list below changes; old caches are deleted on activate.
-const CACHE = 'study-notes-v6';
+// Bump CACHE when the list below changes, or when every page changes at once (a new look), so a device swaps its
+// whole saved copy in one go; old caches are deleted on activate.
+const CACHE = 'study-notes-v7';
 const FONTS = 'study-notes-fonts';
 const KATEX = ['AMS-Regular', 'Main-Bold', 'Main-BoldItalic', 'Main-Italic', 'Main-Regular', 'Math-BoldItalic', 'Math-Italic',
   'Size1-Regular', 'Size2-Regular', 'Size3-Regular', 'Size4-Regular'].map((f) => `./math/assets/fonts/KaTeX_${f}.woff2`);

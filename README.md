@@ -12,7 +12,7 @@ Unofficial study notes for KUAS engineering courses (Calculus &amp; Linear Algeb
 
 The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 
-- `index.html`: the home page: the next exam with its countdown and practice progress, where you left off, the subjects, the other exams, what's new, and how to install it.
+- `index.html`: the home page: the next exam with its countdown and practice progress, where you left off, the two subjects, every exam in one list, what's new, and how to install it.
 - `site.json`: exam dates and the "What's new" list.
 - `sw.js`, `manifest.webmanifest` and the `icon-*.png` files: offline use and "Add to Home Screen".
 - The icons: `apple-touch-icon.png`, `icon-*.png`, `favicon.png` and `logo.png` are the app icon, made by `src/app_icon.py` from `src/app-icon.png`; `favicon-math.svg` and `favicon-physics.svg` are each subject's badge, which its pages show in the browser tab.
@@ -27,7 +27,7 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `src/check_site.py` and `src/check_features.py`: browser checks of the built site.
 - `src/vendor/katex/`: KaTeX 0.16.11, used at build time to typeset the math.
 
-How to update the site (a new class, a new quiz, building and checking) is described in [CLAUDE.md](CLAUDE.md).
+How to update the site (a new class, a new quiz, building and checking) is described in [CLAUDE.md](CLAUDE.md), with the look of the pages (frosted glass over a wash of colour) and how moving between pages cross-fades.
 
 ## Notes
 

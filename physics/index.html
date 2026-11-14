@@ -15,9 +15,10 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="EP1 Review, Engineering Physics 1: the midterm (Chapters 1 to 8), with the final coming later">
 <meta name="twitter:card" content="summary_large_image">
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#131A25" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#E7EDF8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E131C" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="../favicon-physics.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="../manifest.webmanifest">
@@ -25,16 +26,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="assets/physics.css?v=80e70695c7">
+<link rel="stylesheet" href="assets/physics.css?v=5a905aa6c1">
 <style>
-/* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
+/* the exam picker: one glass card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 .picker .wrap { max-width: 760px; } /* no side menu here, so wide screens keep the home page's width */
 .picker .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 .exams { display: grid; gap: 14px; }
 .exam { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px;
-  border: 1.5px solid var(--green); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
-.exam.soon { border-style: dashed; }
+  border: 1px solid var(--glass-edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-shine), var(--glass-shadow);
+  color: var(--ink); text-decoration: none; transition: transform .15s ease; }
+a.exam:active { transform: scale(.985); }
+.exam.soon { border: 1px dashed var(--line); background: none; box-shadow: none; }
 .exam .tile-ic { grid-row: span 2; width: 52px; height: 52px; }
 .exam.soon .tile-ic { opacity: .55; }
 .e-head { display: grid; align-content: center; min-width: 0; }
@@ -50,9 +53,9 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 .e-left:empty { display: none; }
 .e-when.soon .e-left { color: var(--amber); }
 .e-when.past .e-left { color: var(--ink-soft); }
-.e-soon { display: inline-block; padding: 5px 12px; border: 1.5px solid var(--green); border-radius: 999px; color: var(--green-text);
+.e-soon { display: inline-block; padding: 5px 12px; border: 1px solid var(--green-line); border-radius: 999px; color: var(--green-text);
   font-size: 13px; font-weight: 700; line-height: 1.2; }
-@media (hover: hover) { a.exam:hover { background: var(--tint); } a.exam:hover .pill { background: var(--bar-active); } }
+@media (hover: hover) { a.exam:hover { background: var(--glass-2); } a.exam:hover .pill { background: var(--bar-active); } }
 @media (min-width: 640px) { .exam { padding: 18px 20px; } }
 </style>
 <script src="../src/shared/totop.js" defer></script>
@@ -67,7 +70,7 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
   <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Exams</span><span class="jp" lang="ja">試験</span></h1><p class="band-lede">One page of notes for each exam. The midterm page has a summary of every module with worked examples, practice problems in three tiers, the formulas, quiz sheets with worked answers and mock midterms.</p></div></div>
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
-    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-12" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
+    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-14" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
       <p class="e-text">Measurement, motion in one and two dimensions, vectors, Newton’s laws, friction and circular motion, work and energy.</p><p class="e-stats"><span class="nw">8 chapters</span> · <span class="nw">103 practice problems</span> · <span class="nw">186 formulas</span> · <span class="nw">3 exercise days</span> · <span class="nw">3 practice sets</span> · <span class="nw">3 mocks</span> · <span class="nw">2 past midterms</span></p>
       <span class="e-foot"><span class="e-when" data-date="2026-11-13"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span class="nw">Fri 13 Nov</span><span class="e-left" aria-live="off"></span></span><span class="pill">Open<svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span></span></a>
     <div class="exam soon" id="exam-final"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M4 40C13 40 15 11 24 11S35 40 44 40"/><circle cx="14.5" cy="22" r="3.2" class="lime-fill"/></svg><span class="e-head"><span class="kicker">Final</span><span class="e-title">Final exam</span></span>
@@ -79,7 +82,7 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 <footer class="site-foot"><div class="wrap">
   <p class="foot-links"><a href="../">← All subjects</a></p>
   <p class="fine">Study notes for Engineering Physics 1. Not an official Kyoto University of Advanced Science page.</p>
-  <p class="fine">Last updated <time datetime="2026-11-12">12 Nov 2026</time>.</p>
+  <p class="fine">Last updated <time datetime="2026-11-14">14 Nov 2026</time>.</p>
 </div></footer>
 <script>(() => {
   const DAY = 86400000;

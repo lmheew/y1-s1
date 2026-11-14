@@ -1,25 +1,36 @@
 /* Engineering Physics 1: the shared page style (src/math/page.css) in a darker blue, plus the Physics sheets' own parts:
    figures, problem heads and the placeholders of sections still to come. The colour variables keep their Math names
-   (--green is the subject colour, --lime its light accent); on these pages they hold blues. */
+   (--green is the subject colour, --lime its light accent); on these pages they hold blues, and the wash behind the
+   glass runs from blue through violet to a little green. */
 :root {
-  --band: #DCE4F0; --green: #1F4B8F; --green-text: #1C437F; --lime: #8FB4EC; --lime-deep: #4F7EC2; --bar: #1F4B8F; --bar-active: #173A70;
-  --charcoal: #4C5260; --ink: #10151F; --ink-soft: #525B69; --line: #D4DBE6; --icon-ink: #293447; --tint: #EAF0FA; --flash: #D5E3F8;
+  --bg: #E9EEF8; --band: #DCE4F0; --green: #1F4B8F; --green-text: #1C437F; --green-line: rgba(31, 75, 143, .32); --lime: #8FB4EC; --lime-deep: #4F7EC2;
+  --bar: #1F4B8F; --bar-active: #173A70; --charcoal: #4C5260; --ink: #10151F; --ink-soft: #465061; --line: rgba(20, 32, 56, .13); --icon-ink: #293447;
+  --tint: rgba(31, 75, 143, .09); --tint-solid: #EAF0FA; --flash: #D5E3F8;
+  --wash-1: #B4CDF7; --wash-2: #CFC5F9; --wash-3: #B3E3EF; --wash-4: #BBE5CB;
+  --glass-shadow: 0 1px 2px rgba(18, 30, 60, .05), 0 10px 26px -14px rgba(18, 30, 60, .32); --cutout: #F8FAFE; --bar-rgb: 231, 237, 248;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0C1018; --surface: #131A25; --band: #18212F; --green: #6F9BE0; --green-text: #9DBDF0; --lime: #8FB4EC; --lime-deep: #7FA6E6;
-    --bar: #1D3C6C; --bar-active: #152E54; --charcoal: #39404D; --ink: #E4E9F1; --ink-soft: #A0AABA; --line: #263245; --icon-ink: #D3DCE8;
-    --tint: #162033; --flash: #1E3254;
+    --bg: #0C1018; --surface: #131A25; --band: #18212F; --green: #6F9BE0; --green-text: #9DBDF0; --green-line: rgba(111, 155, 224, .42); --lime: #8FB4EC; --lime-deep: #7FA6E6;
+    --bar: #1D3C6C; --bar-active: #152E54; --charcoal: #39404D; --ink: #E4E9F1; --ink-soft: #B0BAC8; --line: rgba(255, 255, 255, .12); --icon-ink: #D3DCE8;
+    --tint: rgba(111, 155, 224, .15); --tint-solid: #162033; --flash: #1E3254;
+    --wash-1: #15356C; --wash-2: #33287A; --wash-3: #0B4254; --wash-4: #12402C;
+    --glass-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 28px -14px rgba(0, 0, 0, .75); --cutout: #1A2130; --bar-rgb: 14, 19, 28;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0C1018; --surface: #131A25; --band: #18212F; --green: #6F9BE0; --green-text: #9DBDF0; --lime: #8FB4EC; --lime-deep: #7FA6E6;
-  --bar: #1D3C6C; --bar-active: #152E54; --charcoal: #39404D; --ink: #E4E9F1; --ink-soft: #A0AABA; --line: #263245; --icon-ink: #D3DCE8;
-  --tint: #162033; --flash: #1E3254;
+  --bg: #0C1018; --surface: #131A25; --band: #18212F; --green: #6F9BE0; --green-text: #9DBDF0; --green-line: rgba(111, 155, 224, .42); --lime: #8FB4EC; --lime-deep: #7FA6E6;
+  --bar: #1D3C6C; --bar-active: #152E54; --charcoal: #39404D; --ink: #E4E9F1; --ink-soft: #B0BAC8; --line: rgba(255, 255, 255, .12); --icon-ink: #D3DCE8;
+  --tint: rgba(111, 155, 224, .15); --tint-solid: #162033; --flash: #1E3254;
+  --wash-1: #15356C; --wash-2: #33287A; --wash-3: #0B4254; --wash-4: #12402C;
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 28px -14px rgba(0, 0, 0, .75); --cutout: #1A2130; --bar-rgb: 14, 19, 28;
 }
 @media print {
-  html:root:root:root { --tint: #EDF2FA; --green: #1F4B8F; --green-text: #1F4B8F; --lime: #4F7EC2; }
+  html:root:root:root { --tint: #EDF2FA; --tint-solid: #EDF2FA; --green: #1F4B8F; --green-text: #1F4B8F; --green-line: #9DB3D6; --lime: #4F7EC2; }
 }
+/* moving between pages (see page.css): here the app bar's badge is the Physics one, and the switch button's is Math's */
+.brand .badge { view-transition-name: badge-physics; }
+.subj-btn svg { view-transition-name: badge-math; }
 .new-pill { color: #0D1A33; }
 
 /* the floating calculator in Physics blue: calculator.css sets its key tints, its dark-mode keys and "=", the ghost
@@ -77,8 +88,8 @@
 .pfig .ah.soft { fill: var(--ink-soft); }
 .pfig .pt { fill: var(--ink); stroke: none; }
 .pfig .acc-pt { fill: var(--amber); }
-.pfig .body { fill: var(--tint); stroke: var(--ink); stroke-width: 1.6; }
-.pfig .body-ln { fill: var(--tint); stroke: var(--ink); stroke-width: 1.6; }
+.pfig .body { fill: var(--tint-solid); stroke: var(--ink); stroke-width: 1.6; }
+.pfig .body-ln { fill: var(--tint-solid); stroke: var(--ink); stroke-width: 1.6; }
 .pfig .ghost { opacity: .4; }
 .pfig .house { fill: var(--band); stroke: var(--ink); stroke-width: 1.6; }
 .pfig .strip { fill: var(--amber); opacity: .5; }
@@ -95,7 +106,7 @@
   .pfig-wrap { break-inside: avoid; }
 }
 
-.ch-mods { font-weight: 500; letter-spacing: .04em; }
+.ch-mods { font-weight: 500; }
 
 /* ---------- Summary: each module's key ideas, then its worked example ---------- */
 .smod { padding-top: 16px; scroll-margin-top: var(--anchor-top); }
@@ -108,11 +119,11 @@
 .frow { contain-intrinsic-size: auto 100px; }
 .smod + .smod { margin-top: 12px; border-top: 1px dashed var(--line); }
 .smod-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 2px; font-size: 17px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
-.mod-no { flex: none; padding: 1px 8px; border-radius: 4px; background: var(--tint); color: var(--green-text); font-size: 13px; font-weight: 700;
+.mod-no { flex: none; padding: 1px 8px; border-radius: 8px; background: linear-gradient(var(--tint), var(--tint)), var(--under); color: var(--green-text); font-size: 13px; font-weight: 700;
   font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 .smod .ideas li:last-child { border-bottom: 0; }
-.wex { margin: 8px 0 4px; padding: 12px 14px 4px; border: 1.5px solid var(--green); border-radius: 6px; background: var(--surface); min-width: 0;
-  scroll-margin-top: var(--anchor-top); }
+.wex { margin: 8px 0 4px; padding: 12px 14px 4px; border: 1px solid var(--glass-edge); border-radius: 20px; background: var(--glass); box-shadow: var(--glass-shine), var(--glass-shadow);
+  min-width: 0; scroll-margin-top: var(--anchor-top); }
 .wex .rq-head .ql { font-size: 15px; color: var(--green-text); }
 .wex .stem + .parts, .wex .pfig-wrap + .parts { margin-top: 8px; }
 .unit .watch { margin-top: 22px; }
@@ -121,10 +132,10 @@
 /* ---------- Formulas: module headings, importance, extras and notes ---------- */
 .fmod { display: flex; align-items: baseline; gap: 10px; margin: 20px 0 0; font-size: 15px; font-weight: 700; line-height: 1.35; text-wrap: balance; }
 .fgroup h2 + .fmod { margin-top: 12px; }
-.fmod-x .mod-no { background: var(--amber-tint); color: var(--amber); }
-.stars { margin-left: 5px; color: var(--lime-deep); font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
-.xtag { display: inline-block; margin-left: 6px; padding: 0 7px; border: 1px solid var(--amber); border-radius: 999px; color: var(--amber);
-  font-size: 10px; font-weight: 700; line-height: 1.6; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; vertical-align: 1px; }
+.fmod-x .mod-no { background: linear-gradient(var(--amber-tint), var(--amber-tint)), var(--under); color: var(--amber); }
+.stars { margin-left: 5px; color: var(--green); font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
+.xtag { display: inline-block; margin-left: 6px; padding: 0 8px; border: 1px solid var(--amber); border-radius: 999px; color: var(--amber);
+  font-size: 11px; font-weight: 700; line-height: 1.6; white-space: nowrap; vertical-align: 1px; }
 .fnote { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
 @media (min-width: 640px) { .frow .fnote { grid-column: 2; margin-top: -10px; } }
 .testing .frow:not(.shown) .fnote { visibility: hidden; }
@@ -135,9 +146,9 @@
 /* ---------- Practice: each chapter's problems in three tiers ---------- */
 .ptier-h { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 18px 0 10px; font-size: 15px; line-height: 1.4; }
 .punit-head + .ptier .ptier-h { margin-top: 6px; }
-.tier-tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: var(--tint); color: var(--green-text); font-size: 13px;
+.tier-tag { display: inline-block; padding: 1px 10px; border-radius: 999px; background: linear-gradient(var(--tint), var(--tint)), var(--under); color: var(--green-text); font-size: 13px;
   font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
-.ptier-x .tier-tag, .tier-tag.tier-x { background: var(--amber-tint); color: var(--amber); }
+.ptier-x .tier-tag, .tier-tag.tier-x { background: linear-gradient(var(--amber-tint), var(--amber-tint)), var(--under); color: var(--amber); }
 .tier-note { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .tier-legend { margin: 0 0 14px; font-size: 12.5px; line-height: 2; color: var(--ink-soft); }
 .tier-legend .tier-tag { font-size: 11.5px; padding: 0 8px; }

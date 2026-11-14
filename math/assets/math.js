@@ -52,21 +52,6 @@
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY = 86400000;
 
-  // ----- the Home Screen app's status bar (iOS 26+) takes its colour from the strip at the top (.sb-edge, page.css):
-  // the app bar's, or on wide screens the tab bar's once that has stuck to the top -----
-  const sbEdge = $('.sb-edge'), sbTabbar = $('.tabbar');
-  const sbWide = window.matchMedia ? window.matchMedia('(min-width: 860px)') : null;
-  let sbQueued = false;
-  const paintEdge = () => {
-    sbQueued = false;
-    sbEdge.classList.toggle('on-bar', Boolean(sbTabbar && sbWide && sbWide.matches && sbTabbar.getBoundingClientRect().top < 1));
-  };
-  if (sbEdge) {
-    window.addEventListener('scroll', () => { if (!sbQueued) { sbQueued = true; requestAnimationFrame(paintEdge); } }, { passive: true });
-    window.addEventListener('resize', paintEdge);
-    paintEdge();
-  }
-
   // ----- theme: system follows the device (or the host's choice); light/dark override it. On the site a script in
   // the page's head has already set the saved light/dark choice (data-theme-early), so that one isn't a host's. -----
   const hostTheme = root.hasAttribute('data-theme-early') ? null : root.getAttribute('data-theme');
@@ -184,6 +169,7 @@
   window.addEventListener('resize', paintToc);
   // current: the view on screen; st.tab: the tab to open next time (never the night-before sheet)
   let current = '', before = '';
+  const tabRow = $('.tabbar-row');
   function show(view) {
     if (!VIEWS.includes(view)) view = HOME;
     if (current && current !== view && current !== 'night') before = current; // where the night-before sheet's Back goes
@@ -192,10 +178,28 @@
     markSeen(view);
     if (view !== 'night') { st.tab = view; save(); }
     tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute('aria-selected', String(on)); t.tabIndex = on || (view === 'night' && t.dataset.view === HOME) ? 0 : -1; });
+    // the tab bar's filled pill slides to the open tab (page.css), and goes while a view without a tab is open
+    const at = tabs.findIndex((t) => t.dataset.view === view);
+    tabRow.style.setProperty('--tab-i', String(Math.max(at, 0)));
+    tabRow.classList.toggle('no-tab', at < 0);
     VIEWS.forEach((v) => { panels[v].hidden = v !== view; });
     paintToc();
     drawAll(view);
     remember({ tab: view, at: '', label: '' });
+  }
+  // A view opened by hand (a tab, the brand, Back, the night-before link) fades in, its title rising into place
+  // (.view-in in page.css). Jumps made from code (search hits, tiles, "Pick up where you left off") show their
+  // target at once, since they scroll to a spot in the view right away.
+  VIEWS.forEach((v) => panels[v].addEventListener('animationend', (e) => { if (e.target === panels[v]) panels[v].classList.remove('view-in'); }));
+  function openView(view) {
+    const from = current;
+    show(view);
+    window.scrollTo({ top: 0 });
+    const p = panels[current];
+    if (reduced || from === current) return;
+    p.classList.remove('view-in');
+    void p.offsetWidth; // so the animation starts again if it was still running
+    p.classList.add('view-in');
   }
 
   // ----- long tabs: Practice cards, questions, formula rows and Physics Summary modules away from the screen skip
@@ -241,17 +245,17 @@
     });
   }
   function setHash(view) { try { if (location.hash !== '#' + view) location.hash = view; } catch (e) { /* ignore */ } }
-  tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); window.scrollTo({ top: 0 }); setHash(t.dataset.view); }));
+  tabs.forEach((t) => t.addEventListener('click', () => { openView(t.dataset.view); setHash(t.dataset.view); }));
   $('.tabbar-row').addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
     const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
     next.focus(); next.click();
   });
-  $('.brand').addEventListener('click', (e) => { e.preventDefault(); show(HOME); window.scrollTo({ top: 0 }); setHash(HOME); });
+  $('.brand').addEventListener('click', (e) => { e.preventDefault(); openView(HOME); setHash(HOME); });
   window.addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
-    if (VIEWS.includes(h) && h !== current) { show(h); window.scrollTo({ top: 0 }); }
+    if (VIEWS.includes(h) && h !== current) openView(h);
   });
 
   // Scroll so an element's top meets the anchor line under the bars. Graphs are drawn as they come near, which can
@@ -883,7 +887,7 @@
   // ----- the night-before sheet: Print, and Back to the tab it was opened from -----
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-night-print]')) { window.print(); return; }
-    if (e.target.closest('[data-night-back]')) { const v = before || HOME; show(v); window.scrollTo({ top: 0 }); setHash(v); }
+    if (e.target.closest('[data-night-back]')) { const v = before || HOME; openView(v); setHash(v); }
   });
 
   // ----- Practice session: one problem at a time. Its setup picks which problems (not marked yet, to review, all), from
@@ -1037,9 +1041,11 @@
     });
   }
 
-  // first view: from the address (#exams…) or where this browser left off
+  // first view: from the address (#exams…) or where this browser left off; the tab bar's pill starts under that tab
+  // and glides from the next tap on (.live in page.css)
   const fromHash = location.hash.slice(1);
   show(VIEWS.includes(fromHash) ? fromHash : st.tab);
+  requestAnimationFrame(() => requestAnimationFrame(() => $('.tabbar').classList.add('live')));
   try {
     const r = JSON.parse(sessionStorage.getItem('study-resume') || 'null');
     sessionStorage.removeItem('study-resume');

@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- moving between pages cross-fades (a view transition); the rule comes before any style sheet the page links, or the browser may give the move up -->
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 <title>Page not found · Study Notes</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECF3EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101713" media="(prefers-color-scheme: dark)">
 <!-- GitHub Pages serves this file for any address that doesn't exist, at that address, so every link is absolute -->
 <link rel="icon" href="/y1-s1/favicon.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="/y1-s1/apple-touch-icon.png">
@@ -21,63 +23,72 @@
   } catch (e) { /* storage unavailable */ }
 </script>
 <style>
-  /* Page not found: the home page's look (palette, app bar, band), with the way back. Hand-written. */
+  /* Page not found: the home page's look (the wash, the glass bar, the large title), with the way back. Hand-written. */
   :root {
-    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --bar: #377E46; --bar-active: #2B6638;
-    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8;
-    --blue: #1F4B8F; --blue-text: #1C437F; --blue-tint: #EAF0FA;
+    --bg: #EEF3EF; --green: #3D8A4D; --green-text: #266138; --green-line: rgba(61, 138, 77, .36); --lime-deep: #7BA831; --bar: #377E46; --bar-active: #2B6638;
+    --ink: #121612; --ink-soft: #4A534C; --line: rgba(22, 36, 27, .13);
+    --blue-text: #1C437F; --blue-line: rgba(31, 75, 143, .32);
+    --wash-1: #BCE5C4; --wash-2: #BDD4F8; --wash-3: #DDEFC0; --wash-4: #C6EAE4;
+    --glass-2: rgba(255, 255, 255, .74); --bar-rgb: 236, 243, 238; --chrome: rgba(var(--bar-rgb), .72); --blur: saturate(1.7) blur(20px);
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
-      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
-      --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: #172234;
+      --bg: #0E1310; --green: #5DB570; --green-text: #86CF95; --green-line: rgba(93, 181, 112, .4); --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
+      --ink: #E6EDE7; --ink-soft: #A9B5AB; --line: rgba(255, 255, 255, .12);
+      --blue-text: #9DBDF0; --blue-line: rgba(111, 155, 224, .42);
+      --wash-1: #143F22; --wash-2: #132D5E; --wash-3: #27390C; --wash-4: #0A3534;
+      --glass-2: rgba(255, 255, 255, .09); --bar-rgb: 16, 23, 19;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --bar: #2B6337; --bar-active: #1F4B29;
-    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E;
-    --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: #172234;
+    --bg: #0E1310; --green: #5DB570; --green-text: #86CF95; --green-line: rgba(93, 181, 112, .4); --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
+    --ink: #E6EDE7; --ink-soft: #A9B5AB; --line: rgba(255, 255, 255, .12);
+    --blue-text: #9DBDF0; --blue-line: rgba(111, 155, 224, .42);
+    --wash-1: #143F22; --wash-2: #132D5E; --wash-3: #27390C; --wash-4: #0A3534;
+    --glass-2: rgba(255, 255, 255, .09); --bar-rgb: 16, 23, 19;
     color-scheme: dark;
   }
+  /* a browser that can't blur what is behind an element gets a nearly solid bar */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --chrome: rgba(var(--bar-rgb), .97); } }
   *, *::before, *::after { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+  /* the colour wash behind the page, as on the home page */
+  body::after { content: ""; position: fixed; z-index: -1; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; pointer-events: none;
+    background: radial-gradient(72% 42% at 0% 0%, var(--wash-1), transparent 72%), radial-gradient(72% 44% at 100% 24%, var(--wash-2), transparent 72%),
+      radial-gradient(76% 42% at 0% 70%, var(--wash-3), transparent 72%), radial-gradient(72% 44% at 100% 100%, var(--wash-4), transparent 72%); }
   p { margin: 0; }
   .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  :where(a):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+  :where(a):focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; }
   /* iOS and iPadOS 26+ blur the page under the Home Screen app's status bar unless a fixed, full-width box more than
      10 px tall sits at the top edge. This strip paints nothing, and the system fills the status bar with its colour. */
   .sb-edge { position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 2147483647; pointer-events: none;
-    background-color: var(--surface); -webkit-background-clip: text; background-clip: text; }
-  @media print { .sb-edge { display: none; } }
-  .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+    background-color: rgb(var(--bar-rgb)); -webkit-background-clip: text; background-clip: text; }
+  @media print { .sb-edge, body::after { display: none; } }
+  .appbar { padding-top: env(safe-area-inset-top, 0px); background: var(--chrome); border-bottom: 1px solid var(--line); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
   .appbar-row { display: flex; align-items: center; height: 60px; }
   .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
-  .brand img { width: 36px; height: 36px; flex: none; border-radius: 9px; box-shadow: 0 0 0 1px var(--line); }
+  .brand img { width: 36px; height: 36px; flex: none; border-radius: 10px; box-shadow: 0 1px 3px rgba(18, 40, 28, .22); }
   .brand-text { display: grid; line-height: 1.2; }
-  .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
-  .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
-  .band { background: var(--band); border-bottom: 5px solid var(--green); }
-  .band .wrap { padding-block: 24px 20px; }
-  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; line-height: 1.15; }
-  .band-title .en { font-size: clamp(32px, 9vw, 44px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
-  .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; }
-  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 28px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
-  main { padding-block: 28px 48px; display: grid; gap: 18px; }
+  .brand-text b { font-size: 17px; font-weight: 700; }
+  .brand-text small { font-size: 11.5px; font-weight: 500; color: var(--ink-soft); }
+  .band .wrap { padding-block: 22px 0; }
+  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; line-height: 1.15; }
+  .band-title .en { font-size: clamp(32px, 9vw, 44px); font-weight: 700; letter-spacing: -.02em; }
+  .band-title .jp { font-size: 15px; font-weight: 500; color: var(--ink-soft); }
+  main { padding-block: 16px 48px; display: grid; gap: 18px; }
   .lede { font-size: 16px; color: var(--ink-soft); max-width: 52ch; }
-  .code { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--green-text); }
+  .code { font-size: 13.5px; font-weight: 700; color: var(--green-text); }
   .ways { display: flex; flex-wrap: wrap; gap: 10px; }
-  .go { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1; text-decoration: none; }
+  .go { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1; text-decoration: none; }
   .go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .go.main { background: var(--bar); color: #FFFFFF; }
+  .go.main { background: var(--bar); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 6px 14px -8px var(--bar); }
   .go.main:hover { background: var(--bar-active); }
-  .go.alt { border: 1.5px solid var(--green); color: var(--green-text); }
-  .go.alt:hover { background: var(--tint); }
-  .go.alt.phys { border-color: var(--blue); color: var(--blue-text); }
-  .go.alt.phys:hover { background: var(--blue-tint); }
+  .go.alt { border: 1px solid var(--green-line); background: var(--glass-2); color: var(--green-text); }
+  .go.alt.phys { border-color: var(--blue-line); color: var(--blue-text); }
+  .go.alt:hover { background: var(--bg); }
   .fine { font-size: 12.5px; color: var(--ink-soft); }
 </style>
 </head>

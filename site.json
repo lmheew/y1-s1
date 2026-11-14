@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-14",
+      "subject": "all",
+      "title": "A new look: glass cards and smooth moves between pages",
+      "text": "The whole site has a new look: see-through glass cards over a soft wash of colour, round buttons, and on phones a tab bar that floats at the bottom of the screen. Moving from one page to another cross-fades (in recent Safari and Chrome), with the subject's badge gliding to its new place, and a tab fades in when it is opened. The home page is shorter: the next exam on top, the two subjects side by side, and every exam in one list. Dark mode and printing follow along.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-13",
       "subject": "math",
       "title": "Calculus midterm 2: areas, volumes, averages, curve length and Quiz 08",

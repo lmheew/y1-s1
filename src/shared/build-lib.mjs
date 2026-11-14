@@ -223,10 +223,17 @@ export const writeIfChanged = (file, data) => {
 // the theme picked on any page (light or dark), set before the first paint; page.js takes over from there
 export const THEME_EARLY = `<script>try{var t=(JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{}).theme;if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);document.documentElement.setAttribute('data-theme-early','')}}catch(e){}</script>`;
 // the browser tab shows the subject's badge (favicon-math.svg, favicon-physics.svg); the Home Screen icon is the app's
-// own, the same on every page (src/app_icon.py makes both)
-export const HEAD_COMMON = (up, dark = '#151C17', subject = 'math') => `<meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="${dark}" media="(prefers-color-scheme: dark)">
+// own, the same on every page (src/app_icon.py makes both). The browser's own bars take the colour of the page's glass
+// bars: --bar-rgb in page.css (Math) and physics.css, light and dark, written here as hex.
+const BAR_COLOURS = { math: ['#ECF3EE', '#101713'], physics: ['#E7EDF8', '#0E131C'] };
+// Moving between pages cross-fades (a view transition; the rest is in page.css). A page says so in its head, before
+// any style sheet it links: the browser gives the move up if it works out the page's style once without this rule,
+// which happens when the fonts' sheet arrives before the page's own.
+export const VIEW_TRANSITION = '<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>';
+export const HEAD_COMMON = (up, subject = 'math') => `${VIEW_TRANSITION}
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="${BAR_COLOURS[subject][0]}" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="${BAR_COLOURS[subject][1]}" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="${up}favicon-${subject}.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${up}apple-touch-icon.png">
 <link rel="manifest" href="${up}manifest.webmanifest">`;
@@ -267,14 +274,16 @@ export async function openBox(key, box) {
 export const SB_EDGE = '<div class="sb-edge" aria-hidden="true"></div>';
 
 export const PICKER_CSS = `
-/* the exam picker: one card per exam, like the home page's subject cards; there is no tab bar on this page */
+/* the exam picker: one glass card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 .picker .wrap { max-width: 760px; } /* no side menu here, so wide screens keep the home page's width */
 .picker .site-foot .wrap { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 .exams { display: grid; gap: 14px; }
 .exam { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 14px; padding: 16px;
-  border: 1.5px solid var(--green); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
-.exam.soon { border-style: dashed; }
+  border: 1px solid var(--glass-edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-shine), var(--glass-shadow);
+  color: var(--ink); text-decoration: none; transition: transform .15s ease; }
+a.exam:active { transform: scale(.985); }
+.exam.soon { border: 1px dashed var(--line); background: none; box-shadow: none; }
 .exam .tile-ic { grid-row: span 2; width: 52px; height: 52px; }
 .exam.soon .tile-ic { opacity: .55; }
 .e-head { display: grid; align-content: center; min-width: 0; }
@@ -290,9 +299,9 @@ body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset
 .e-left:empty { display: none; }
 .e-when.soon .e-left { color: var(--amber); }
 .e-when.past .e-left { color: var(--ink-soft); }
-.e-soon { display: inline-block; padding: 5px 12px; border: 1.5px solid var(--green); border-radius: 999px; color: var(--green-text);
+.e-soon { display: inline-block; padding: 5px 12px; border: 1px solid var(--green-line); border-radius: 999px; color: var(--green-text);
   font-size: 13px; font-weight: 700; line-height: 1.2; }
-@media (hover: hover) { a.exam:hover { background: var(--tint); } a.exam:hover .pill { background: var(--bar-active); } }
+@media (hover: hover) { a.exam:hover { background: var(--glass-2); } a.exam:hover .pill { background: var(--bar-active); } }
 @media (min-width: 640px) { .exam { padding: 18px 20px; } }`;
 export const PICKER_JS = `(() => {
   const DAY = 86400000;

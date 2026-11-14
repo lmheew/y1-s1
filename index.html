@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- moving between pages cross-fades (a view transition); the rule comes before any style sheet the page links, or the browser may give the move up -->
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
 <title>Study Notes · Year 1</title>
 <meta name="description" content="Unofficial study notes for first-year KUAS engineering courses: summaries, practice problems with worked solutions, formula sheets, quizzes and mock exams.">
 <meta name="robots" content="noindex, nofollow">
@@ -16,8 +18,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Study Notes, Year 1: Calculus and Linear Algebra 1, and Engineering Physics 1">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151C17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECF3EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101713" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,159 +36,219 @@
   } catch (e) { /* storage unavailable */ }
 </script>
 <style>
-  /* Home: subjects, upcoming exams, what's new, and offline use. Same KUAS-style palette as the subject pages;
-     each subject keeps its own colour (Math green, Physics a darker blue). Hand-written: edit it directly. */
+  /* Home, a "today" screen in the site's frosted glass: the next exam as a card of the subject's colour, where the
+     reading was left, the two subjects side by side, every exam in one list, what's new, and offline use. The same
+     wash, panels and bars as the subject pages (src/math/page.css): the bar is real glass (it blurs what scrolls
+     under it), the cards are see-through panels without a blur of their own. Each subject keeps its colour (Math
+     green, Physics a darker blue). Hand-written: edit it directly. */
   :root {
-    --bg: #FFFFFF; --surface: #FFFFFF; --band: #DEE6DD; --green: #3D8A4D; --green-text: #2F7340; --lime: #9CC34C; --lime-deep: #7BA831; --bar: #377E46; --bar-active: #2B6638;
-    --ink: #121612; --ink-soft: #545C55; --line: #D6DED5; --tint: #EEF5E8; --amber: #8F5B0D; --charcoal: #505050;
-    --blue: #1F4B8F; --blue-text: #1C437F; --blue-soft: #8FB4EC; --blue-tint: #EAF0FA;
+    --bg: #EEF3EF; --surface: #FFFFFF; --green: #3D8A4D; --green-text: #266138; --green-line: rgba(61, 138, 77, .36); --lime: #9CC34C; --lime-deep: #7BA831; --bar: #377E46; --bar-active: #2B6638;
+    --ink: #121612; --ink-soft: #4A534C; --line: rgba(22, 36, 27, .13); --tint: rgba(61, 138, 77, .1); --amber: #7C4D08; --amber-tint: rgba(170, 110, 20, .14); --charcoal: #505050;
+    --blue: #1F4B8F; --blue-text: #1C437F; --blue-tint: rgba(31, 75, 143, .09);
+    --wash-1: #BCE5C4; --wash-2: #BDD4F8; --wash-3: #DDEFC0; --wash-4: #C6EAE4;
+    --glass: rgba(255, 255, 255, .58); --glass-2: rgba(255, 255, 255, .74); --glass-edge: rgba(255, 255, 255, .8);
+    --glass-shine: inset 0 1px 0 rgba(255, 255, 255, .6); --glass-shadow: 0 1px 2px rgba(18, 40, 28, .05), 0 10px 26px -14px rgba(18, 40, 28, .3);
+    --bar-rgb: 236, 243, 238; --chrome: rgba(var(--bar-rgb), .72); --blur: saturate(1.7) blur(20px);
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
     --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); /* no tab bar here, so the back-to-top button sits lower */
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
-      --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
-      --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
+      --bg: #0E1310; --surface: #151C17; --green: #5DB570; --green-text: #86CF95; --green-line: rgba(93, 181, 112, .4); --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
+      --ink: #E6EDE7; --ink-soft: #A9B5AB; --line: rgba(255, 255, 255, .12); --tint: rgba(93, 181, 112, .13); --amber: #E8B564; --amber-tint: rgba(226, 171, 85, .14); --charcoal: #3A413C;
+      --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: rgba(111, 155, 224, .15);
+      --wash-1: #143F22; --wash-2: #132D5E; --wash-3: #27390C; --wash-4: #0A3534;
+      --glass: rgba(255, 255, 255, .055); --glass-2: rgba(255, 255, 255, .09); --glass-edge: rgba(255, 255, 255, .11);
+      --glass-shine: inset 0 1px 0 rgba(255, 255, 255, .07); --glass-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 28px -14px rgba(0, 0, 0, .75);
+      --bar-rgb: 16, 23, 19;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0E1310; --surface: #151C17; --band: #1B261E; --green: #5DB570; --green-text: #86CF95; --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
-    --ink: #E6EDE7; --ink-soft: #A3AFA5; --line: #2A362E; --tint: #1A281E; --amber: #E2AB55; --charcoal: #3A413C;
-    --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-soft: #6F9BE0; --blue-tint: #172234;
+    --bg: #0E1310; --surface: #151C17; --green: #5DB570; --green-text: #86CF95; --green-line: rgba(93, 181, 112, .4); --lime: #A6CF5A; --lime-deep: #8DB845; --bar: #2B6337; --bar-active: #1F4B29;
+    --ink: #E6EDE7; --ink-soft: #A9B5AB; --line: rgba(255, 255, 255, .12); --tint: rgba(93, 181, 112, .13); --amber: #E8B564; --amber-tint: rgba(226, 171, 85, .14); --charcoal: #3A413C;
+    --blue: #6F9BE0; --blue-text: #9DBDF0; --blue-tint: rgba(111, 155, 224, .15);
+    --wash-1: #143F22; --wash-2: #132D5E; --wash-3: #27390C; --wash-4: #0A3534;
+    --glass: rgba(255, 255, 255, .055); --glass-2: rgba(255, 255, 255, .09); --glass-edge: rgba(255, 255, 255, .11);
+    --glass-shine: inset 0 1px 0 rgba(255, 255, 255, .07); --glass-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 12px 28px -14px rgba(0, 0, 0, .75);
+    --bar-rgb: 16, 23, 19;
     color-scheme: dark;
   }
+  /* a browser that can't blur what is behind an element gets a nearly solid bar */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --chrome: rgba(var(--bar-rgb), .97); } }
   *, *::before, *::after { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.7; }
+  /* the colour wash behind the page (as in page.css): four soft patches that stay put while the page scrolls */
+  body::after { content: ""; position: fixed; z-index: -1; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; pointer-events: none;
+    background: radial-gradient(72% 42% at 0% 0%, var(--wash-1), transparent 72%), radial-gradient(72% 44% at 100% 24%, var(--wash-2), transparent 72%),
+      radial-gradient(76% 42% at 0% 70%, var(--wash-3), transparent 72%), radial-gradient(72% 44% at 100% 100%, var(--wash-4), transparent 72%); }
   p { margin: 0; }
   .wrap { max-width: 760px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  :where(a, button):focus-visible { outline: 2.5px solid var(--lime); outline-offset: 3px; }
+  :where(a, button, summary):focus-visible { outline: 2.5px solid var(--lime-deep); outline-offset: 3px; }
   svg.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  .nw { white-space: nowrap; }
+  /* a panel: a see-through card with a light edge and a soft shadow */
+  .resume, .subject, .tl, .news, .more, .offline { border: 1px solid var(--glass-edge); background: var(--glass); box-shadow: var(--glass-shine), var(--glass-shadow); }
 
   /* iOS and iPadOS 26+ blur the page under the Home Screen app's status bar unless a fixed, full-width box more than
-     10 px tall sits at the top edge. This strip paints nothing, and the system fills the status bar with its colour. */
+     10 px tall sits at the top edge. This strip paints nothing, and the system fills the status bar with its colour:
+     the bar's own, without its see-through part. */
   .sb-edge { position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 2147483647; pointer-events: none;
-    background-color: var(--surface); -webkit-background-clip: text; background-clip: text; }
+    background-color: rgb(var(--bar-rgb)); -webkit-background-clip: text; background-clip: text; }
   @media print { .sb-edge { display: none; } }
-  .appbar { background: var(--surface); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .appbar { position: sticky; top: 0; z-index: 20; padding-top: env(safe-area-inset-top, 0px); background: var(--chrome); border-bottom: 1px solid var(--line);
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
   .appbar-row { display: flex; align-items: center; height: 60px; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); text-decoration: none; }
-  .brand img { width: 36px; height: 36px; flex: none; border-radius: 9px; box-shadow: 0 0 0 1px var(--line); } /* the app icon (logo.png) */
+  .brand img { width: 36px; height: 36px; flex: none; border-radius: 10px; box-shadow: 0 1px 3px rgba(18, 40, 28, .22); } /* the app icon (logo.png) */
   .brand-text { display: grid; line-height: 1.2; }
-  .brand-text b { font-size: 17px; font-weight: 900; letter-spacing: .01em; }
-  .brand-text small { font-size: 11px; font-weight: 500; color: var(--green-text); }
+  .brand-text b { font-size: 17px; font-weight: 700; }
+  .brand-text small { font-size: 11.5px; font-weight: 500; color: var(--ink-soft); }
 
-  .band { background: var(--band); border-bottom: 5px solid var(--green); }
-  .band .wrap { padding-block: 16px 14px; }
-  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; line-height: 1.15; }
-  .band-title .en { font-size: clamp(30px, 8vw, 40px); font-weight: 700; letter-spacing: .04em; color: var(--green); }
-  .band-title .jp { position: relative; padding-left: 22px; font-size: 15px; font-weight: 700; }
-  .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 26px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
-  .band-lede { margin-top: 4px; font-size: 14.5px; color: var(--ink-soft); }
+  /* the page's title: large, on the page itself, with today's date under it */
+  .band .wrap { padding-block: 16px 0; }
+  .band-title { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; line-height: 1.15; }
+  .band-title .en { font-size: clamp(34px, 9vw, 44px); font-weight: 700; letter-spacing: -.02em; }
+  .band-title .jp { font-size: 15px; font-weight: 500; color: var(--ink-soft); }
+  .band-lede { margin-top: 2px; font-size: 15px; color: var(--ink-soft); }
 
-  main { padding-block: 20px 8px; display: grid; gap: 28px; }
-  .sec-title { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px solid var(--green); font-size: 19px; font-weight: 700; line-height: 1.3; }
-  .new-pill { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--lime); color: #1B2A0E;
-    font-size: 10.5px; font-weight: 900; line-height: 1.3; letter-spacing: .06em; text-transform: uppercase; vertical-align: middle; }
-  .nw { white-space: nowrap; }
+  main { padding-block: 14px 8px; display: grid; gap: 24px; }
+  .sec-title { margin: 0 0 10px; font-size: 20px; font-weight: 700; line-height: 1.3; }
+  .new-pill { display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: var(--lime); color: #1B2A0E;
+    font-size: 11.5px; font-weight: 700; line-height: 1.3; vertical-align: middle; white-space: nowrap; }
 
-  /* next up: the soonest exam as a card with its countdown, Practice progress and links; then the others with a date */
-  .next { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
-    display: grid; gap: 8px; padding: 16px; border: 2px solid var(--c); border-radius: 6px; background: var(--surface); }
-  .next.physics, .up-item.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
-  .nx-top { display: flex; align-items: center; gap: 12px; }
-  .nx-top svg { width: 44px; height: 44px; flex: none; display: block; }
-  .nx-head { flex: 1; min-width: 0; display: grid; line-height: 1.25; }
-  .nx-kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
-  .nx-title { margin: 2px 0 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
-  .nx-left { flex: none; display: grid; justify-items: end; line-height: 1.1; color: var(--c-text); }
-  .nx-left b { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
-  .nx-left small { font-size: 12px; font-weight: 700; }
-  .next.soon .nx-left { color: var(--amber); }
-  .nx-when { font-size: 14px; color: var(--ink-soft); }
-  .prog { display: grid; gap: 5px; font-size: 13.5px; color: var(--ink-soft); }
-  .prog-bar { display: flex; height: 8px; border-radius: 8px; background: var(--line); overflow: hidden; }
-  .prog-bar i { display: block; height: 100%; background: var(--c); }
-  .prog-bar i.rev { background: var(--amber); }
-  .prog b { color: var(--ink); font-variant-numeric: tabular-nums; }
-  .nx-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-  .nx-btns a { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; line-height: 1.1; text-decoration: none; }
-  .nx-btns .go { background: var(--c); color: #FFFFFF; }
-  .nx-btns .alt { border: 1.5px solid var(--c); color: var(--c-text); background: var(--surface); }
-  .nx-btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-  :root[data-theme="dark"] .nx-btns .go { color: #0E1310; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nx-btns .go { color: #0E1310; } }
-  @media (hover: hover) { .nx-btns .alt:hover { background: var(--c-tint); } }
+  /* the next exam: a card of glass in its subject's colour, with the countdown, Practice progress and three ways in.
+     Its colours are the same in light and dark mode (white text on the subject's deep colour). */
+  .next { --h1: rgba(43, 102, 56, .92); --h2: rgba(55, 126, 70, .96); --h3: rgba(38, 122, 100, .95); --h-ink: #24592F; --h-glow: rgba(43, 102, 56, .55);
+    position: relative; overflow: hidden; display: grid; gap: 8px; padding: 18px 18px 18px; border: 1px solid rgba(255, 255, 255, .38); border-radius: 26px; color: #FFFFFF;
+    background: linear-gradient(150deg, var(--h1), var(--h2) 55%, var(--h3));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 2px 5px rgba(10, 30, 20, .1), 0 20px 38px -16px var(--h-glow); }
+  .next.physics { --h1: rgba(23, 58, 112, .92); --h2: rgba(31, 75, 143, .96); --h3: rgba(36, 104, 160, .95); --h-ink: #173A70; --h-glow: rgba(23, 58, 112, .55); }
+  .next::before { content: ""; position: absolute; inset: 0 0 58% 0; background: linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, 0)); pointer-events: none; }
+  .next > * { position: relative; }
+  .nx-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 12px; }
+  .nx-top > svg { width: 40px; height: 40px; display: block; border-radius: 11px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .45), 0 6px 14px -4px rgba(0, 0, 0, .35); }
+  .nx-head { display: contents; }
+  .nx-kicker { grid-column: 2; grid-row: 1; font-size: 14px; font-weight: 500; line-height: 1.3; color: rgba(255, 255, 255, .92); }
+  .nx-left { grid-column: 3; grid-row: 1; padding: 6px 12px; border: 1px solid rgba(255, 255, 255, .38); border-radius: 999px; background: rgba(255, 255, 255, .2);
+    font-size: 14.5px; font-weight: 700; line-height: 1.1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .next.soon .nx-left { border-color: transparent; background: #FFE9BE; color: #5F3C05; } /* a week or less to go */
+  .nx-title { grid-column: 1 / -1; grid-row: 2; margin: 12px 0 0; font-size: 28px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; text-wrap: balance; }
+  .nx-when { font-size: 15px; color: rgba(255, 255, 255, .92); }
+  .prog { display: grid; gap: 6px; font-size: 14px; color: rgba(255, 255, 255, .92); }
+  .prog-bar { display: flex; height: 8px; border-radius: 8px; background: rgba(255, 255, 255, .26); overflow: hidden; }
+  .prog-bar i { display: block; height: 100%; background: #FFFFFF; }
+  .prog-bar i.rev { background: #FFD27A; }
+  .prog b { color: #FFFFFF; font-variant-numeric: tabular-nums; }
+  .nx-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .nx-btns a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1.1; text-decoration: none; transition: transform .15s ease; }
+  .nx-btns a:active { transform: scale(.97); }
+  .nx-btns .go { background: rgba(255, 255, 255, .94); color: var(--h-ink); }
+  .nx-btns .alt { border: 1px solid rgba(255, 255, 255, .42); background: rgba(255, 255, 255, .17); color: #FFFFFF; }
+  @media (hover: hover) { .nx-btns .go:hover { background: #FFFFFF; } .nx-btns .alt:hover { background: rgba(255, 255, 255, .26); } }
+  #next > .up-when { font-size: 14px; color: var(--ink-soft); }
 
-  .up-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .up-list:empty { display: none; }
-  #up-list { margin-top: 10px; }
-  .up-item { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
-    display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); text-decoration: none; }
-  a.up-item:hover { background: var(--tint); }
-  .up-cal { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--c-tint); color: var(--c-text); }
-  .up-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
-  .up-name { font-size: 15.5px; font-weight: 700; }
-  .up-when { font-size: 13px; color: var(--ink-soft); }
-  .up-prog { font-size: 12.5px; color: var(--ink-soft); }
-  .up-left { flex: none; font-size: 14px; font-weight: 700; color: var(--c-text); font-variant-numeric: tabular-nums; }
-  .up-item.soon { border-color: var(--amber); }
-  .up-item.soon .up-left { color: var(--amber); }
-  .up-item.past { opacity: .6; }
-  .resume { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 11px 14px; border: 1.5px dashed var(--green); border-radius: 4px;
-    color: var(--ink); text-decoration: none; }
-  .resume > svg { width: 22px; height: 22px; flex: none; color: var(--green-text); }
+  /* where the reading was left */
+  .resume { display: flex; align-items: center; gap: 12px; margin-top: 12px; min-height: 60px; padding: 10px 14px 10px 16px; border-radius: 20px; color: var(--ink); text-decoration: none; transition: transform .15s ease; }
+  .resume:active, .subject:active { transform: scale(.985); }
+  .resume > svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--green-text); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .resume > svg.chev { width: 16px; height: 16px; stroke: var(--ink-soft); stroke-width: 2; }
   .rs-main { flex: 1; min-width: 0; display: grid; line-height: 1.35; }
   .rs-main b { font-size: 14.5px; }
   .rs-main small { font-size: 13px; color: var(--ink-soft); }
-  @media (hover: hover) { .resume:hover { background: var(--tint); } }
+  @media (hover: hover) { .resume:hover, a.subject:hover, .more:hover { background: var(--glass-2); } }
 
-  .subjects { display: grid; gap: 12px; }
-  @media (min-width: 640px) { .subjects { grid-template-columns: 1fr 1fr; } }
-  .subject { --c: var(--green); --c-text: var(--green-text); --c-tint: var(--tint);
-    display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: 4px 12px; padding: 14px; border: 1.5px solid var(--c); border-radius: 4px;
-    background: var(--surface); color: var(--ink); text-decoration: none; }
-  a.subject:hover { background: var(--c-tint); }
-  .subject.physics { --c: var(--blue); --c-text: var(--blue-text); --c-tint: var(--blue-tint); }
-  .s-icon { width: 44px; height: 44px; }
+  /* the two subjects, side by side */
+  .subjects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .subject { --c-text: var(--green-text); --c-glow: rgba(61, 138, 77, .5);
+    position: relative; display: flex; flex-direction: column; align-items: flex-start; min-height: 148px; padding: 14px; border-radius: 22px; color: var(--ink); text-decoration: none; transition: transform .15s ease; }
+  .subject.physics { --c-text: var(--blue-text); --c-glow: rgba(31, 75, 143, .5); }
+  .s-icon { width: 44px; height: 44px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 8px 16px -8px var(--c-glow); }
   .s-icon svg { width: 100%; height: 100%; display: block; }
-  .s-kicker { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-text); }
-  .s-title { display: block; margin-top: 2px; font-size: 18px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
-  .s-text { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-soft); }
-  .s-go { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 7px 14px; border-radius: 999px; background: var(--c); color: #FFFFFF; font-size: 13.5px; font-weight: 700; line-height: 1; }
+  .s-go { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--glass-edge); border-radius: 50%; background: var(--glass-2); color: var(--c-text); }
   .s-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  :root[data-theme="dark"] .s-go { color: #0E1310; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-go { color: #0E1310; } }
+  .s-kicker { font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--c-text); }
+  .s-title { margin-top: 1px; font-size: 17px; font-weight: 700; line-height: 1.28; text-wrap: balance; }
 
-  /* What's new: a headline per entry, tapped open for the whole note and its link */
+  /* every exam in one list: the ones to come (soonest first), those without a date in one row, then the ones done.
+     The date is on the left in the subject's colour, how long is left on the right. */
+  .tl { list-style: none; margin: 0; padding: 2px 16px; border-radius: 22px; }
+  .tl-row { --c: var(--green); --c-text: var(--green-text); }
+  .tl-row.physics { --c: var(--blue); --c-text: var(--blue-text); }
+  .tl-row + .tl-row { border-top: 1px solid var(--line); }
+  .tl-in { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 14px; min-height: 66px; padding: 11px 0; color: var(--ink); text-decoration: none; }
+  .tl-date { display: grid; justify-items: center; line-height: 1.05; color: var(--c-text); }
+  .tl-date b { font-size: 22px; font-weight: 900; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .tl-date small { font-size: 12px; font-weight: 700; }
+  .tl-main { display: grid; min-width: 0; line-height: 1.35; }
+  .tl-name { font-size: 15.5px; font-weight: 700; }
+  .tl-sub, .tl-prog { font-size: 13px; color: var(--ink-soft); }
+  .tl-prog b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .tl-left { padding: 5px 11px; border: 1px solid var(--glass-edge); border-radius: 999px; background: var(--glass-2); color: var(--c-text); font-size: 13px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tl-row.soon .tl-left { border-color: transparent; background: var(--amber-tint); color: var(--amber); }
+  .tl-row.now .tl-left { border-color: transparent; background: var(--c); color: #FFFFFF; }
+  .tl-row.done .tl-in { opacity: .62; }
+  .tl-row.done .tl-left { padding: 0; border: 0; background: none; color: var(--ink-soft); }
+  .tl-row.nodate .tl-date { color: var(--ink-soft); }
+  .tl-row.nodate .tl-date b { font-size: 19px; font-weight: 700; }
+  :root[data-theme="dark"] .tl-row.now .tl-left { color: #0E1310; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tl-row.now .tl-left { color: #0E1310; } }
+
+  /* What's new: a headline per entry, tapped open for the whole note and its link; the older days wait behind a button */
   .news, .n-items { list-style: none; margin: 0; padding: 0; display: grid; }
-  .news { gap: 12px; }
-  .n-date { margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--green-text); }
-  .n-items li { border-bottom: 1px solid var(--line); }
-  .n-items details > summary { display: flex; align-items: center; gap: 10px; padding: 10px 0; list-style: none; cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1.4; }
+  .news { padding: 2px 16px; border-radius: 22px; }
+  .news.clip > .n-day.older { display: none; }
+  .n-day + .n-day { border-top: 1px solid var(--line); }
+  .n-date { margin: 0; padding-top: 12px; font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
+  .n-items details > summary { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 0 10px; list-style: none; cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1.4; }
+  .n-items li + li details > summary { padding-top: 2px; }
   .n-items details > summary::-webkit-details-marker { display: none; }
   .n-items summary .n-t { flex: 1; min-width: 0; }
-  .n-items summary svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--green-text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+  .n-items summary svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
   .n-items details[open] > summary svg { transform: rotate(90deg); }
   .n-text { margin: 0 0 10px; font-size: 14px; color: var(--ink-soft); }
   .n-open { display: inline-block; margin: -2px 0 12px; font-size: 14px; font-weight: 700; color: var(--green-text); }
+  .more { appearance: none; width: 100%; min-height: 44px; margin-top: 10px; border-radius: 999px; color: var(--ink); font: 700 14px/1 var(--font); cursor: pointer; }
 
-  .offline { padding: 16px; border: 1.5px dashed var(--green); border-radius: 4px; }
-  .offline h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
-  .offline p { font-size: 14px; color: var(--ink-soft); }
-  .offline p + p { margin-top: 8px; }
-  .install { appearance: none; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 0; border-radius: 999px;
+  /* offline use: one row that opens to say how */
+  .offline { border-radius: 22px; }
+  .offline > summary { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; list-style: none; cursor: pointer; font-size: 15px; font-weight: 700; line-height: 1.35; }
+  .offline > summary::-webkit-details-marker { display: none; }
+  .off-ic { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 11px; background: var(--tint); color: var(--green-text); }
+  .offline > summary > span:nth-child(2) { flex: 1; min-width: 0; }
+  .offline > summary > svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--ink-soft); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
+  .offline[open] > summary > svg { transform: rotate(90deg); }
+  .off-body { padding: 0 16px 16px; }
+  .off-body p { font-size: 14px; color: var(--ink-soft); }
+  .off-body p + p { margin-top: 8px; }
+  .install { appearance: none; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px;
     background: var(--bar); color: #FFFFFF; font: 700 14px/1 var(--font); cursor: pointer; }
   @media (hover: hover) { .install:hover { background: var(--bar-active); } }
-  .ok { color: var(--green-text); font-weight: 700; }
+  .off-body .ok { color: var(--green-text); font-weight: 700; }
 
   .site-foot .wrap { padding-block: 20px calc(80px + env(safe-area-inset-bottom, 0px)); text-align: center; } /* room for the back-to-top button */
   .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
   .fine + .fine { margin-top: 6px; }
+
+  /* Moving between pages (see page.css; the rule that switches it on is at the top of the head): a tap on a link
+     cross-fades to its page, and the subject's badge glides from its card here to the page's app bar and back. After
+     a tap inside the next-exam card, that card's badge is the one that glides (.from-next, set by the script below).
+     Each name may be on the page only once. */
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .26s; }
+  #card-math .s-icon { view-transition-name: badge-math; }
+  #card-physics .s-icon { view-transition-name: badge-physics; }
+  :root.from-next #card-math .s-icon, :root.from-next #card-physics .s-icon { view-transition-name: none; }
+  :root.from-next .next.math .nx-top > svg { view-transition-name: badge-math; }
+  :root.from-next .next.physics .nx-top > svg { view-transition-name: badge-physics; }
+  ::view-transition-group(badge-math), ::view-transition-group(badge-physics) { animation-duration: .38s; animation-timing-function: cubic-bezier(.3, .85, .3, 1); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+  @media print { body::after { display: none; } .appbar { position: static; } }
 </style>
 </head>
 <body>
@@ -205,10 +267,9 @@
 
 <main class="wrap">
   <section aria-labelledby="next-title">
-    <h2 class="sec-title" id="next-title">Next up</h2>
+    <h2 class="sr" id="next-title">Next exam</h2>
     <div id="next"><p class="up-when">Loading…</p></div>
-    <ul class="up-list" id="up-list"></ul>
-    <a class="resume" id="resume" href="./" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.2h3.2"/><path d="M12 8.5V12l2.5 2"/></svg><span class="rs-main"><b>Pick up where you left off</b><small id="resume-where"></small></span></a>
+    <a class="resume" id="resume" href="./" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.2h3.2"/><path d="M12 8.5V12l2.5 2"/></svg><span class="rs-main"><b>Pick up where you left off</b><small id="resume-where"></small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg></a>
   </section>
 
   <section aria-labelledby="subj-title">
@@ -216,37 +277,40 @@
     <div class="subjects">
       <a class="subject math" href="math/" id="card-math">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#3D8A4D"/><path d="M6 24Q16 -6 26 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M5.5 21L16.5 4.5" fill="none" stroke="#9CC34C" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="12.75" r="2.4" fill="#9CC34C"/></svg></span>
-        <span><span class="s-kicker">Math · CLA1</span><span class="s-title">Calculus &amp; Linear Algebra 1</span></span>
-        <p class="s-text">Calculus midterms 1 and 2 (integrals, which grows after each class). Coming: the Linear Algebra midterm.</p>
-        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
+        <span class="s-kicker">Math · CLA1</span>
+        <span class="s-title">Calculus &amp; Linear Algebra 1</span>
+        <span class="s-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
       </a>
       <a class="subject physics" href="physics/" id="card-physics">
         <span class="s-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></span>
-        <span><span class="s-kicker">Physics · EP1</span><span class="s-title">Engineering Physics 1</span></span>
-        <p class="s-text">The midterm, Chapters 1–8: summaries, 103 practice problems, formulas, quiz sheets and mock midterms.</p>
-        <span class="s-go">Open<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
+        <span class="s-kicker">Physics · EP1</span>
+        <span class="s-title">Engineering Physics 1</span>
+        <span class="s-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span>
       </a>
     </div>
   </section>
 
-  <section aria-labelledby="later-title">
-    <h2 class="sec-title" id="later-title">Other exams</h2>
-    <ul class="up-list" id="later-list"></ul>
+  <section aria-labelledby="exams-title">
+    <h2 class="sec-title" id="exams-title">Exams</h2>
+    <ol class="tl" id="exam-list"></ol>
   </section>
 
   <section aria-labelledby="news-title">
     <h2 class="sec-title" id="news-title">What's new</h2>
-    <ul class="news" id="news"></ul>
+    <ul class="news clip" id="news"></ul>
+    <button type="button" class="more" id="news-more" hidden></button>
   </section>
 
-  <section class="offline" id="offline" aria-labelledby="off-title">
-    <h2 id="off-title">Use it like an app, even offline</h2>
-    <p>Add the site to your home screen. Each page you open is saved on the device, so it works without a signal, and it updates itself when you're back online.</p>
-    <p id="off-ios" hidden>On iPhone or iPad: tap the Share button in Safari, then <b>Add to Home Screen</b>.</p>
-    <p id="off-other">On Android or a computer: use the button below, or your browser's menu (<b>Install app</b> or <b>Add to Home screen</b>).</p>
-    <button type="button" class="install" id="install" hidden>Install Study Notes</button>
-    <p class="ok" id="off-done" hidden>Installed: you're using the app version.</p>
-  </section>
+  <details class="offline" id="offline">
+    <summary><span class="off-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></span><span id="off-title">Use it like an app, even offline</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg></summary>
+    <div class="off-body">
+      <p>Add the site to your home screen. Each page you open is saved on the device, so it works without a signal, and it updates itself when you're back online.</p>
+      <p id="off-ios" hidden>On iPhone or iPad: tap the Share button in Safari, then <b>Add to Home Screen</b>.</p>
+      <p id="off-other">On Android or a computer: use the button below, or your browser's menu (<b>Install app</b> or <b>Add to Home screen</b>).</p>
+      <button type="button" class="install" id="install" hidden>Install Study Notes</button>
+      <p class="ok" id="off-done" hidden>Installed: you're using the app version.</p>
+    </div>
+  </details>
 </main>
 
 <footer class="site-foot"><div class="wrap">
@@ -259,14 +323,14 @@
     const DAY = 86400000;
     const $ = (s) => document.querySelector(s);
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const CAL = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>';
     const CHEV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>';
     const fresh = (date) => { const t = new Date(date + 'T00:00:00+09:00').getTime(); return Date.now() - t < 14 * DAY && Date.now() >= t - DAY; };
     const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
     // an exam links to its own page (page in site.json), or else to its subject's page
     const COURSE_PAGE = { math: 'math/', physics: 'physics/' };
-    const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg>';
+    // each subject's badge and short name, as its card shows them (read before a New label is added to the card)
     const BADGE = { math: $('#card-math .s-icon').innerHTML, physics: $('#card-physics .s-icon').innerHTML };
+    const SHORT = { math: $('#card-math .s-kicker').textContent, physics: $('#card-physics .s-kicker').textContent };
     // what the exam pages record for this device (page.js): each page's Practice progress and where it was left
     let pages = {};
     try { pages = JSON.parse(localStorage.getItem('study-pages') || 'null') || {}; } catch (e) { pages = {}; }
@@ -276,45 +340,46 @@
       const pc = (n) => Math.max(0, Math.min(100, (100 * n) / p.total)).toFixed(1) + '%';
       const text = `Practice: <b>${p.got}</b> of ${p.total} got it${p.rev ? ` · <b>${p.rev}</b> to review` : ''}`;
       return hero ? `<div class="prog"><div class="prog-bar" role="img" aria-label="${p.got} of ${p.total} practice problems got it, ${p.rev || 0} to review"><i style="width:${pc(p.got)}"></i><i class="rev" style="width:${pc(p.rev || 0)}"></i></div><span>${text}</span></div>`
-        : `<span class="up-prog">${text}</span>`;
+        : `<span class="tl-prog">${text}</span>`;
     }
 
     function exams(list) {
       const today = todayJST();
-      // the course name only tells exams apart once there is more than one course
-      const several = new Set(list.map((x) => x.course)).size > 1;
-      const rows = list.map((x) => {
-        let when = 'Date to be announced', left = '', cls = '', sort = Infinity, days = null;
-        if (x.date) {
-          days = Math.round((new Date(x.date + 'T00:00:00+09:00').getTime() - today) / DAY);
-          when = new Date(x.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' }) + (x.time ? ' · ' + x.time : '');
-          left = days < 0 ? 'Done' : days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
-          cls = days < 0 ? ' past' : days <= 7 ? ' soon' : '';
-          sort = days < 0 ? 1e9 + days : days;
-        }
-        return { x, days, when, left, cls, sort };
-      }).sort((a, b) => a.sort - b.sort);
-      const row = ({ x, when, left, cls }) => {
-        const href = x.page ? x.page + '#exams' : COURSE_PAGE[x.subject];
-        const inner = `<span class="up-cal">${CAL}</span><span class="up-main"><b class="up-name">${esc(x.name)}</b><span class="up-when">${several ? esc(x.course) + ' · ' : ''}<span class="nw">${esc(when)}</span></span>${progress(x.page, false)}</span><span class="up-left">${left}</span>`;
-        return href ? `<li><a class="up-item ${x.subject}${cls}" href="${href}">${inner}</a></li>` : `<li class="up-item ${x.subject}${cls}">${inner}</li>`;
-      };
-      const coming = rows.filter((r) => r.days !== null && r.days >= 0);
-      // the soonest exam: its countdown in large, Practice progress, and its page, Practice and night-before sheet
+      const dayOf = (x, opts) => new Date(x.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { timeZone: 'Asia/Tokyo', ...opts });
+      const rows = list.filter((x) => x.date).map((x) => {
+        const days = Math.round((new Date(x.date + 'T00:00:00+09:00').getTime() - today) / DAY);
+        return { x, days, left: days < 0 ? 'Done' : days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days` };
+      });
+      const coming = rows.filter((r) => r.days >= 0).sort((a, b) => a.days - b.days);
+      const done = rows.filter((r) => r.days < 0).sort((a, b) => b.days - a.days);
+      const undated = list.filter((x) => !x.date);
+
+      // the soonest exam: how long is left, its Practice progress, and its page, Practice and night-before sheet
       const hero = coming[0];
       if (hero) {
-        const { x, days, when } = hero;
+        const { x, days, left } = hero;
         const go = x.page || COURSE_PAGE[x.subject];
-        const left = days === 0 ? '<b>Today</b>' : days === 1 ? '<b>Tomorrow</b>' : `<b>${days}</b><small>days to go</small>`;
+        const when = dayOf(x, { weekday: 'short', day: 'numeric', month: 'short' }) + (x.time ? ' · ' + x.time : '');
         $('#next').innerHTML = `<article class="next ${x.subject}${days <= 7 ? ' soon' : ''}" id="next-exam">
           <div class="nx-top">${BADGE[x.subject] || ''}<div class="nx-head"><span class="nx-kicker">${esc(x.course)}</span><h3 class="nx-title">${esc(x.name)}</h3></div><div class="nx-left">${left}</div></div>
           <p class="nx-when">${esc(when)}</p>
           ${progress(x.page, true)}
-          <div class="nx-btns"><a class="go" href="${go}">Open${ARROW}</a>${x.page ? `<a class="alt" href="${x.page}#practice">Practice</a><a class="alt" href="${x.page}#night">Night-before sheet</a>` : ''}</div>
+          <div class="nx-btns"><a class="go" href="${go}">Open</a>${x.page ? `<a class="alt" href="${x.page}#practice">Practice</a><a class="alt" href="${x.page}#night">Night-before sheet</a>` : ''}</div>
         </article>`;
       } else $('#next').innerHTML = '<p class="up-when">No exam dates yet.</p>';
-      $('#up-list').innerHTML = coming.slice(1).map(row).join('');
-      $('#later-list').innerHTML = rows.filter((r) => !coming.includes(r)).map(row).join('');
+
+      // every exam in one list: to come (soonest first), no date yet (one row), then done (the latest first)
+      const row = ({ x, days, left }) => {
+        const href = x.page ? x.page + '#exams' : COURSE_PAGE[x.subject];
+        const cls = days < 0 ? ' done' : days === 0 ? ' now' : days <= 7 ? ' soon' : '';
+        const inner = `<time class="tl-date" datetime="${esc(x.date)}"><b>${esc(dayOf(x, { day: 'numeric' }))}</b><small>${esc(dayOf(x, { month: 'short' }))}</small></time>
+          <span class="tl-main"><b class="tl-name">${esc(x.name)}</b><span class="tl-sub"><span class="nw">${esc(dayOf(x, { weekday: 'short' }) + (x.time ? ', ' + x.time : ''))}</span> · <span class="nw">${esc(SHORT[x.subject] || x.course)}</span></span>${progress(x.page, false)}</span>
+          <span class="tl-left">${left}</span>`;
+        return `<li class="tl-row ${x.subject}${cls}">${href ? `<a class="tl-in" href="${href}">${inner}</a>` : `<div class="tl-in">${inner}</div>`}</li>`;
+      };
+      const later = undated.length ? `<li class="tl-row nodate"><div class="tl-in"><span class="tl-date" aria-hidden="true"><b>?</b></span>
+          <span class="tl-main"><b class="tl-name">No date yet</b><span class="tl-sub">${undated.map((x) => `<span class="nw">${esc(x.name)}</span>`).join(', ')}</span></span></div></li>` : '';
+      $('#exam-list').innerHTML = coming.map(row).join('') + later + done.map(row).join('');
     }
 
     // the page and spot this device was on last (study-pages, page.js), if it was in the last 30 days
@@ -334,6 +399,12 @@
       link.hidden = false;
     })();
     $('#today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Tokyo' });
+    // moving to another page: after a tap inside the next-exam card, that card's badge is the one that glides to the
+    // page's app bar (.from-next in the style above); after any other tap, the subject card's
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest && e.target.closest('a[href]');
+      if (a) document.documentElement.classList.toggle('from-next', Boolean(a.closest('.next')));
+    }, true);
     // "New" only for what this device hasn't seen yet, like the Math page (same keys, see page.js): What's new
     // marks a day's entries until the home page has shown them once (they stay for the rest of that visit), and
     // a subject's card until that subject's page has been opened since its newest update.
@@ -351,16 +422,25 @@
     const unseen = (date, key, base) => Boolean(date) && fresh(date) && !(base[key] >= date);
     const PILL = ' <span class="new-pill">New</span>';
 
-    // the latest six entries, grouped under their date
+    // the latest six entries, grouped under their date. The two newest days show, and so does every day that is
+    // New here; the days before those wait behind a button.
     function news(list) {
       const latest = list.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)).slice(0, 6);
       const days = [];
       latest.forEach((n) => { const g = days[days.length - 1]; if (g && g.date === n.date) g.items.push(n); else days.push({ date: n.date, items: [n] }); });
-      $('#news').innerHTML = days.map((g) => {
+      const shown = Math.max(2, 1 + days.reduce((last, g, i) => (unseen(g.date, 'news', start) ? i : last), -1));
+      $('#news').innerHTML = days.map((g, i) => {
         const d = new Date(g.date + 'T12:00:00+09:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Tokyo' });
-        const items = g.items.map((n) => `<li><details><summary><span class="n-t">${esc(n.title || n.text)}</span>${CHEV}</summary><p class="n-text">${esc(n.text)}</p>${n.link ? `<a class="n-open" href="${esc(n.link)}">Open →</a>` : ''}</details></li>`).join('');
-        return `<li class="n-day"><p class="n-date"><time class="nw" datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
+        const items = g.items.map((n) => `<li><details><summary><span class="n-t">${esc(n.title || n.text)}</span>${CHEV}</summary><p class="n-text">${esc(n.text)}</p>${n.link ? `<a class="n-open" href="${esc(n.link)}">Open this page</a>` : ''}</details></li>`).join('');
+        return `<li class="n-day${i >= shown ? ' older' : ''}"><p class="n-date"><time class="nw" datetime="${esc(g.date)}">${esc(d)}</time>${unseen(g.date, 'news', start) ? PILL : ''}</p><ul class="n-items">${items}</ul></li>`;
       }).join('');
+      const older = days.slice(shown).reduce((n, g) => n + g.items.length, 0);
+      const more = $('#news-more');
+      if (older) {
+        more.textContent = `Show ${older} older update${older === 1 ? '' : 's'}`;
+        more.hidden = false;
+        more.addEventListener('click', () => { $('#news').classList.remove('clip'); more.hidden = true; });
+      }
       const newest = latest.length ? latest[0].date : '';
       if (newest) {
         const t = $('#updated time');
