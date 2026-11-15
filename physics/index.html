@@ -22,11 +22,11 @@
 <link rel="icon" href="../favicon-physics.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="../manifest.webmanifest">
-<script>try{var t=(JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{}).theme;if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);document.documentElement.setAttribute('data-theme-early','')}}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{},d=document.documentElement,t=o.theme,l=o.look;if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);d.setAttribute('data-theme-early','')}if(l==='classic'||l==='paper'){d.setAttribute('data-look',l);var c=l==='paper'?['#F4F0E7','#1E1D1B']:['#FFFFFF',''];document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){var k=c[/dark/.test(m.media)?1:0];if(k)m.content=k})}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="assets/physics.css?v=bc55ca3864">
+<link rel="stylesheet" href="assets/physics.css?v=94c06a3368">
 <style>
 /* the exam picker: one glass card per exam, like the home page's subject cards; there is no tab bar on this page */
 body.picker { padding-bottom: 0; --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
@@ -70,7 +70,7 @@ a.exam:active { transform: scale(.985); }
   <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Exams</span><span class="jp" lang="ja">試験</span></h1><p class="band-lede">One page of notes for each exam: a summary of every module with worked examples, practice problems in three tiers and the formulas. The midterm page also has quiz sheets with worked answers and mock midterms.</p></div></div>
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
-    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-14" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
+    <a class="exam" id="exam-midterm" href="midterm/" data-updated="2026-11-15" data-seen="physics"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M5 40h38"/><path d="M8 40Q24 2 40 40" class="lime-stroke"/><circle cx="24" cy="21" r="3.2" class="lime-fill"/><path d="M8 40l7-12"/></svg><span class="e-head"><span class="kicker">Midterm</span><span class="e-title">Chapters 1–8</span></span>
       <p class="e-text">Measurement, motion in one and two dimensions, vectors, Newton’s laws, friction and circular motion, work and energy.</p><p class="e-stats"><span class="nw">8 chapters</span> · <span class="nw">103 practice problems</span> · <span class="nw">186 formulas</span> · <span class="nw">3 exercise days</span> · <span class="nw">3 practice sets</span> · <span class="nw">3 mocks</span> · <span class="nw">2 past midterms</span></p>
       <span class="e-foot"><span class="e-when" data-date="2026-11-13"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span class="nw">Fri 13 Nov</span><span class="e-left" aria-live="off"></span></span><span class="pill">Open<svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></span></span></a>
     <a class="exam" id="exam-final" href="final/" data-updated="2026-11-14" data-seen="physics-final"><svg viewBox="0 0 48 48" aria-hidden="true" class="tile-ic"><path d="M4 40C13 40 15 11 24 11S35 40 44 40"/><circle cx="14.5" cy="22" r="3.2" class="lime-fill"/></svg><span class="e-head"><span class="kicker">Final</span><span class="e-title">Chapters 15–20</span></span>
@@ -82,7 +82,7 @@ a.exam:active { transform: scale(.985); }
 <footer class="site-foot"><div class="wrap">
   <p class="foot-links"><a href="../">← All subjects</a></p>
   <p class="fine">Study notes for Engineering Physics 1. Not an official Kyoto University of Advanced Science page.</p>
-  <p class="fine">Last updated <time datetime="2026-11-14">14 Nov 2026</time>.</p>
+  <p class="fine">Last updated <time datetime="2026-11-15">15 Nov 2026</time>.</p>
 </div></footer>
 <script>(() => {
   const DAY = 86400000;

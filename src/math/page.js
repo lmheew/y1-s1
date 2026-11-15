@@ -13,7 +13,8 @@
   const HOME = VIEWS.includes(CONF.home) ? CONF.home : 'summary';
   const FILTERS = ['all', 'review', 'unmarked'];
   const THEMES = ['system', 'light', 'dark'];
-  const st = { tab: HOME, marks: {}, filter: 'all', theme: 'system', seg: {} };
+  const LOOKS = ['glass', 'classic', 'paper']; // the themes (looks.css): the page as page.css draws it, the look from before 14 Nov, Paper
+  const st = { tab: HOME, marks: {}, filter: 'all', theme: 'system', look: 'glass', seg: {} };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
@@ -21,19 +22,25 @@
       if (saved.marks && typeof saved.marks === 'object') st.marks = saved.marks;
       if (FILTERS.includes(saved.filter)) st.filter = saved.filter;
       if (THEMES.includes(saved.theme)) st.theme = saved.theme;
+      if (LOOKS.includes(saved.look)) st.look = saved.look;
       if (saved.seg && typeof saved.seg === 'object') st.seg = saved.seg;
     }
   } catch (e) { /* storage unavailable: start fresh */ }
   if (KEY !== THEME_KEY) {
-    try { const t = (JSON.parse(localStorage.getItem(THEME_KEY) || 'null') || {}).theme; st.theme = THEMES.includes(t) ? t : 'system'; } catch (e) { /* ignore */ }
+    try {
+      const o = JSON.parse(localStorage.getItem(THEME_KEY) || 'null') || {};
+      st.theme = THEMES.includes(o.theme) ? o.theme : 'system';
+      st.look = LOOKS.includes(o.look) ? o.look : 'glass';
+    } catch (e) { /* ignore */ }
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* ignore */ } };
-  // a page with its own store also writes the theme into the site-wide one
+  // a page with its own store also writes the mode and the theme into the site-wide one
   const saveTheme = () => {
     if (KEY === THEME_KEY) return;
     try {
       const o = JSON.parse(localStorage.getItem(THEME_KEY) || 'null') || {};
       o.theme = st.theme;
+      o.look = st.look;
       localStorage.setItem(THEME_KEY, JSON.stringify(o));
     } catch (e) { /* ignore */ }
   };
@@ -51,20 +58,87 @@
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY = 86400000;
 
-  // ----- theme: system follows the device (or the host's choice); light/dark override it. On the site a script in
-  // the page's head has already set the saved light/dark choice (data-theme-early), so that one isn't a host's. -----
+  // ----- appearance: the mode (Auto follows the device, or the host's choice; Light and Dark override it) and the
+  // theme (Glass, Classic or Paper: looks.css). On the site a script in the page's head has already set the saved
+  // choices before the first paint (data-theme-early marks its data-theme as the site's, not a host's). The light/dark
+  // button opens a small menu with both; a choice applies at once and is kept for every page. -----
   const hostTheme = root.hasAttribute('data-theme-early') ? null : root.getAttribute('data-theme');
   const themeBtn = $('#theme-btn');
-  const THEME_LABEL = { system: 'Theme: matches your device. Tap for light.', light: 'Theme: light. Tap for dark.', dark: 'Theme: dark. Tap to match your device.' };
+  const MODE_NAME = { system: 'Auto', light: 'Light', dark: 'Dark' };
+  const LOOK_NAME = { glass: 'Glass', classic: 'Classic', paper: 'Paper' };
+  // the browser's own bars (theme-color) follow the theme: Glass keeps the page's own colours
+  const barMetas = $$('meta[name="theme-color"]').map((m) => ({ m, glass: m.content, dark: /dark/.test(m.media || '') }));
+  const BAR_LOOK = { classic: ['#FFFFFF', null], paper: ['#F4F0E7', '#1E1D1B'] };
   function applyTheme() {
     if (st.theme === 'system') {
       if (hostTheme) root.setAttribute('data-theme', hostTheme); else root.removeAttribute('data-theme');
     } else root.setAttribute('data-theme', st.theme);
+    if (st.look === 'glass') root.removeAttribute('data-look'); else root.setAttribute('data-look', st.look);
+    barMetas.forEach(({ m, glass, dark }) => { const c = BAR_LOOK[st.look]; m.content = (c && c[dark ? 1 : 0]) || glass; });
     themeBtn.dataset.mode = st.theme;
-    themeBtn.setAttribute('aria-label', THEME_LABEL[st.theme]);
-    themeBtn.title = THEME_LABEL[st.theme];
+    const label = `Appearance: ${LOOK_NAME[st.look]} theme, ${MODE_NAME[st.theme] === 'Auto' ? 'mode matches your device' : MODE_NAME[st.theme].toLowerCase() + ' mode'}. Tap to change.`;
+    themeBtn.setAttribute('aria-label', label);
+    themeBtn.title = label;
+    if (menu) $$('[data-set]', menu).forEach((b) => b.setAttribute('aria-checked', String(st[b.dataset.set] === b.dataset.val)));
   }
-  themeBtn.addEventListener('click', () => { st.theme = THEMES[(THEMES.indexOf(st.theme) + 1) % THEMES.length]; save(); saveTheme(); applyTheme(); });
+  let menu = null;
+  function buildMenu() {
+    const opt = (set, val, inner) => `<button type="button" class="ap-opt" role="radio" data-set="${set}" data-val="${val}" aria-checked="false">${inner}</button>`;
+    const icon = (v) => themeBtn.querySelector('.t-' + v).innerHTML;
+    menu = document.createElement('div');
+    menu.className = 'appear';
+    menu.id = 'appear';
+    menu.hidden = true;
+    menu.setAttribute('role', 'dialog');
+    menu.setAttribute('aria-label', 'Appearance');
+    menu.innerHTML = '<p class="ap-h" id="ap-mode">Mode</p><div class="ap-row" role="radiogroup" aria-labelledby="ap-mode">'
+      + THEMES.map((v) => opt('theme', v, icon(v) + MODE_NAME[v])).join('') + '</div>'
+      + '<p class="ap-h" id="ap-look">Theme</p><div class="ap-row" role="radiogroup" aria-labelledby="ap-look">'
+      + LOOKS.map((v) => opt('look', v, `<span class="ap-sw sw-${v}" aria-hidden="true"></span>${LOOK_NAME[v]}`)).join('') + '</div>'
+      + '<p class="ap-note">Kept on this device, for every page.</p>';
+    document.body.append(menu);
+    menu.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-set]');
+      if (!b) return;
+      st[b.dataset.set] = b.dataset.val;
+      save(); saveTheme(); applyTheme();
+    });
+    // a radio group: the arrow keys move along it and pick, as with the browser's own radio buttons
+    menu.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); return; }
+      const b = e.target.closest('[data-set]');
+      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!b || !step) return;
+      e.preventDefault();
+      const row = $$('[data-set]', b.parentElement);
+      const next = row[(row.indexOf(b) + step + row.length) % row.length];
+      next.focus(); next.click();
+    });
+    applyTheme();
+  }
+  function placeMenu() { menu.style.top = Math.round(themeBtn.getBoundingClientRect().bottom + 8) + 'px'; }
+  function openMenu() {
+    if (!menu) buildMenu();
+    placeMenu();
+    menu.hidden = false;
+    themeBtn.setAttribute('aria-expanded', 'true');
+    if (!reduced) { menu.classList.remove('pop'); void menu.offsetWidth; menu.classList.add('pop'); }
+    // the arrow keys move within a group, so only its picked option is in the Tab order
+    $$('[data-set]', menu).forEach((b) => { b.tabIndex = b.getAttribute('aria-checked') === 'true' ? 0 : -1; });
+    $('[aria-checked="true"]', menu).focus({ preventScroll: true });
+  }
+  function closeMenu(refocus) {
+    if (!menu || menu.hidden) return;
+    menu.hidden = true;
+    themeBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) themeBtn.focus();
+  }
+  themeBtn.setAttribute('aria-haspopup', 'dialog');
+  themeBtn.setAttribute('aria-expanded', 'false');
+  themeBtn.addEventListener('click', () => { if (menu && !menu.hidden) closeMenu(); else openMenu(); });
+  document.addEventListener('pointerdown', (e) => { if (menu && !menu.hidden && !menu.contains(e.target) && !themeBtn.contains(e.target)) closeMenu(); });
+  document.addEventListener('focusin', (e) => { if (menu && !menu.hidden && !menu.contains(e.target) && e.target !== themeBtn) closeMenu(); });
+  window.addEventListener('resize', () => { if (menu && !menu.hidden) placeMenu(); });
   applyTheme();
 
   // ----- phones: a band's intro shows one line (page.css) until it is tapped -----

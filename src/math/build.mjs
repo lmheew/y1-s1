@@ -579,7 +579,7 @@ function foot(site, updated) {
 
 // page.css/page.js are the Math pages'; the floating calculator and the back-to-top button in src/shared are common to every subject page
 const SHARED = path.join(ROOT, 'src', 'shared');
-const CSS_FILES = [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css')];
+const CSS_FILES = [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css'), path.join(SHARED, 'looks.css')];
 const JS_FILES = [path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')];
 // the artifact: everything inside the page
 const inlineAssets = () => ({ css: readAll(CSS_FILES), js: readAll(JS_FILES), kcss: katexCSS() });
@@ -589,7 +589,7 @@ function writeAssets() {
   const fonts = [];
   const kcss = katexCSS((name) => { fonts.push(name); return `fonts/${name}.woff2`; });
   const note = (from) => `/* Built by src/math/build.mjs from ${from}. Don't edit it here: change the sources and build again. */\n`;
-  const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
+  const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css, src/shared/looks.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
   const js = note('src/math/page.js, src/math/graphs.js, src/shared/totop.js and src/shared/calculator.js') + readAll(JS_FILES) + '\n';
   writeIfChanged(path.join(ASSETS, 'math.css'), css);
   writeIfChanged(path.join(ASSETS, 'math.js'), js);

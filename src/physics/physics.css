@@ -8,6 +8,7 @@
   --tint: rgba(31, 75, 143, .09); --tint-solid: #EAF0FA; --flash: #D5E3F8;
   --wash-1: #B4CDF7; --wash-2: #CFC5F9; --wash-3: #B3E3EF; --wash-4: #BBE5CB;
   --glass-shadow: 0 1px 2px rgba(18, 30, 60, .05), 0 10px 26px -14px rgba(18, 30, 60, .32); --cutout: #F8FAFE; --bar-rgb: 231, 237, 248;
+  --sw-glass-1: #B4CDF7; --sw-glass-2: #CFC5F9; --sw-accent: #1F4B8F; --sw-band: #DCE4F0;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {

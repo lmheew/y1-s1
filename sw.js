@@ -5,7 +5,7 @@
 // worker stays up for that, waitUntil), so the page never waits for a whole file to be saved first.
 // Bump CACHE when the list below changes, or when every page changes at once (a new look), so a device swaps its
 // whole saved copy in one go; old caches are deleted on activate.
-const CACHE = 'study-notes-v8';
+const CACHE = 'study-notes-v9';
 const FONTS = 'study-notes-fonts';
 const KATEX = ['AMS-Regular', 'Main-Bold', 'Main-BoldItalic', 'Main-Italic', 'Main-Regular', 'Math-BoldItalic', 'Math-Italic',
   'Size1-Regular', 'Size2-Regular', 'Size3-Regular', 'Size4-Regular'].map((f) => `./math/assets/fonts/KaTeX_${f}.woff2`);

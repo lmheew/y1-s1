@@ -464,6 +464,7 @@ with sync_playwright() as p:
     pg2.goto(BASE + '/math/derivatives/')
     pg2.wait_for_selector('.calc-fab')
     pg2.click('#theme-btn')
+    pg2.click('#appear [data-set="theme"][data-val="system"]')
     check('theme: on an exam page the saved choice is set early, and "system" still follows the device', pg2.evaluate("document.documentElement.hasAttribute('data-theme')") is False
           and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
     ctx.close()
@@ -478,10 +479,6 @@ with sync_playwright() as p:
     pg.wait_for_selector('#news .n-day')
     check('new (13 Nov): the day Quiz 08 arrived is New on the home page',
           pg.locator('#news .n-day:has(time[datetime="2026-11-13"]) .new-pill').count() == 1)
-    pg.goto(BASE + '/math/')
-    pg.wait_for_selector('.exams')
-    check('new (13 Nov): the picker marks Calculus midterm 2 New, and midterm 1 no longer', pg.locator('#exam-integrals .new-pill').count() == 1
-          and pg.locator('#exam-derivatives .new-pill').count() == 0)
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')
     check('new (13 Nov): Calculus midterm 2 has its own tab dots', dots(pg) == ['practice', 'formulas', 'quizzes'], dots(pg))
@@ -490,6 +487,20 @@ with sync_playwright() as p:
     pg.click('#tab-quizzes')
     pg.wait_for_selector('#qg08')
     check('new (13 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
+    ctx.close()
+
+    # ---- the picker at noon on the day Calculus midterm 2 was last updated (its card's date, which each What's new line
+    # that links to the page moves on, so this moment moves with it): its card is New, and midterm 1's (last updated
+    # on 30 Oct) is not ----
+    upd = re.search(r'id="exam-integrals"[^>]*data-updated="([\d-]+)"', open(os.path.join(SITE, 'math', 'index.html'), encoding='utf-8').read()).group(1)
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.clock.set_fixed_time(datetime.datetime(*map(int, upd.split('-')), 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/math/')
+    pg.wait_for_selector('.exams')
+    check(f'new ({upd}): the picker marks Calculus midterm 2 New, and midterm 1 no longer', pg.locator('#exam-integrals .new-pill').count() == 1
+          and pg.locator('#exam-derivatives .new-pill').count() == 0)
     ctx.close()
 
     # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
@@ -817,6 +828,116 @@ with sync_playwright() as p:
     at = pg.evaluate(pill)
     check('glass: on a wide screen the tab bar is a strip of glass that stays at the top, its pill under the open tab',
           wide == ['sticky', 0, True, True] and at['i'] == '2' and abs(at['off']) <= 1, (wide, at))
+    ctx.close()
+
+    # ---- appearance: the light/dark button opens a small menu with the mode (Auto, Light, Dark) and the theme (Glass,
+    # Classic, Paper: looks.css); a choice applies at once, is kept for every page and is set before the first paint ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    # when the theme is set: while the page's head is read (before <body> exists), or later
+    ctx.add_init_script("new MutationObserver((l, o) => { const h = document.documentElement; if (h && h.hasAttribute('data-look')) { window.__lookEarly = !document.body; o.disconnect(); } })"
+                        ".observe(document, { subtree: true, attributes: true, attributeFilter: ['data-look'] });")
+    pg = ctx.new_page()
+    pg.goto(BASE + '/math/integrals/#summary')
+    pg.wait_for_selector('.calc-fab')
+    pg.click('#theme-btn')
+    menu = pg.evaluate("""(() => { const m = document.getElementById('appear'), q = (s) => [...m.querySelectorAll(s)];
+      return [!m.hidden, q('[data-set="theme"]').map((b) => b.textContent.trim()), q('[data-set="look"]').map((b) => b.textContent.trim()),
+        q('[aria-checked="true"]').map((b) => b.dataset.val), document.getElementById('theme-btn').getAttribute('aria-expanded'),
+        document.activeElement.dataset.val]; })()""")
+    check('appearance: the light/dark button opens a menu: the mode (Auto, Light, Dark) and the theme (Glass, Classic, Paper)',
+          menu == [True, ['Auto', 'Light', 'Dark'], ['Glass', 'Classic', 'Paper'], ['system', 'glass'], 'true', 'system'], menu)
+    pg.keyboard.press('ArrowRight')
+    check('appearance: the arrow keys move along a row and pick, like radio buttons', pg.evaluate("document.documentElement.dataset.theme") == 'light'
+          and pg.locator('#appear [data-val="light"]').get_attribute('aria-checked') == 'true')
+    pg.keyboard.press('Escape')
+    check('appearance: Esc closes the menu and goes back to the button', pg.locator('#appear').is_hidden()
+          and pg.evaluate("document.activeElement.id") == 'theme-btn' and pg.locator('#theme-btn').get_attribute('aria-expanded') == 'false')
+    pg.click('#theme-btn')
+    pg.click('#appear [data-set="theme"][data-val="system"]')
+    pg.click('#appear [data-set="look"][data-val="paper"]')
+    LOOK = """(() => { const cs = (s, p) => getComputedStyle(document.querySelector(s), p || null), root = getComputedStyle(document.documentElement);
+      const blur = (c) => (c.backdropFilter || c.webkitBackdropFilter || 'none') !== 'none';
+      const bar = document.querySelector('.tabbar'), r = bar ? bar.getBoundingClientRect() : null;
+      return { look: document.documentElement.dataset.look || 'glass', bg: cs('body').backgroundColor, wash: cs('body', '::after').display !== 'none',
+        blur: blur(cs('.appbar')), serif: /serif/.test(cs('body').fontFamily) && !/sans-serif/.test(cs('body').fontFamily.split(',')[0]),
+        accent: root.getPropertyValue('--green').trim(), barColour: (document.querySelector('meta[name="theme-color"]') || {}).content,
+        tabbar: r ? [Math.round(r.left), Math.round(innerWidth - r.right), Math.round(innerHeight - r.bottom)] : null }; })()"""
+    got = pg.evaluate(LOOK)
+    check('appearance: Paper: cream paper, no wash, solid bars, serif text, ink instead of the subject colour, the tab bar along the bottom',
+          got['look'] == 'paper' and got['bg'] == 'rgb(244, 240, 231)' and not got['wash'] and not got['blur'] and got['serif']
+          and got['accent'] == '#2E2B26' and got['barColour'] == '#F4F0E7' and got['tabbar'] == [0, 0, 0], got)
+    pg.mouse.click(200, 700)
+    check('appearance: a tap outside closes the menu', pg.locator('#appear').is_hidden())
+    # kept for every page, and set before the first paint: the home page, the picker, Physics, the page not found
+    for url, bg in [('/', 'rgb(244, 240, 231)'), ('/physics/', 'rgb(244, 240, 231)'), ('/physics/final/', 'rgb(244, 240, 231)')]:
+        pg.goto(BASE + url)
+        pg.wait_for_load_state('load')
+        got = pg.evaluate("""(() => ({ look: document.documentElement.dataset.look, early: window.__lookEarly, bg: getComputedStyle(document.body).backgroundColor,
+          wash: getComputedStyle(document.body, '::after').display !== 'none' && getComputedStyle(document.body, '::after').content !== 'none' }))()""")
+        check(f'appearance: {url} opens in Paper, set before the first paint', got['look'] == 'paper' and got['early'] is True and got['bg'] == bg and not got['wash'], got)
+    pg.goto(BASE + '/404.html')
+    check('appearance: the page-not-found page follows the theme too', pg.evaluate("[document.documentElement.dataset.look, getComputedStyle(document.body).backgroundColor]")
+          == ['paper', 'rgb(244, 240, 231)'])
+    pg.goto(BASE + '/physics/midterm/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    got = pg.evaluate(LOOK)
+    check('appearance: Physics in Paper is grey too: ink instead of its blue', got['look'] == 'paper' and got['accent'] == '#2E2B26' and got['bg'] == 'rgb(244, 240, 231)', got)
+    pg.emulate_media(color_scheme='dark')
+    got = pg.evaluate(LOOK)
+    check('appearance: Paper in dark mode: warm charcoal', got['bg'] == 'rgb(30, 29, 27)' and got['accent'] == '#E4DFD5', got)
+    pg.emulate_media(color_scheme='light')
+    # Classic: the look from before 14 Nov: a white page, the band with the title in the subject's colour over a rule,
+    # square cards with a coloured edge, the tab bar along the bottom in the subject's colour
+    pg.click('#theme-btn')
+    pg.click('#appear [data-set="look"][data-val="classic"]')
+    pg.keyboard.press('Escape')
+    got = pg.evaluate(LOOK)
+    old = pg.evaluate("""(() => { const cs = (s) => getComputedStyle(document.querySelector(s));
+      return [cs('#view-practice .band').borderBottomWidth, cs('#view-practice .band-title .en').color, cs('.prob').borderTopLeftRadius, cs('.prob').borderTopColor,
+        cs('.tabbar').backgroundColor]; })()""")
+    check('appearance: Classic: a white page, no wash, solid bars, the band over a 5 px rule in blue, square cards with a blue edge, the blue tab bar along the bottom',
+          got['look'] == 'classic' and got['bg'] == 'rgb(255, 255, 255)' and not got['wash'] and not got['blur'] and got['tabbar'] == [0, 0, 0]
+          and old == ['5px', 'rgb(31, 75, 143)', '4px', 'rgb(31, 75, 143)', 'rgb(31, 75, 143)'], (got, old))
+    pg.emulate_media(color_scheme='dark')
+    check('appearance: Classic in dark mode keeps its dark page', pg.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(12, 16, 24)')
+    pg.emulate_media(color_scheme='light')
+    check('appearance: no sideways scroll in Classic', overflow(pg) <= 0)
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news li')
+    check('appearance: the home page in Classic: white, the title in green over a green rule',
+          pg.evaluate("[getComputedStyle(document.body).backgroundColor, getComputedStyle(document.querySelector('.band')).borderBottomWidth]") == ['rgb(255, 255, 255)', '5px'])
+    # back to Glass: the attribute goes, and the page is as page.css draws it
+    pg.goto(BASE + '/math/derivatives/#practice')
+    pg.wait_for_selector('#prob-1-1')
+    pg.click('#theme-btn')
+    pg.click('#appear [data-set="look"][data-val="glass"]')
+    got = pg.evaluate(LOOK)
+    check('appearance: Glass again: the wash and the blurred bars are back', got['look'] == 'glass' and got['wash'] and got['blur'], got)
+    check('appearance: the choice is kept in the site-wide store', pg.evaluate("JSON.parse(localStorage.getItem('cla1-midterm-review')).look") == 'glass')
+    ctx.close()
+    # contrast: the small text colours read on each theme's page and panels (4.5 to 1 or better), light and dark
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    CONTRAST = """(() => { const c = document.createElement('canvas').getContext('2d');
+      const rgb = (v) => { c.fillStyle = '#000'; c.fillStyle = v; const h = c.fillStyle; if (h[0] === '#') return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+        return h.match(/[\\d.]+/g).slice(0, 3).map(Number); };
+      const lum = (a) => { const f = (x) => { x /= 255; return x <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4; }; return .2126 * f(a[0]) + .7152 * f(a[1]) + .0722 * f(a[2]); };
+      const ratio = (a, b) => { const x = lum(rgb(a)), y = lum(rgb(b)); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+      const t = getComputedStyle(document.documentElement), v = (n) => t.getPropertyValue(n).trim();
+      const backs = [v('--bg'), v('--surface')];
+      return Math.min(...['--ink', '--ink-soft', '--green-text', '--amber', '--warn'].flatMap((n) => backs.map((b) => ratio(v(n), b)))); })()"""
+    for subject in ['/math/integrals/', '/physics/midterm/']:
+        for look in ['paper', 'classic']:
+            for scheme in ['light', 'dark']:
+                pg.emulate_media(color_scheme=scheme)
+                pg.goto(BASE + subject)
+                pg.evaluate(f"localStorage.setItem('cla1-midterm-review', JSON.stringify({{ look: '{look}' }}))")
+                pg.reload()
+                pg.wait_for_selector('.calc-fab')
+                low = pg.evaluate(CONTRAST)
+                check(f'appearance: {look} {scheme} ({subject}): small text reads at 4.5 to 1 or better', low >= 4.5, round(low, 2))
     ctx.close()
 
     # ---- moving between pages: a link to another page of the site cross-fades to it (a view transition), and the

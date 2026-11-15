@@ -52,7 +52,7 @@
 .calc-panel {
   --ck: clamp(30px, calc((100vh - 206px) / 6), 50px);
   --c-num: #FFFFFF; --c-num-h: #F4F8F2; --c-fn: #EFF5EB; --c-fn-h: #E4EEDD; --c-press: #D7E6CE;
-  --c-eq: var(--bar); --c-eq-h: var(--green-text); --c-eq-press: var(--bar-active); --c-on-eq: #FFFFFF;
+  --c-eq: var(--bar); --c-eq-h: var(--green-text); --c-eq-press: var(--bar-active); --c-on-eq: var(--on-bar, #FFFFFF);
   position: fixed; left: 0; top: 0; z-index: 38; width: min(320px, calc(100vw - 16px));
   display: flex; flex-direction: column; overflow: hidden; background: rgba(var(--bar-rgb), .86); color: var(--ink);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);

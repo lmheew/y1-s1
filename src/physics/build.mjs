@@ -618,7 +618,7 @@ function foot(P) {
 
 // ---------- shared files: one stylesheet and one script for every Physics page, named with ?v=<hash> ----------
 const MATH_SRC = path.join(ROOT, 'src', 'math'), SHARED = path.join(ROOT, 'src', 'shared');
-const CSS_FILES = [path.join(MATH_SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css'), path.join(SRC, 'physics.css')];
+const CSS_FILES = [path.join(MATH_SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css'), path.join(SRC, 'physics.css'), path.join(SHARED, 'looks.css')];
 const JS_FILES = [path.join(MATH_SRC, 'page.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')];
 function writeAssets() {
   const fonts = [];
@@ -626,7 +626,7 @@ function writeAssets() {
   const kcss = katexCSS((name) => { fonts.push(name); return `../../math/assets/fonts/${name}.woff2`; });
   for (const f of fonts) if (!fs.existsSync(path.join(MATH_FONTS, f + '.woff2'))) fail(`math/assets/fonts/${f}.woff2 is missing: build Math first (node src/math/build.mjs site).`);
   const note = (from) => `/* Built by src/physics/build.mjs from ${from}. Don't edit it here: change the sources and build again. */\n`;
-  const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css, src/physics/physics.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
+  const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css, src/physics/physics.css, src/shared/looks.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
   const js = note('src/math/page.js, src/shared/totop.js and src/shared/calculator.js') + readAll(JS_FILES) + '\n';
   writeIfChanged(path.join(ASSETS, 'physics.css'), css);
   writeIfChanged(path.join(ASSETS, 'physics.js'), js);

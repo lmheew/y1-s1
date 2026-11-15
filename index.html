@@ -29,10 +29,16 @@
 <link rel="stylesheet" href="src/shared/totop.css">
 <script src="src/shared/totop.js" defer></script>
 <script>
-  // follow the theme picked on a subject page (light / dark / system)
+  // follow the mode (light / dark / system) and the theme (Glass, Classic, Paper) picked on a subject page, and give the
+  // browser's own bars the theme's colours (the same as THEME_EARLY in src/shared/build-lib.mjs)
   try {
-    const t = (JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {}).theme;
-    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    const o = JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {};
+    if (o.theme === 'light' || o.theme === 'dark') document.documentElement.setAttribute('data-theme', o.theme);
+    if (o.look === 'classic' || o.look === 'paper') {
+      document.documentElement.setAttribute('data-look', o.look);
+      const c = o.look === 'paper' ? ['#F4F0E7', '#1E1D1B'] : ['#FFFFFF', ''];
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => { const k = c[/dark/.test(m.media) ? 1 : 0]; if (k) m.content = k; });
+    }
   } catch (e) { /* storage unavailable */ }
 </script>
 <style>
@@ -50,6 +56,7 @@
     --glass-shine: inset 0 1px 0 rgba(255, 255, 255, .6); --glass-shadow: 0 1px 2px rgba(18, 40, 28, .05), 0 10px 26px -14px rgba(18, 40, 28, .3);
     --bar-rgb: 236, 243, 238; --chrome: rgba(var(--bar-rgb), .72); --blur: saturate(1.7) blur(20px);
     --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+    --on-bar: #FFFFFF;
     --totop-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); /* no tab bar here, so the back-to-top button sits lower */
     color-scheme: light;
   }
@@ -233,13 +240,114 @@
   .off-body p { font-size: 14px; color: var(--ink-soft); }
   .off-body p + p { margin-top: 8px; }
   .install { appearance: none; margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px;
-    background: var(--bar); color: #FFFFFF; font: 700 14px/1 var(--font); cursor: pointer; }
+    background: var(--bar); color: var(--on-bar); font: 700 14px/1 var(--font); cursor: pointer; }
   @media (hover: hover) { .install:hover { background: var(--bar-active); } }
   .off-body .ok { color: var(--green-text); font-weight: 700; }
 
   .site-foot .wrap { padding-block: 20px calc(80px + env(safe-area-inset-bottom, 0px)); text-align: center; } /* room for the back-to-top button */
   .fine { max-width: 56ch; margin-inline: auto; font-size: 12.5px; color: var(--ink-soft); }
   .fine + .fine { margin-top: 6px; }
+
+  /* ---------- Themes (picked in a subject page's appearance menu; src/shared/looks.css has the pages' side) ----------
+     Classic: the look from before 14 Nov 2026 (white page, a band with the title in green over a green rule, square
+     cards with a coloured edge). Paper: cream paper or warm charcoal, greys only, serif text, ink buttons. Both are
+     solid: no wash, no blur. The script at the top of the head sets data-look before the first paint. */
+  :root:is([data-look="classic"], [data-look="paper"]) { --glass-shine: 0 0 #0000; --chrome: rgb(var(--bar-rgb)); --blur: none; }
+  :root:is([data-look="classic"], [data-look="paper"]) body::after { display: none; }
+  :root:is([data-look="classic"], [data-look="paper"]) .next::before { display: none; }
+
+  :root[data-look="classic"] { --band: #1B261E; --glass: var(--surface); --glass-2: var(--surface); --glass-edge: rgba(255, 255, 255, .14); --glass-shadow: 0 0 #0000; }
+  /* light mode only: the white page, the pale green band and white bars (dark mode keeps its page colours) */
+  :root[data-look="classic"][data-theme="light"] { --bg: #FFFFFF; --band: #DEE6DD; --glass-edge: var(--line); --bar-rgb: 255, 255, 255; }
+  @media (prefers-color-scheme: light) { :root[data-look="classic"]:not([data-theme="dark"]) { --bg: #FFFFFF; --band: #DEE6DD; --glass-edge: var(--line); --bar-rgb: 255, 255, 255; } }
+  :root[data-look="classic"] .appbar { background: var(--surface); }
+  :root[data-look="classic"] .band { background: var(--band); border-bottom: 5px solid var(--green); }
+  :root[data-look="classic"] .band .wrap { padding-block: 16px 14px; }
+  :root[data-look="classic"] .band-title .en { font-size: clamp(30px, 8vw, 40px); letter-spacing: .04em; color: var(--green); }
+  :root[data-look="classic"] .band-title .jp { position: relative; padding-left: 22px; font-weight: 700; color: var(--ink); }
+  :root[data-look="classic"] .band-title .jp::before { content: ""; position: absolute; left: 6px; top: 50%; width: 2px; height: 26px; background: var(--ink); transform: translateY(-58%) rotate(24deg); }
+  :root[data-look="classic"] main { padding-top: 22px; }
+  :root[data-look="classic"] .sec-title { padding-bottom: 8px; border-bottom: 2px solid var(--green); font-size: 19px; }
+  :root[data-look="classic"] :is(.resume, .subject, .tl, .news, .offline) { border: 1.5px solid var(--line); border-radius: 4px; background: var(--surface); box-shadow: none; }
+  :root[data-look="classic"] .subject { border-color: var(--c-text); }
+  :root[data-look="classic"] .resume, :root[data-look="classic"] .offline { border-style: dashed; border-color: var(--green); }
+  :root[data-look="classic"] .more { border: 1.5px solid var(--line); background: var(--surface); box-shadow: none; }
+  :root[data-look="classic"] .s-kicker, :root[data-look="classic"] .nx-kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  :root[data-look="classic"] .s-icon { box-shadow: none; }
+  :root[data-look="classic"] .s-go { border-color: var(--c-text); background: var(--surface); }
+  /* the next exam: a white card with the subject's coloured edge, as "Next up" was */
+  :root[data-look="classic"] .next { border: 2px solid var(--h2); border-radius: 6px; background: var(--surface); color: var(--ink); box-shadow: none; }
+  :root[data-look="classic"] .next { --h1: var(--green); --h2: var(--green); --h-ink: var(--green-text); }
+  :root[data-look="classic"] .next.physics { --h1: var(--blue); --h2: var(--blue); --h-ink: var(--blue-text); }
+  :root[data-look="classic"] :is(.nx-kicker, .nx-left) { color: var(--h-ink); }
+  :root[data-look="classic"] :is(.nx-when, .prog) { color: var(--ink-soft); }
+  :root[data-look="classic"] .prog b { color: var(--ink); }
+  :root[data-look="classic"] .prog-bar { background: var(--line); }
+  :root[data-look="classic"] .prog-bar i { background: var(--h1); }
+  :root[data-look="classic"] .prog-bar i.rev { background: var(--amber); }
+  :root[data-look="classic"] .nx-left { border-color: var(--h1); background: none; }
+  :root[data-look="classic"] .next.soon .nx-left { border-color: transparent; background: var(--amber-tint); color: var(--amber); }
+  :root[data-look="classic"] .nx-top > svg { box-shadow: none; }
+  :root[data-look="classic"] .nx-btns .go { background: var(--h1); color: #FFFFFF; }
+  :root[data-look="classic"] .nx-btns .alt { border: 1.5px solid var(--h1); background: var(--surface); color: var(--h-ink); }
+  :root[data-look="classic"][data-theme="dark"] .nx-btns .go { color: #0E1310; }
+  @media (prefers-color-scheme: dark) { :root[data-look="classic"]:not([data-theme="light"]) .nx-btns .go { color: #0E1310; } }
+
+  :root[data-look="paper"] {
+    --bg: #F4F0E7; --surface: #FBF9F4; --green: #2E2B26; --green-text: #4F4A42; --green-line: rgba(46, 43, 38, .3); --lime: #C9C1B2; --lime-deep: #857D70; --bar: #2E2B26; --bar-active: #191714;
+    --ink: #23211D; --ink-soft: #625D54; --line: rgba(46, 43, 38, .13); --tint: rgba(46, 43, 38, .055); --amber: #5E584F; --amber-tint: rgba(46, 43, 38, .1); --charcoal: #4A463F;
+    --blue: #2E2B26; --blue-text: #4F4A42; --blue-tint: rgba(46, 43, 38, .055);
+    --glass: #FBF9F4; --glass-2: #FFFDF9; --glass-edge: #E2DCD0; --glass-shadow: 0 1px 2px rgba(60, 48, 28, .04);
+    --bar-rgb: 244, 240, 231; --on-bar: #FBF9F4;
+    --font: ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Noto Serif CJK JP", serif;
+    --ui-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    color-scheme: light;
+  }
+  :root[data-look="paper"][data-theme="dark"] {
+    --bg: #1E1D1B; --surface: #282724; --green: #E4DFD5; --green-text: #CCC6BA; --green-line: rgba(236, 232, 224, .3); --lime: #B9B2A5; --lime-deep: #A29B8E; --bar: #E4DFD5; --bar-active: #F3EFE8;
+    --ink: #ECE8DF; --ink-soft: #A8A297; --line: rgba(255, 248, 235, .1); --tint: rgba(236, 232, 224, .06); --amber: #BFB7A9; --amber-tint: rgba(236, 232, 224, .09); --charcoal: #3A3935;
+    --blue: #E4DFD5; --blue-text: #CCC6BA; --blue-tint: rgba(236, 232, 224, .06);
+    --glass: #262522; --glass-2: #2E2D2A; --glass-edge: rgba(255, 248, 235, .08); --glass-shadow: 0 0 #0000;
+    --bar-rgb: 30, 29, 27; --on-bar: #1E1D1B;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-look="paper"]:not([data-theme="light"]) {
+      --bg: #1E1D1B; --surface: #282724; --green: #E4DFD5; --green-text: #CCC6BA; --green-line: rgba(236, 232, 224, .3); --lime: #B9B2A5; --lime-deep: #A29B8E; --bar: #E4DFD5; --bar-active: #F3EFE8;
+      --ink: #ECE8DF; --ink-soft: #A8A297; --line: rgba(255, 248, 235, .1); --tint: rgba(236, 232, 224, .06); --amber: #BFB7A9; --amber-tint: rgba(236, 232, 224, .09); --charcoal: #3A3935;
+      --blue: #E4DFD5; --blue-text: #CCC6BA; --blue-tint: rgba(236, 232, 224, .06);
+      --glass: #262522; --glass-2: #2E2D2A; --glass-edge: rgba(255, 248, 235, .08); --glass-shadow: 0 0 #0000;
+      --bar-rgb: 30, 29, 27; --on-bar: #1E1D1B;
+      color-scheme: dark;
+    }
+  }
+  :root[data-look="paper"] body { font-size: 16.5px; }
+  :root[data-look="paper"] :is(.brand-text small, .nx-kicker, .nx-left, .nx-when, .prog, .nx-btns a, .s-kicker, .tl-date small, .tl-sub, .tl-prog, .tl-left,
+    .n-date, .new-pill, .more, .install, .rs-main small, .up-when, .off-body .ok, .n-open) { font-family: var(--ui-font); }
+  :root[data-look="paper"] .band-title .en { font-weight: 500; letter-spacing: -.015em; }
+  :root[data-look="paper"] :is(.sec-title, .nx-title, .s-title, .brand-text b) { font-weight: 600; }
+  :root[data-look="paper"] :is(.resume, .subject, .tl, .news, .offline) { border-radius: 14px; }
+  :root[data-look="paper"] .more { border-radius: 12px; }
+  :root[data-look="paper"] .subject { --c-glow: rgba(40, 30, 10, .2); }
+  /* the badges in ink (their colours are written in the SVG) */
+  :root[data-look="paper"] :is(.s-icon, .nx-top) svg rect { fill: var(--bar); }
+  :root[data-look="paper"] :is(.s-icon, .nx-top) svg [stroke="#FFFFFF"] { stroke: var(--on-bar); }
+  :root[data-look="paper"] :is(.s-icon, .nx-top) svg :is([stroke="#9CC34C"], [stroke="#8FB4EC"]) { stroke: var(--lime); }
+  :root[data-look="paper"] :is(.s-icon, .nx-top) svg :is([fill="#9CC34C"], [fill="#8FB4EC"]) { fill: var(--lime); }
+  :root[data-look="paper"] .next .nx-top svg rect { fill: #FBF9F4; }
+  :root[data-look="paper"] .next .nx-top svg [stroke="#FFFFFF"] { stroke: #2E2B26; }
+  :root[data-look="paper"] .s-go { color: var(--ink); }
+  :root[data-look="paper"] .new-pill { padding: 1px 8px; border: 1px solid var(--green-line); background: transparent; color: var(--ink); font-weight: 600; }
+  /* the next exam: a card of ink (warm charcoal, a step lighter than the page, in dark mode) */
+  :root[data-look="paper"] .next { --h1: #2E2B26; --h2: #2E2B26; --h3: #2E2B26; --h-ink: #2E2B26; --h-glow: rgba(40, 30, 10, .3); border-color: transparent; border-radius: 16px; }
+  :root[data-look="paper"] .next.soon .nx-left { background: #ECE7DC; color: #2E2B26; }
+  :root[data-look="paper"] .nx-btns .go { background: #FBF9F4; }
+  :root[data-look="paper"][data-theme="dark"] .next { --h1: #34332F; --h2: #34332F; --h3: #34332F; --h-ink: #1E1D1B; --h-glow: rgba(0, 0, 0, .5); border-color: rgba(255, 248, 235, .08); }
+  :root[data-look="paper"][data-theme="dark"] .nx-btns .go { background: #ECE8DF; }
+  @media (prefers-color-scheme: dark) {
+    :root[data-look="paper"]:not([data-theme="light"]) .next { --h1: #34332F; --h2: #34332F; --h3: #34332F; --h-ink: #1E1D1B; --h-glow: rgba(0, 0, 0, .5); border-color: rgba(255, 248, 235, .08); }
+    :root[data-look="paper"]:not([data-theme="light"]) .nx-btns .go { background: #ECE8DF; }
+  }
 
   /* Moving between pages (see page.css; the rule that switches it on is at the top of the head): a tap on a link
      cross-fades to its page, and the subject's badge glides from its card here to the page's app bar and back. After

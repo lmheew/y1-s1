@@ -16,10 +16,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
 <script>
-  // follow the theme picked on a subject page (light / dark / system)
+  // follow the mode (light / dark / system) and the theme (Glass, Classic, Paper) picked on a subject page, as the home page does
   try {
-    const t = (JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {}).theme;
-    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    const o = JSON.parse(localStorage.getItem('cla1-midterm-review') || 'null') || {};
+    if (o.theme === 'light' || o.theme === 'dark') document.documentElement.setAttribute('data-theme', o.theme);
+    if (o.look === 'classic' || o.look === 'paper') {
+      document.documentElement.setAttribute('data-look', o.look);
+      const c = o.look === 'paper' ? ['#F4F0E7', '#1E1D1B'] : ['#FFFFFF', ''];
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => { const k = c[/dark/.test(m.media) ? 1 : 0]; if (k) m.content = k; });
+    }
   } catch (e) { /* storage unavailable */ }
 </script>
 <style>
@@ -84,12 +89,45 @@
   .ways { display: flex; flex-wrap: wrap; gap: 10px; }
   .go { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1; text-decoration: none; }
   .go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .go.main { background: var(--bar); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 6px 14px -8px var(--bar); }
+  .go.main { background: var(--bar); color: var(--on-bar, #FFFFFF); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 6px 14px -8px var(--bar); }
   .go.main:hover { background: var(--bar-active); }
   .go.alt { border: 1px solid var(--green-line); background: var(--glass-2); color: var(--green-text); }
   .go.alt.phys { border-color: var(--blue-line); color: var(--blue-text); }
   .go.alt:hover { background: var(--bg); }
   .fine { font-size: 12.5px; color: var(--ink-soft); }
+  /* the themes, as on the home page: Classic (white, the title in green over a green rule) and Paper (greys, serif) */
+  :root:is([data-look="classic"], [data-look="paper"]) { --chrome: rgb(var(--bar-rgb)); --blur: none; }
+  :root:is([data-look="classic"], [data-look="paper"]) body::after { display: none; }
+  :root[data-look="classic"] { --glass-2: #151C17; }
+  :root[data-look="classic"][data-theme="light"] { --bg: #FFFFFF; --glass-2: #FFFFFF; --bar-rgb: 255, 255, 255; }
+  @media (prefers-color-scheme: light) { :root[data-look="classic"]:not([data-theme="dark"]) { --bg: #FFFFFF; --glass-2: #FFFFFF; --bar-rgb: 255, 255, 255; } }
+  :root[data-look="classic"] .band { background: #1B261E; border-bottom: 5px solid var(--green); }
+  :root[data-look="classic"][data-theme="light"] .band { background: #DEE6DD; }
+  @media (prefers-color-scheme: light) { :root[data-look="classic"]:not([data-theme="dark"]) .band { background: #DEE6DD; } }
+  :root[data-look="classic"] .band .wrap { padding-block: 16px 14px; }
+  :root[data-look="classic"] .band-title .en { letter-spacing: .04em; color: var(--green); }
+  :root[data-look="classic"] main { padding-top: 22px; }
+  :root[data-look="paper"] {
+    --bg: #F4F0E7; --green: #2E2B26; --green-text: #4F4A42; --green-line: rgba(46, 43, 38, .3); --lime-deep: #857D70; --bar: #2E2B26; --bar-active: #191714; --on-bar: #FBF9F4;
+    --ink: #23211D; --ink-soft: #625D54; --line: rgba(46, 43, 38, .13); --blue-text: #4F4A42; --blue-line: rgba(46, 43, 38, .3); --glass-2: #FFFDF9; --bar-rgb: 244, 240, 231;
+    --font: ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", serif;
+    color-scheme: light;
+  }
+  :root[data-look="paper"][data-theme="dark"] {
+    --bg: #1E1D1B; --green: #E4DFD5; --green-text: #CCC6BA; --green-line: rgba(236, 232, 224, .3); --lime-deep: #A29B8E; --bar: #E4DFD5; --bar-active: #F3EFE8; --on-bar: #1E1D1B;
+    --ink: #ECE8DF; --ink-soft: #A8A297; --line: rgba(255, 248, 235, .1); --blue-text: #CCC6BA; --blue-line: rgba(236, 232, 224, .3); --glass-2: #2E2D2A; --bar-rgb: 30, 29, 27;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-look="paper"]:not([data-theme="light"]) {
+      --bg: #1E1D1B; --green: #E4DFD5; --green-text: #CCC6BA; --green-line: rgba(236, 232, 224, .3); --lime-deep: #A29B8E; --bar: #E4DFD5; --bar-active: #F3EFE8; --on-bar: #1E1D1B;
+      --ink: #ECE8DF; --ink-soft: #A8A297; --line: rgba(255, 248, 235, .1); --blue-text: #CCC6BA; --blue-line: rgba(236, 232, 224, .3); --glass-2: #2E2D2A; --bar-rgb: 30, 29, 27;
+      color-scheme: dark;
+    }
+  }
+  :root[data-look="paper"] .band-title .en { font-weight: 500; letter-spacing: -.015em; }
+  :root[data-look="paper"] :is(.go, .code, .brand-text small) { font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  :root[data-look="paper"] .go.main { box-shadow: none; }
 </style>
 </head>
 <body>

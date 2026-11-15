@@ -27,7 +27,7 @@ The repository root is the website (GitHub Pages, branch `main`, folder `/`).
 - `src/check_site.py` and `src/check_features.py`: browser checks of the built site.
 - `src/vendor/katex/`: KaTeX 0.16.11, used at build time to typeset the math.
 
-How to update the site (a new class, a new quiz, building and checking) is described in [CLAUDE.md](CLAUDE.md), with the look of the pages (frosted glass over a wash of colour) and how moving between pages cross-fades.
+How to update the site (a new class, a new quiz, building and checking) is described in [CLAUDE.md](CLAUDE.md), with the look of the pages (frosted glass over a wash of colour, or the Classic and Paper themes picked from the light/dark button) and how moving between pages cross-fades.
 
 ## Notes
 

@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-15",
+      "subject": "all",
+      "title": "Three looks to choose from: Glass, Classic and Paper",
+      "text": "The light/dark button on a subject page now opens a small menu: Auto, Light or Dark, and the look of the whole site. Glass is the look from 14 Nov, Classic the one from before it, and Paper is new: cream paper (warm charcoal in dark mode), greys only and serif text, calm and plain. The choice is kept on the device, for every page. Pages also show sooner after an update, and the home page no longer jumps while it loads.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-14",
       "subject": "physics",
       "title": "Physics final: Chapters 15–20, ready ahead of class",
