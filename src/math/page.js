@@ -66,8 +66,9 @@
   const themeBtn = $('#theme-btn');
   const MODE_NAME = { system: 'Auto', light: 'Light', dark: 'Dark' };
   const LOOK_NAME = { glass: 'Glass', classic: 'Classic', paper: 'Paper' };
-  // the browser's own bars (theme-color) follow the theme: Glass keeps the page's own colours
-  const barMetas = $$('meta[name="theme-color"]').map((m) => ({ m, glass: m.content, dark: /dark/.test(m.media || '') }));
+  // the browser's own bars (theme-color) follow the theme: Glass keeps the page's own colours (the script in the head
+  // keeps them in data-glass when it has already put another theme's colour there)
+  const barMetas = $$('meta[name="theme-color"]').map((m) => ({ m, glass: m.getAttribute('data-glass') || m.content, dark: /dark/.test(m.media || '') }));
   const BAR_LOOK = { classic: ['#FFFFFF', null], paper: ['#F4F0E7', '#1E1D1B'] };
   function applyTheme() {
     if (st.theme === 'system') {
@@ -81,6 +82,10 @@
     themeBtn.title = label;
     if (menu) $$('[data-set]', menu).forEach((b) => b.setAttribute('aria-checked', String(st[b.dataset.set] === b.dataset.val)));
   }
+  // iPhones and iPads fill the status bar (and Safari the strip under its address bar) with the colour of .sb-edge and
+  // .sb-foot, but look at them again only now and then (a theme switch left Paper's cream above Classic's white bar):
+  // fresh copies of the two make them look again
+  const freshEdges = () => $$('.sb-edge, .sb-foot').forEach((e) => e.replaceWith(e.cloneNode()));
   let menu = null;
   function buildMenu() {
     const opt = (set, val, inner) => `<button type="button" class="ap-opt" role="radio" data-set="${set}" data-val="${val}" aria-checked="false">${inner}</button>`;
@@ -101,7 +106,7 @@
       const b = e.target.closest('[data-set]');
       if (!b) return;
       st[b.dataset.set] = b.dataset.val;
-      save(); saveTheme(); applyTheme();
+      save(); saveTheme(); applyTheme(); freshEdges();
     });
     // a radio group: the arrow keys move along it and pick, as with the browser's own radio buttons
     menu.addEventListener('keydown', (e) => {

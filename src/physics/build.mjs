@@ -734,7 +734,7 @@ const PRELOAD = ['KaTeX_Main-Regular', 'KaTeX_Math-Italic'];
 function writePage(P, a, r, lockedSrc) {
   if (!PRELOAD.every((f) => a.fonts.includes(f))) fail('a preloaded KaTeX font is not among the fonts');
   const html = `<!doctype html>
-<html lang="en">
+<html lang="en" data-subject="physics">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -785,7 +785,7 @@ function pickerHTML(a, pages) {
       : `<div class="exam soon" id="exam-${x.id}">${inner}</div>`;
   }).join('\n    ');
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-subject="physics">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

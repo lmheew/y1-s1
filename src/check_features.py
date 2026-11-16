@@ -939,6 +939,41 @@ with sync_playwright() as p:
                 low = pg.evaluate(CONTRAST)
                 check(f'appearance: {look} {scheme} ({subject}): small text reads at 4.5 to 1 or better', low >= 4.5, round(low, 2))
     ctx.close()
+    # on a wide screen (an iPad held sideways): the side menu shows in every theme (a restored Classic rule once hid
+    # it), Classic keeps the old sizes there (the practice cards' wide padding, the app bar's edge), and the browser's
+    # bar colours follow a switch made on a page that opened in another theme
+    ctx = b.new_context(viewport={'width': 1180, 'height': 820})
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    for look in ['glass', 'classic', 'paper']:
+        for subject in ['/math/integrals/', '/physics/midterm/']:
+            pg.goto(BASE + subject)
+            pg.evaluate(f"localStorage.setItem('cla1-midterm-review', JSON.stringify({{ theme: 'light', look: '{look}' }}))")
+            pg.goto(BASE + subject + '#practice')
+            pg.reload()                                     # a new hash alone doesn't load the page again
+            pg.wait_for_selector('#view-practice .prob')
+            got = pg.evaluate("""(() => { const t = document.querySelector('#view-practice .toc'), p = getComputedStyle(document.querySelector('#view-practice .prob'));
+              return [getComputedStyle(t).display, Math.round(t.getBoundingClientRect().width), t.querySelectorAll('a').length > 0, p.paddingLeft,
+                getComputedStyle(document.querySelector('.appbar')).borderBottomWidth]; })()""")
+            check(f'themes, wide screen: {look} ({subject}): the side menu shows, and the practice cards have their wide padding',
+                  pg.evaluate("document.documentElement.dataset.look || 'glass'") == look
+                  and got[:4] == ['block', 236, True, '20px'] and (look != 'classic' or got[4] == '1px'), got)
+    pg.goto(BASE + '/math/integrals/')
+    pg.evaluate("localStorage.setItem('cla1-midterm-review', JSON.stringify({ theme: 'light', look: 'paper' }))")
+    pg.reload()
+    pg.wait_for_selector('.calc-fab')
+    metas = lambda: pg.evaluate("[...document.querySelectorAll('meta[name=\"theme-color\"]')].map((m) => m.content)")
+    check('themes: a page that opened in Paper gives the browser Paper\'s bar colours', metas() == ['#F4F0E7', '#1E1D1B'], metas())
+    pg.click('#theme-btn')
+    pg.click('#appear [data-set="look"][data-val="glass"]')
+    check('themes: switched to Glass there, the browser gets the page\'s own bar colours back', metas() == ['#ECF3EE', '#101713'], metas())
+    pg.click('#appear [data-set="look"][data-val="classic"]')
+    check('themes: and in Classic, white bars in light mode and the page\'s own in dark', metas() == ['#FFFFFF', '#101713'], metas())
+    edges = pg.evaluate("""(() => { const e = document.querySelectorAll('.sb-edge'), f = document.querySelectorAll('.sb-foot');
+      return [e.length, f.length, document.body.firstElementChild === e[0], f[0].nextElementSibling.classList.contains('tabbar'),
+        getComputedStyle(e[0]).backgroundColor]; })()""")
+    check('themes: after a switch the status-bar strips are fresh copies, in place, in the theme\'s colour', edges == [1, 1, True, True, 'rgb(255, 255, 255)'], edges)
+    ctx.close()
 
     # ---- moving between pages: a link to another page of the site cross-fades to it (a view transition), and the
     # subject's badge glides between its places on the two pages; each name is on a page once, or the browser skips the
