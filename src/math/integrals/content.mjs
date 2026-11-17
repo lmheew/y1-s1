@@ -2,7 +2,8 @@
 // schedule (integral part): one unit per lesson pair, in schedule order. The schedule slide gives dates, not day
 // numbers, so every unit carries `dates` ("2 & 3 Nov"); a lesson gets `days` and `quiz` once a quiz sheet shows them
 // (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15;
-// Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19; Quiz 08 is "Day20 & Day21", 12 & 13 Nov). The 9 Nov
+// Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19; Quiz 08 is "Day20 & Day21", 12 & 13 Nov; Quiz 09
+// follows as "Day22 & Day23", 16 & 17 Nov). The 9 Nov
 // class finished the primitive-functions lesson (inverse trigonometric functions) before substitution, so that part
 // sits in u2.
 // A lesson still to come has `upcoming: true` and shows as a greyed-out Summary tile; `starred` marks the lessons with
@@ -16,6 +17,7 @@ const NOV6 = '2026-11-06';
 const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
+const NOV17 = '2026-11-17';
 
 export const units = [
   {
@@ -231,7 +233,64 @@ $$\begin{gathered}I_6=\frac{5\cdot3\cdot1}{6\cdot4\cdot2}\cdot\frac{\pi}{2}=\fra
 - **Spot the perfect square in a length:** if $f'=A-B$ with $AB=\frac{1}{4}$, then $1+f'^2=A^2+2AB+B^2=(A+B)^2$, so the root is $A+B$ (when it is positive). For example $f'=x-\frac{1}{4x}$ gives $\sqrt{1+f'^2}=x+\frac{1}{4x}$.
 - **Check an average:** it must lie between the smallest and the largest value of $f$ on the interval, and $\bar x$ must lie in $[a,b]$. $\frac{2}{\pi}\approx0.64$ for $\sin x$ on $[0,\pi]$ passes.`,
   },
-  { id: 'u5', dates: '16 & 17 Nov', title: 'Parametric and polar curves', starred: true, upcoming: true },
+  {
+    id: 'u5', quiz: 'Quiz 09', days: 'Day 22 & 23', dates: '16 & 17 Nov', starred: true, added: NOV17,
+    title: 'Parametric and polar curves',
+    ideas: R`
+- **Parametrization:** a representation of a variable with another variable. A curve is written as $x=x(t)$, $y=y(t)$, and as $t$ runs over its range, the point $(x(t),y(t))$ traces the curve. The class example: $y=\sqrt x$ on $1\le x\le4$, with $x=t^2$ $(1\le t\le2)$, gives $y=\sqrt{t^2}=t$, so
+$$\begin{cases}x=t^2\\y=t\end{cases}\qquad(1\le t\le2)$$
+is the equivalent curve. One curve has many parametrizations ($x=t$, $y=\sqrt t$ draws the same one), and eliminating $t$ gives the equation back: $x=\cos t$, $y=\sin t$ is the circle $x^2+y^2=1$.
+- **Polar coordinates:** a point is given by its distance $r$ from the origin and the angle $\theta$ from the positive $x$-axis, instead of the Cartesian $(x,y)$:
+$$\begin{gathered}x=r\cos\theta,\quad y=r\sin\theta\\[2pt]r=\sqrt{x^2+y^2},\quad\tan\theta=\frac{y}{x}\end{gathered}$$
+A curve $r=r(\theta)$ is the parametric curve $x=r(\theta)\cos\theta$, $y=r(\theta)\sin\theta$, with $\theta$ as the parameter. For example $(1,1)$ is $r=\sqrt2$, $\theta=\frac{\pi}{4}$, and $r=2$ is the circle $x^2+y^2=4$.
+- **The class example: an arc with $x=\cos\theta$.** The arc $y=g(x)=\sqrt{1-x^2}$, $-\frac{1}{\sqrt2}\le x\le\frac{1}{\sqrt2}$, becomes $x=\cos\theta$, $y=\sin\theta$. Then $\frac{dx}{d\theta}=-\sin\theta$ and $g'(x)=-\frac{\cos\theta}{\sin\theta}$, and the integrand of the length is transformed to a constant (with $y=\sin\theta>0$):
+$$\begin{aligned}&\sqrt{1+g'(x(\theta))^2}\cdot\frac{dx}{d\theta}\\[4pt]&=\sqrt{1+\frac{\cos^2\theta}{\sin^2\theta}}\cdot(-\sin\theta)\\[4pt]&=-\frac{\sqrt{\sin^2\theta+\cos^2\theta}}{\sin\theta}\cdot\sin\theta=-1\end{aligned}$$
+- **The conversion of the region of integral:** put each end into $x=\cos\theta$. $x=-\frac{1}{\sqrt2}$ gives $\theta=\frac{3\pi}{4}$ and $x=\frac{1}{\sqrt2}$ gives $\theta=\frac{\pi}{4}$ (with $0\le\theta\le\pi$ on the upper half). The order follows $x$, so the limits come out reversed, and the minus sign turns them back:
+$$\ell=\int_{3\pi/4}^{\pi/4}(-1)\,d\theta=\int_{\pi/4}^{3\pi/4}1\,d\theta=\frac{\pi}{2}$$
+an arc of angle $\frac{\pi}{2}$ on a circle of radius $1$.
+- **Length of a parametric curve:** in general, with $x=x(\theta)$ and $y=y(\theta)$, the slope is $\frac{dy}{dx}=\frac{dy/d\theta}{dx/d\theta}$ (Day 5 & 6) and $dx=\frac{dx}{d\theta}\,d\theta$, so
+$$\begin{aligned}\ell&=\int_a^b\sqrt{1+\frac{(dy/d\theta)^2}{(dx/d\theta)^2}}\cdot\frac{dx}{d\theta}\,d\theta\\[4pt]&=\int_a^b\sqrt{\left(\frac{dx}{d\theta}\right)^2+\left(\frac{dy}{d\theta}\right)^2}\,d\theta\end{aligned}$$
+The latter has nothing to divide by, so it can be applied even if $\frac{dx}{d\theta}=0$: at a vertical tangent, around a whole circle, or on a curve that is not a function $y=g(x)$. With $a<b$ it is always positive. For the arc above, $\sin^2\theta+\cos^2\theta=1$ gives $\ell=\int_{\pi/4}^{3\pi/4}d\theta=\frac{\pi}{2}$ at once.
+- **A general curve in $(r,\theta)$:** with $x=r\cos\theta$ and $y=r\sin\theta$, the sum of squares of the derivatives is
+$$\left(\frac{dx}{d\theta}\right)^2+\left(\frac{dy}{d\theta}\right)^2=r^2+\left(\frac{dr}{d\theta}\right)^2$$
+because the terms $\pm2rr'\sin\theta\cos\theta$ cancel and $\sin^2\theta+\cos^2\theta=1$. So
+$$\ell=\int_a^b\sqrt{r^2+\left(\frac{dr}{d\theta}\right)^2}\,d\theta$$
+A circle $r=a$ has $\frac{dr}{d\theta}=0$ and gives $\int_0^{2\pi}a\,d\theta=2\pi a$.
+- **The length element is always positive.** For the cardioid $r=1+\cos\theta$, $r^2+r'^2=2+2\cos\theta=4\cos^2\frac{\theta}{2}$, so $\ell=2\int\sqrt{\cos^2\frac{\theta}{2}}\,d\theta$, and $\sqrt{\cos^2\frac{\theta}{2}}=\left|\cos\frac{\theta}{2}\right|$, not $\cos\frac{\theta}{2}$. On $0\le\theta\le2\pi$, $\cos\frac{\theta}{2}$ changes sign at $\pi$:
+$$\begin{aligned}\ell&=2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta-2\int_{\pi}^{2\pi}\cos\frac{\theta}{2}\,d\theta\\[4pt]&=4+4=8\end{aligned}$$
+Without the absolute value the "length" would come out as $0$.
+- **The 16 Nov exercises:** the length of $y=\frac{1}{2}x^2$ $(0\le x\le1)$, using the relation
+$$\int\frac{dx}{\sqrt{x^2+a^2}}=\ln\left|x+\sqrt{x^2+a^2}\right|+C$$
+and integration by parts for $\sqrt{x^2+1}=1\cdot\sqrt{x^2+1}$: the integral comes back, as with $\cos^nx$, and $\ell=\frac{\sqrt2}{2}+\frac{1}{2}\ln\left(1+\sqrt2\right)$. For $r=2\theta$ $(0\le\theta\le1)$, $\sqrt{4\theta^2+4}=2\sqrt{\theta^2+1}$ leads to the same integral, and $\ell=\sqrt2+\ln\left(1+\sqrt2\right)$. Practice works both out step by step.
+- **The conversion of summation:** with $x=x(t)$, each strip's width is $\Delta x=\frac{\Delta x}{\Delta t}\,\Delta t$:
+$$\begin{aligned}&\sum_{k=1}^{N}f(x_k)\,\Delta x\\[2pt]&\to\sum_{k=1}^{N}f(x(t_k))\cdot\frac{\Delta x}{\Delta t}\cdot\Delta t\end{aligned}$$
+The additional factor $\frac{\Delta x}{\Delta t}$ tends to $\frac{dx}{dt}$, so in general the transformation leads to
+$$\begin{aligned}&\int f(x)\,dx=F(x)\\[2pt]&\to\int f(x(t))\cdot\frac{dx}{dt}\,dt=G(t)\end{aligned}$$
+the substitution rule again. For the class curve $x=3t^2$, $y=3t-t^3$, the factor is $\frac{dx}{dt}=6t$.
+- **Area with a parameter:** the area between a curve and the $x$-axis is $\int y\,dx$, so
+$$A=\int_{t_a}^{t_b}y(t)\,\frac{dx}{dt}\,dt$$
+Convert the region of integral first. The class curve meets the $x$-axis where $y=t(3-t^2)=0$, at $t=0$ and $t=\sqrt3$ ($x=0$ and $x=9$). Exercise (3): $A=\int_0^{\sqrt3}(3t-t^3)\cdot6t\,dt=\frac{36\sqrt3}{5}$.
+- **Length with a parameter:** for the same curve,
+$$\begin{aligned}\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2&=36t^2+9(1-t^2)^2\\[2pt]&=9(1+t^2)^2\end{aligned}$$
+a perfect square, so the root is $3(1+t^2)$. Exercise (4), the length within $0\le x\le12$: $x=3t^2=12$ gives $t=2$, and $\ell=\int_0^2 3(1+t^2)\,dt=14$.`,
+    watch: R`
+- $\frac{dr}{d\theta}=0$ only when $r$ is a constant. For $r=2\theta$, $\frac{dr}{d\theta}=2$.
+- Square the first derivatives: $\left(\frac{dx}{dt}\right)^2$ is the square of $\frac{dx}{dt}$, not $\frac{d^2x}{dt^2}$.
+- $\sqrt{a^2}=|a|$: split the integral where the inside changes sign. $2\int_0^{2\pi}\cos\frac{\theta}{2}\,d\theta=0$ can't be the length of the cardioid.
+- Convert the region of integral with the variable: put each end of $x$ into $x=x(t)$ and solve for $t$. With $x=\cos\theta$ the limits come out reversed, and the minus sign of $\frac{dx}{d\theta}$ turns them back.
+- In an area, $dx$ becomes $\frac{dx}{dt}\,dt$: don't drop the factor. With $x=\ln t$ the factor is $\frac{1}{t}$, and $x\ge0$ means $t\ge1$.
+- "Meets the $x$-axis" means $y=0$, not $x=0$.
+- In Exercise (1), the first part of integration by parts, $\Big[x\sqrt{1+x^2}\Big]_0^1=\sqrt2$, is a number, not an integral, and what is left is $\int\frac{x\cdot x}{\sqrt{1+x^2}}\,dx$, with both factors of $x$.
+- The relation from class has a root in the denominator: $\int\frac{dx}{\sqrt{x^2+a^2}}$ is a logarithm, but $\int\frac{dx}{x^2+a^2}=\frac{1}{a}\arctan\frac{x}{a}+C$.`,
+    tricksAdded: NOV17,
+    tricks: R`
+- **A ready-made primitive:** the by-parts steps of Exercise (1) work for any $a>0$ and give
+$$\begin{aligned}&\int\sqrt{x^2+a^2}\,dx=\frac{1}{2}x\sqrt{x^2+a^2}\\[2pt]&\quad+\frac{a^2}{2}\ln\left|x+\sqrt{x^2+a^2}\right|+C\end{aligned}$$
+Use it to check an answer; on a quiz, still show the by-parts steps.
+- **Spot the perfect square:** $(A-B)^2+4AB=(A+B)^2$, and the sum of squares of a length is often built that way. The class curve has $9(1-t^2)^2+36t^2=9(1+t^2)^2$, with $A=t^2$ and $B=1$ inside.
+- **Halve a symmetric curve:** the cardioid $r=1+\cos\theta$ is symmetric about the $x$-axis, so its length is twice the top half, $2\cdot2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta=8$, with no absolute value to split.
+- **Speed:** with $t$ as time, $\sqrt{x'(t)^2+y'(t)^2}$ is the speed of the moving point, so the length is the distance travelled, as in physics.`,
+  },
   { id: 'u6', dates: '19 & 20 Nov', title: 'Improper integrals and orthogonal functions', starred: true, upcoming: true },
 ];
 
@@ -246,6 +305,7 @@ export const habits = R`
 - After a substitution, write the new limits at once, on the line with $du$.
 - For a volume, write $V=\pi\int_a^b f(x)^2\,dx$ first, then expand $f(x)^2$ completely before you integrate.
 - For a length, simplify $1+f'(x)^2$ (look for a perfect square) before you take the root.
+- For a parametric or polar length, write the two derivatives first, square and add them, then look for a perfect square, $\sin^2+\cos^2=1$ or a half-angle formula.
 - Keep answers exact: $\frac{16}{3}$, $\frac{\pi}{4}$ or $\frac{e^2-1}{2}$, not decimals.`;
 
 // ---------------- Practice ----------------
@@ -858,5 +918,130 @@ It is $r\theta$ with $r=2$ and $\theta=\frac{\pi}{6}$, the angle between the rad
 **(2)** An odd power: $\frac{6\cdot4\cdot2}{7\cdot5\cdot3}=\frac{48}{105}=\frac{16}{35}$.
 
 **(3)** On $\left[0,\frac{\pi}{2}\right]$, $\sin^2x$ and $\cos^2x$ have the same integral and add up to $1$, so each gives $\frac{\pi}{4}$. Since $\sin(\pi-x)=\sin x$, the half from $\frac{\pi}{2}$ to $\pi$ gives the same again: $\frac{\pi}{4}+\frac{\pi}{4}=\frac{\pi}{2}$.` },
+  ],
+  u5: [
+    { src: 'Class example: parametrization', added: NOV17,
+      stem: R`Describe the curves with a parameter, or without one.`,
+      parts: [R`Write $y=\sqrt x$, $1\le x\le4$, with $x=t^2$: find $y$ and the range of $t$.`, R`Check that both forms give the same area under the curve: $\displaystyle\int_1^4\sqrt x\,dx$ and $\displaystyle\int y\,\frac{dx}{dt}\,dt$.`,
+              R`Eliminate $t$ from $x=2\cos t$, $y=2\sin t$.`],
+      hint: R`(1) $\sqrt{t^2}=t$ for $t>0$; put $x=1$ and $x=4$ into $x=t^2$. (2) $dx=2t\,dt$. (3) $\cos^2t+\sin^2t=1$.`,
+      answer: [R`(1) $y=t$, with $1\le t\le2$`, R`(2) both give $\frac{14}{3}$`, R`(3) $x^2+y^2=4$, the circle of radius $2$`],
+      sol: R`
+**(1)** $y=\sqrt{t^2}=t$, since $t>0$ here. $x=1$ gives $t=1$, and $x=4$ gives $t=2$.
+
+**(2)** Directly: $\int_1^4\sqrt x\,dx=\frac{2}{3}\Big[x^{3/2}\Big]_1^4=\frac{2}{3}(8-1)=\frac{14}{3}$. With $t$: $\frac{dx}{dt}=2t$, so $\int_1^2t\cdot2t\,dt=\frac{2}{3}\Big[t^3\Big]_1^2=\frac{14}{3}$.
+
+**(3)** $\cos t=\frac{x}{2}$ and $\sin t=\frac{y}{2}$, so $\cos^2t+\sin^2t=1$ gives $\frac{x^2}{4}+\frac{y^2}{4}=1$, that is $x^2+y^2=4$.` },
+    { src: 'Polar and Cartesian coordinates', added: NOV17,
+      stem: R`Convert between polar and Cartesian coordinates.`,
+      parts: [R`The point $(x,y)=(1,1)$ in polar coordinates`, R`The point $r=2$, $\theta=\frac{2\pi}{3}$ in Cartesian coordinates`, R`The curve $r=2\cos\theta$ as an equation in $x$ and $y$`],
+      hint: R`$x=r\cos\theta$, $y=r\sin\theta$ and $r^2=x^2+y^2$. In (3), multiply both sides by $r$ first.`,
+      answer: [R`(1) $r=\sqrt2$, $\theta=\frac{\pi}{4}$`, R`(2) $\left(-1,\sqrt3\right)$`, R`(3) $(x-1)^2+y^2=1$`],
+      sol: R`
+**(1)** $r=\sqrt{1+1}=\sqrt2$, and $\tan\theta=1$ with the point in the first quadrant, so $\theta=\frac{\pi}{4}$.
+
+**(2)** $x=2\cos\frac{2\pi}{3}=-1$ and $y=2\sin\frac{2\pi}{3}=\sqrt3$.
+
+**(3)** Multiply by $r$: $r^2=2r\cos\theta$, that is $x^2+y^2=2x$. Completing the square, $(x-1)^2+y^2=1$: the circle of radius $1$ about $(1,0)$.` },
+    { src: 'Class exercise (1): y = ½x² by parts', added: NOV17,
+      stem: R`Give the line length of $y=\frac{1}{2}x^2$ $(0\le x\le1)$ using the relation $\displaystyle\int\frac{dx}{\sqrt{x^2+a^2}}=\ln\left|x+\sqrt{x^2+a^2}\right|+C$ and integration by parts for $\sqrt{x^2+1}=1\cdot\sqrt{x^2+1}$.`,
+      parts: [],
+      hint: R`$\ell=\int_0^1\sqrt{1+x^2}\,dx$. By parts, the same integral comes back: write $x^2=(1+x^2)-1$, then solve for $\ell$.`,
+      answer: [R`$\frac{\sqrt2}{2}+\frac{1}{2}\ln\left(1+\sqrt2\right)$`],
+      sol: R`
+$y'=x$, so $\ell=\int_0^1\sqrt{1+x^2}\,dx$.
+
+By parts with $f=\sqrt{1+x^2}$ and $g'=1$: $f'=\frac{x}{\sqrt{1+x^2}}$ and $g=x$, so
+$$\ell=\Big[x\sqrt{1+x^2}\Big]_0^1-\int_0^1\frac{x^2}{\sqrt{1+x^2}}\,dx$$
+and the first part is the number $\sqrt2$.
+
+Write $x^2=(1+x^2)-1$, so $\frac{x^2}{\sqrt{1+x^2}}=\sqrt{1+x^2}-\frac{1}{\sqrt{1+x^2}}$. The first piece integrates to $\ell$ again, and the relation with $a=1$ gives the second:
+$$\int_0^1\frac{dx}{\sqrt{1+x^2}}=\Big[\ln\left(x+\sqrt{x^2+1}\right)\Big]_0^1=\ln\left(1+\sqrt2\right)$$
+
+So $\ell=\sqrt2-\ell+\ln\left(1+\sqrt2\right)$. Move $\ell$ to the left: $2\ell=\sqrt2+\ln\left(1+\sqrt2\right)$, and $\ell=\frac{\sqrt2}{2}+\frac{1}{2}\ln\left(1+\sqrt2\right)$, about $1.15$.` },
+    { src: 'Class example: an arc with x = cos θ', added: NOV17,
+      stem: R`The arc $y=g(x)=\sqrt{1-x^2}$, $-\frac{1}{\sqrt2}\le x\le\frac{1}{\sqrt2}$, is parametrized by $x=\cos\theta$, $y=\sin\theta$.`,
+      parts: [R`Convert the region of integral to $\theta$.`, R`Show that $\sqrt{1+g'(x)^2}\cdot\frac{dx}{d\theta}=-1$.`, R`Find the length of the arc.`],
+      hint: R`Take $0\le\theta\le\pi$, since $y=\sin\theta>0$. $\frac{dx}{d\theta}=-\sin\theta$, and $g'(x)=-\frac{x}{\sqrt{1-x^2}}=-\frac{\cos\theta}{\sin\theta}$.`,
+      answer: [R`(1) $\theta$ runs from $\frac{3\pi}{4}$ to $\frac{\pi}{4}$`, R`(2) $-1$`, R`(3) $\frac{\pi}{2}$`],
+      sol: R`
+**(1)** $\cos\theta=-\frac{1}{\sqrt2}$ gives $\theta=\frac{3\pi}{4}$, and $\cos\theta=\frac{1}{\sqrt2}$ gives $\theta=\frac{\pi}{4}$. As $x$ goes from left to right, $\theta$ goes from $\frac{3\pi}{4}$ down to $\frac{\pi}{4}$.
+
+**(2)** $\sqrt{1+\frac{\cos^2\theta}{\sin^2\theta}}=\frac{1}{\sin\theta}$ (with $\sin\theta>0$), and times $\frac{dx}{d\theta}=-\sin\theta$ that is $-1$.
+
+**(3)** $\ell=\int_{3\pi/4}^{\pi/4}(-1)\,d\theta=\int_{\pi/4}^{3\pi/4}d\theta=\frac{\pi}{2}$. The general formula gives it at once: $\sqrt{\sin^2\theta+\cos^2\theta}=1$ on $\left[\frac{\pi}{4},\frac{3\pi}{4}\right]$.` },
+    { src: 'Class exercise (2): r = 2θ', added: NOV17,
+      stem: R`Give the line length of the curve $r=2\theta$ $(0\le\theta\le1)$.`,
+      parts: [],
+      hint: R`$\frac{dr}{d\theta}=2$, since $r$ changes with $\theta$. Take the $4$ out of the root and compare with Exercise (1).`,
+      answer: [R`$\sqrt2+\ln\left(1+\sqrt2\right)$`],
+      sol: R`
+$r=2\theta$ changes with $\theta$, so $\frac{dr}{d\theta}=2$, not $0$:
+$$\ell=\int_0^1\sqrt{4\theta^2+4}\,d\theta=2\int_0^1\sqrt{\theta^2+1}\,d\theta$$
+
+The integral is Exercise (1)'s, with $\theta$ for $x$: $\frac{\sqrt2}{2}+\frac{1}{2}\ln\left(1+\sqrt2\right)$. So $\ell=\sqrt2+\ln\left(1+\sqrt2\right)$, about $2.30$: a little more than $2$, the straight distance from the origin to the end point, where $r=2$.` },
+    { src: 'Class example: the cardioid r = 1 + cos θ', added: NOV17,
+      stem: R`Find the length of the cardioid $r=1+\cos\theta$, $0\le\theta\le2\pi$.`,
+      parts: [R`Show that $r^2+\left(\frac{dr}{d\theta}\right)^2=4\cos^2\frac{\theta}{2}$.`, R`Find the length.`],
+      hint: R`$\frac{dr}{d\theta}=-\sin\theta$ and $1+\cos\theta=2\cos^2\frac{\theta}{2}$. Then $\sqrt{\cos^2\frac{\theta}{2}}=\left|\cos\frac{\theta}{2}\right|$: split where $\cos\frac{\theta}{2}$ changes sign.`,
+      answer: [R`(1) $2+2\cos\theta=4\cos^2\frac{\theta}{2}$`, R`(2) $8$`],
+      sol: R`
+**(1)** $(1+\cos\theta)^2+\sin^2\theta=1+2\cos\theta+\cos^2\theta+\sin^2\theta=2+2\cos\theta$, and $2+2\cos\theta=4\cos^2\frac{\theta}{2}$.
+
+**(2)** The root is $2\left|\cos\frac{\theta}{2}\right|$. On $[0,\pi]$, $\cos\frac{\theta}{2}\ge0$, and on $[\pi,2\pi]$ it is $\le0$. With $\int\cos\frac{\theta}{2}\,d\theta=2\sin\frac{\theta}{2}$:
+$$\begin{aligned}\ell&=2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta-2\int_{\pi}^{2\pi}\cos\frac{\theta}{2}\,d\theta\\[4pt]&=2\cdot2-2\cdot(-2)=8\end{aligned}$$
+
+Without the absolute value, $2\int_0^{2\pi}\cos\frac{\theta}{2}\,d\theta=4\Big[\sin\frac{\theta}{2}\Big]_0^{2\pi}=0$, which can't be a length.` },
+    { src: 'Class exercises (3) and (4): x = 3t², y = 3t − t³', added: NOV17,
+      stem: R`The parameterized curve $x=3t^2$, $y=3t-t^3$, with $t\ge0$.`,
+      parts: [R`Find where the curve meets the $x$-axis, in $t$ and in $x$.`, R`Give the area enclosed by the curve and the $x$-axis.`, R`Give the line length within $0\le x\le12$.`, R`Give the length of the arch above the $x$-axis.`],
+      hint: R`The $x$-axis is $y=0$. Area: $\int y\,\frac{dx}{dt}\,dt$ with $\frac{dx}{dt}=6t$. Length: $\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2$ is a perfect square, and $x=12$ means $t=2$.`,
+      answer: [R`(1) $t=0$ and $t=\sqrt3$, that is $x=0$ and $x=9$`, R`(2) $\frac{36\sqrt3}{5}$`, R`(3) $14$`, R`(4) $6\sqrt3$`],
+      sol: R`
+**(1)** $y=t(3-t^2)=0$ at $t=0$ and $t=\sqrt3$ (with $t\ge0$), where $x=0$ and $x=9$.
+
+**(2)** $\frac{dx}{dt}=6t$, so
+$$\begin{aligned}A&=\int_0^{\sqrt3}(3t-t^3)\cdot6t\,dt=\int_0^{\sqrt3}(18t^2-6t^4)\,dt\\[4pt]&=\Big[6t^3-\frac{6}{5}t^5\Big]_0^{\sqrt3}=18\sqrt3-\frac{54\sqrt3}{5}=\frac{36\sqrt3}{5}\end{aligned}$$
+
+**(3)** $\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2=36t^2+9(1-t^2)^2=9(1+t^2)^2$, so the root is $3(1+t^2)$. $x=3t^2=12$ gives $t=2$:
+$$\ell=\int_0^2(3+3t^2)\,dt=\Big[3t+t^3\Big]_0^2=14$$
+
+**(4)** Over the arch, $0\le t\le\sqrt3$: $\Big[3t+t^3\Big]_0^{\sqrt3}=3\sqrt3+3\sqrt3=6\sqrt3$.` },
+    { src: 'A parametric curve: slope, area and length', added: NOV17,
+      stem: R`The curve $x=t^2$, $y=t-\frac{t^3}{3}$, with $t\ge0$.`,
+      parts: [R`Find the slope $\frac{dy}{dx}$ at $t=2$.`, R`Find where the curve meets the $x$-axis, in $t$ and in $x$.`, R`Find the area between the arch and the $x$-axis.`, R`Find the length of the arch.`],
+      hint: R`$\frac{dy}{dx}=\frac{dy/dt}{dx/dt}$, with $\frac{dx}{dt}=2t$ and $\frac{dy}{dt}=1-t^2$. For (4), $\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2$ is a perfect square.`,
+      answer: [R`(1) $-\frac{3}{4}$`, R`(2) $t=0$ and $t=\sqrt3$, that is $x=0$ and $x=3$`, R`(3) $\frac{4\sqrt3}{5}$`, R`(4) $2\sqrt3$`],
+      sol: R`
+**(1)** $\frac{dy}{dx}=\frac{1-t^2}{2t}$, which at $t=2$ is $\frac{1-4}{4}=-\frac{3}{4}$.
+
+**(2)** $y=t\left(1-\frac{t^2}{3}\right)=0$ at $t=0$ and $t=\sqrt3$ (with $t\ge0$), where $x=0$ and $x=3$.
+
+**(3)** $A=\int_0^{\sqrt3}\left(t-\frac{t^3}{3}\right)\cdot2t\,dt=\Big[\frac{2t^3}{3}-\frac{2t^5}{15}\Big]_0^{\sqrt3}=2\sqrt3-\frac{6\sqrt3}{5}=\frac{4\sqrt3}{5}$.
+
+**(4)** $4t^2+(1-t^2)^2=1+2t^2+t^4=(1+t^2)^2$, so $\ell=\int_0^{\sqrt3}(1+t^2)\,dt=\sqrt3+\sqrt3=2\sqrt3$.` },
+    { src: 'Lengths in polar coordinates', added: NOV17,
+      stem: R`Find the length of each curve.`,
+      parts: [R`$r=e^{\theta}$, $0\le\theta\le1$`, R`$r=\theta^2$, $0\le\theta\le\sqrt5$`, R`$r=1-\cos\theta$, $0\le\theta\le2\pi$`],
+      hint: R`$\ell=\int\sqrt{r^2+r'^2}\,d\theta$. (2) Factor out $\theta^2$ and substitute $u=\theta^2+4$. (3) $1-\cos\theta=2\sin^2\frac{\theta}{2}$.`,
+      answer: [R`(1) $\sqrt2\,(e-1)$`, R`(2) $\frac{19}{3}$`, R`(3) $8$`],
+      sol: R`
+**(1)** $r'=e^{\theta}$, so $r^2+r'^2=2e^{2\theta}$ and the root is $\sqrt2\,e^{\theta}$: $\ell=\sqrt2\Big[e^{\theta}\Big]_0^1=\sqrt2\,(e-1)$.
+
+**(2)** $r'=2\theta$, so $r^2+r'^2=\theta^4+4\theta^2=\theta^2(\theta^2+4)$, and the root is $\theta\sqrt{\theta^2+4}$ (here $\theta\ge0$). With $u=\theta^2+4$, $du=2\theta\,d\theta$, the limits become $4$ and $9$:
+$$\ell=\frac{1}{2}\int_4^9\sqrt u\,du=\frac{1}{3}\Big[u^{3/2}\Big]_4^9=\frac{27-8}{3}=\frac{19}{3}$$
+
+**(3)** $r'=\sin\theta$, so $r^2+r'^2=1-2\cos\theta+\cos^2\theta+\sin^2\theta=2-2\cos\theta=4\sin^2\frac{\theta}{2}$. On $[0,2\pi]$, $\frac{\theta}{2}$ stays in $[0,\pi]$, where $\sin\frac{\theta}{2}\ge0$, so no split is needed: $\ell=\int_0^{2\pi}2\sin\frac{\theta}{2}\,d\theta=\Big[-4\cos\frac{\theta}{2}\Big]_0^{2\pi}=8$.` },
+    { src: 'Shortcut: a ready-made primitive and symmetry', added: NOV17,
+      stem: R`Use the shortcuts of this lesson.`,
+      parts: [R`$\displaystyle\int_0^2\sqrt{x^2+4}\,dx$, with the ready-made primitive`, R`The length of $y=\frac{x^2}{4}$ on $[0,2]$`, R`The length of the cardioid $r=1+\cos\theta$, from its top half`],
+      hint: R`(1) $a=2$. (2) $\sqrt{1+\frac{x^2}{4}}=\frac{1}{2}\sqrt{x^2+4}$. (3) The top half is $0\le\theta\le\pi$, where $\cos\frac{\theta}{2}\ge0$.`,
+      answer: [R`(1) $2\sqrt2+2\ln\left(1+\sqrt2\right)$`, R`(2) $\sqrt2+\ln\left(1+\sqrt2\right)$`, R`(3) $8$`],
+      sol: R`
+**(1)** With $a=2$, the primitive is $\frac{1}{2}\left(x\sqrt{x^2+4}+4\ln\left(x+\sqrt{x^2+4}\right)\right)$. At $x=2$ it is $\frac{1}{2}\left(4\sqrt2+4\ln\left(2+2\sqrt2\right)\right)$ and at $x=0$ it is $2\ln2$, so the integral is $2\sqrt2+2\ln\frac{2+2\sqrt2}{2}=2\sqrt2+2\ln\left(1+\sqrt2\right)$.
+
+**(2)** $y'=\frac{x}{2}$, so $\sqrt{1+\frac{x^2}{4}}=\frac{1}{2}\sqrt{x^2+4}$, and the length is half of (1): $\sqrt2+\ln\left(1+\sqrt2\right)$, the same as Exercise (2).
+
+**(3)** The cardioid is symmetric about the $x$-axis, so take twice the top half: $2\cdot2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta=2\cdot4=8$.` },
   ],
 };

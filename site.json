@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-17",
+      "subject": "math",
+      "title": "Calculus midterm 2: parametric and polar curves and Quiz 09",
+      "text": "Calculus midterm 2: Day 22 & 23 are added: parametrization, polar coordinates, the conversion of the region of integral, the length of a parametric curve and of a polar curve (with the class arc, the cardioid and r = 2θ), and areas and lengths with a parameter (the conversion of summation, x = 3t², y = 3t − t³). Practice has ten new problems, including all four class exercises; Formulas has two new groups. Quizzes has In-class Quiz 09 (password needed) with Follow-up A and B.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-15",
       "subject": "all",
       "title": "Three looks to choose from: Glass, Classic and Paper",

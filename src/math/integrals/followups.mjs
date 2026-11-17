@@ -5,6 +5,7 @@ const R = String.raw;
 const NOV6 = '2026-11-06';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
+const NOV17 = '2026-11-17';
 
 export const followups = {
   '06': [
@@ -195,6 +196,61 @@ Each $\sin kx$ is odd, so $\Big[\frac{\sin kx}{k}\Big]_{-\pi/2}^{\pi/2}=\frac{2}
 $$\begin{aligned}&\int_{-\pi/2}^{\pi/2}\sin mx\sin nx\,dx\\[4pt]&=\frac{\sin\frac{(m-n)\pi}{2}}{m-n}-\frac{\sin\frac{(m+n)\pi}{2}}{m+n}\end{aligned}$$
 
 For $m=1$ and $n=2$: $\frac{\sin(-\pi/2)}{-1}-\frac{\sin(3\pi/2)}{3}=1+\frac{1}{3}=\frac{4}{3}$. The interval is not $[0,\pi]$, so the answer need not be $0$.` },
+    ]},
+  ],
+  '09': [
+    { added: NOV17, focus: 'Each question mirrors Quiz 09 with new numbers.', qs: [
+      { label: 'Q.1', pts: '', stem: R`Consider the curve defined by,
+$$r(\theta)=3\theta^2-3,$$
+in the polar coordinate.`,
+        parts: [R`Give $x$ and $y$ as the functions of $\theta$. (1pt×2)`, R`Compute the curve length within the domain $0\le\theta\le\pi$. (3pt)`],
+        answer: [R`(1) $x=(3\theta^2-3)\cos\theta$, $y=(3\theta^2-3)\sin\theta$`, R`(2) $\pi^3+3\pi$`],
+        sol: R`
+**(1)** $x=r\cos\theta=(3\theta^2-3)\cos\theta$ and $y=r\sin\theta=(3\theta^2-3)\sin\theta$.
+
+**(2)** $\frac{dr}{d\theta}=6\theta$, so
+$$\begin{aligned}r^2+\left(\frac{dr}{d\theta}\right)^2&=9(\theta^2-1)^2+36\theta^2\\[2pt]&=9(\theta^4+2\theta^2+1)=9(\theta^2+1)^2\end{aligned}$$
+
+The root is $3(\theta^2+1)$:
+$$\ell=\int_0^{\pi}(3\theta^2+3)\,d\theta=\Big[\theta^3+3\theta\Big]_0^{\pi}=\pi^3+3\pi$$` },
+      { label: 'Q.2', pts: '', stem: R`Consider the following parameterized curve,
+$$\begin{cases}x=\ln(t)\\y=-t^3+2t^2+3t\end{cases}$$
+within the region $x\ge0$.`,
+        parts: [R`Find the interval of $x$ to give $y\ge0$. (2pt)`, R`Compute the area enclosed by the curve with $y\ge0$, the $x$ axis, and the $y$ axis. (3pt)`],
+        answer: [R`(1) $0\le x\le\ln3$`, R`(2) $\frac{16}{3}$`],
+        sol: R`
+**(1)** $x=\ln t\ge0$ means $t\ge1$. Factor: $y=-t(t^2-2t-3)=-t(t-3)(t+1)$, which for $t\ge1$ is $\ge0$ exactly when $t\le3$. So $1\le t\le3$, that is $0\le x\le\ln3$.
+
+**(2)** $\frac{dx}{dt}=\frac{1}{t}$, so
+$$\begin{aligned}A&=\int_1^3(-t^2+2t+3)\,dt=\Big[-\frac{t^3}{3}+t^2+3t\Big]_1^3\\[4pt]&=9-\frac{11}{3}=\frac{16}{3}\end{aligned}$$` },
+    ]},
+    { added: NOV17, focus: 'Targets the usual slips: the square root of a square, which needs an absolute value and a split, the derivative of r, turning x ≥ 0 into t ≥ 1 for x = ln t, and the factor 1/t in dx.', qs: [
+      { label: 'Q.1', pts: '', stem: R`Consider the curve defined by,
+$$r(\theta)=2+2\cos\theta,$$
+in the polar coordinate.`,
+        parts: [R`Give $x$ and $y$ as the functions of $\theta$. (1pt×2)`, R`Compute the curve length within the domain $0\le\theta\le2\pi$. (3pt)`],
+        answer: [R`(1) $x=(2+2\cos\theta)\cos\theta$, $y=(2+2\cos\theta)\sin\theta$`, R`(2) $16$`],
+        sol: R`
+**(1)** $x=(2+2\cos\theta)\cos\theta$ and $y=(2+2\cos\theta)\sin\theta$.
+
+**(2)** $\frac{dr}{d\theta}=-2\sin\theta$, so $r^2+\left(\frac{dr}{d\theta}\right)^2=4(1+\cos\theta)^2+4\sin^2\theta=8+8\cos\theta=16\cos^2\frac{\theta}{2}$.
+
+The root is $4\left|\cos\frac{\theta}{2}\right|$, not $4\cos\frac{\theta}{2}$: $\cos\frac{\theta}{2}<0$ for $\pi<\theta<2\pi$. Split at $\pi$:
+$$\begin{aligned}\ell&=4\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta-4\int_{\pi}^{2\pi}\cos\frac{\theta}{2}\,d\theta\\[4pt]&=4\cdot2-4\cdot(-2)=16\end{aligned}$$
+
+Without the absolute value the integral is $8\Big[\sin\frac{\theta}{2}\Big]_0^{2\pi}=0$, which can't be a length.` },
+      { label: 'Q.2', pts: '', stem: R`Consider the following parameterized curve,
+$$\begin{cases}x=\ln(t)\\y=4t-t^3\end{cases}$$
+within the region $x\ge0$.`,
+        parts: [R`Find the interval of $x$ to give $y\ge0$. (2pt)`, R`Compute the area enclosed by the curve with $y\ge0$, the $x$ axis, and the $y$ axis. (3pt)`],
+        answer: [R`(1) $0\le x\le\ln2$`, R`(2) $\frac{5}{3}$`],
+        sol: R`
+**(1)** $x\ge0$ means $\ln t\ge0$, so $t\ge1$, not $t\ge0$. $y=t(4-t^2)=t(2-t)(2+t)$, which for $t\ge1$ is $\ge0$ exactly when $t\le2$. So $1\le t\le2$, that is $0\le x\le\ln2$.
+
+**(2)** $dx=\frac{dx}{dt}\,dt=\frac{1}{t}\,dt$, so the $t$-limits are $1$ and $2$ and one $t$ cancels:
+$$A=\int_1^2(4-t^2)\,dt=\Big[4t-\frac{t^3}{3}\Big]_1^2=\frac{16}{3}-\frac{11}{3}=\frac{5}{3}$$
+
+Dropping the factor $\frac{1}{t}$ would give $\int_1^2(4t-t^3)\,dt=\frac{9}{4}$, and integrating from $0$ to $\ln2$ in $t$ would mix the two variables.` },
     ]},
   ],
 };

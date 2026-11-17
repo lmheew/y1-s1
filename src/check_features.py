@@ -410,7 +410,7 @@ with sync_playwright() as p:
     # a day dated after the page's moment (13 Nov at noon on 11 Nov) isn't New yet: count the days up to 12 Nov
     fresh_days = pg.evaluate("[...document.querySelectorAll('#news .n-day time')].filter((t) => t.getAttribute('datetime') <= '2026-11-12').length")
     check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1
-          and fresh_days >= 2 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
+          and fresh_days >= 1 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
     # Calculus midterm 2 was last updated on 13 Nov, more than a day after this moment, so its card waits (see 13 Nov below)
@@ -469,24 +469,26 @@ with sync_playwright() as p:
           and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
     ctx.close()
 
-    # ---- the same at noon on 13 Nov, when Day 20 & 21 and Quiz 08 arrived: the lesson, its Shortcuts and the day in
-    # What's new are New (Calculus midterm 1's lessons, from 29 Oct, are past their 14 days by then) ----
+    # ---- the same at noon on 17 Nov, when Day 22 & 23 and Quiz 09 arrived: the lessons of the last 14 days (9 Nov on)
+    # and the day in What's new are New; 2 & 3 Nov (the first lesson and its Riemann-sum graph) are past their 14 days,
+    # as are Calculus midterm 1's lessons from 29 Oct ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
-    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 13, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 17, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new (13 Nov): the day Quiz 08 arrived is New on the home page',
-          pg.locator('#news .n-day:has(time[datetime="2026-11-13"]) .new-pill').count() == 1)
+    check('new (17 Nov): the day Quiz 09 arrived is New on the home page',
+          pg.locator('#news .n-day:has(time[datetime="2026-11-17"]) .new-pill').count() == 1)
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')
-    check('new (13 Nov): Calculus midterm 2 has its own tab dots', dots(pg) == ['practice', 'formulas', 'quizzes'], dots(pg))
-    check('new (13 Nov): Calculus midterm 2 marks its new lessons and graph', all(pg.locator(f'#su-{u} .unit-head .new-pill').count() == 1 for u in ('u1', 'u2', 'u3', 'u4'))
-          and pg.locator('#gx-riemann .new-pill').count() == 1, [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4')])
+    check('new (17 Nov): Calculus midterm 2 has its own tab dots', dots(pg) == ['practice', 'formulas', 'quizzes'], dots(pg))
+    pills = [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4', 'u5')]
+    check('new (17 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
+          pills == [0, 1, 1, 1, 1] and pg.locator('#gx-riemann .new-pill').count() == 0, pills)
     pg.click('#tab-quizzes')
-    pg.wait_for_selector('#qg08')
-    check('new (13 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
+    pg.wait_for_selector('#qg09')
+    check('new (17 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     ctx.close()
 
     # ---- the picker at noon on the day Calculus midterm 2 was last updated (its card's date, which each What's new line
@@ -755,7 +757,7 @@ with sync_playwright() as p:
     pg.goto(BASE + '/physics/midterm/')
     pg.wait_for_selector('#view-exams .up-item')
     check('night: it is never the tab a page opens on next time: the last tab (Exams) opens', pg.locator('#view-night').is_hidden() and pg.locator('#view-exams').is_visible())
-    for page, n in [('math/derivatives', 8), ('math/integrals', 6)]:
+    for page, n in [('math/derivatives', 8), ('math/integrals', 7)]:
         pg.goto(BASE + f'/{page}/#formulas')
         pg.wait_for_selector('#view-formulas .night-link')
         pg.click('#view-formulas .night-link')

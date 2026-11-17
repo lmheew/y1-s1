@@ -768,6 +768,159 @@ for (m, n) in ((1, 2), (2, 3), (1, 3), (3, 6), (2, -1), (4, 1)):
 check("08B Q3 m = 1, n = 2: 4/3", integral(lambda x: sin(x) * sin(2 * x), -pi / 2, pi / 2), 4 / 3)
 check("08B Q3 1 + 1/3", gen(1, 2), 4 / 3)
 
+# ================= 16 & 17 Nov: parametric and polar curves (u5) =================
+def plen(xf, yf, a, b, m=4000):
+    """length of a parametric curve, with numerical derivatives"""
+    return integral(lambda t: sqrt(d1(xf, t) ** 2 + d1(yf, t) ** 2), a, b, m)
+def polar_len(rf, a, b, m=4000):
+    return integral(lambda th: sqrt(rf(th) ** 2 + d1(rf, th) ** 2), a, b, m)
+def chord_len(xf, yf, a, b, N=20000):
+    """the curve as N straight pieces: the sum of the pieces tends to the length"""
+    pts = [(xf(a + (b - a) * k / N), yf(a + (b - a) * k / N)) for k in range(N + 1)]
+    return sum(sqrt((pts[k][0] - pts[k - 1][0]) ** 2 + (pts[k][1] - pts[k - 1][1]) ** 2) for k in range(1, N + 1))
+# parametrization: y = sqrt x with x = t^2, the same points; the area both ways
+for t in (1.0, 1.3, 1.7, 2.0):
+    check(f"summary/P5.1a: x = t^2 gives y = sqrt(x) = t at t={t}", sqrt(t * t), t)
+check("P5.1a: x = 1 -> t = 1, x = 4 -> t = 2", sqrt(1) + sqrt(4), 3)
+check("summary/P5.1b: int_1^4 sqrt x = 14/3", integral(sqrt, 1, 4), 14 / 3)
+check("P5.1b: int_1^2 t * 2t dt = 14/3", integral(lambda t: t * 2 * t, 1, 2), 14 / 3)
+for t in (0.3, 1.9, 4.0):
+    check(f"summary/P5.1c: x = 2cos t, y = 2 sin t lies on x^2 + y^2 = 4 (t={t})", (2 * cos(t)) ** 2 + (2 * sin(t)) ** 2, 4)
+    check(f"summary: x = cos t, y = sin t lies on x^2 + y^2 = 1 (t={t})", cos(t) ** 2 + sin(t) ** 2, 1)
+# polar coordinates
+for (r, th) in ((2.0, 0.4), (1.5, 2.2), (3.0, -1.0)):
+    xx, yy = r * cos(th), r * sin(th)
+    check(f"summary/g5b: r = sqrt(x^2 + y^2) (r={r})", sqrt(xx * xx + yy * yy), r)
+    check(f"summary/g5b: tan theta = y/x (theta={th})", tan(th), yy / xx)
+check("P5.2a: (1,1) -> r = sqrt2", sqrt(2), sqrt(1 + 1)); check("P5.2a: theta = pi/4", atan2(1, 1), pi / 4)
+check("P5.2b: x = 2 cos(2pi/3) = -1", 2 * cos(2 * pi / 3), -1); check("P5.2b: y = 2 sin(2pi/3) = sqrt3", 2 * sin(2 * pi / 3), sqrt(3))
+for th in (-1.2, 0.3, 1.1):
+    xx, yy = 2 * cos(th) * cos(th), 2 * cos(th) * sin(th)
+    check(f"P5.2c: r = 2cos theta lies on (x-1)^2 + y^2 = 1 (theta={th})", (xx - 1) ** 2 + yy * yy, 1)
+check("summary: r = 2 is the circle x^2 + y^2 = 4", (2 * cos(0.7)) ** 2 + (2 * sin(0.7)) ** 2, 4)
+# the arc y = sqrt(1 - x^2) with x = cos theta
+g = lambda x: sqrt(1 - x * x)
+for th in (pi / 4 + 0.1, pi / 2, 3 * pi / 4 - 0.1):
+    gp = d1(g, cos(th))
+    check(f"summary/P5.4b: g'(x) = -cos/sin at theta={th:.3f}", gp, -cos(th) / sin(th), 1e-6)
+    check(f"summary/P5.4b: sqrt(1+g'^2) dx/dtheta = -1 at theta={th:.3f}", sqrt(1 + gp * gp) * (-sin(th)), -1, 1e-6)
+check("summary/P5.4a: cos(3pi/4) = -1/sqrt2", cos(3 * pi / 4), -1 / sqrt(2)); check("P5.4a: cos(pi/4) = 1/sqrt2", cos(pi / 4), 1 / sqrt(2))
+check("summary/P5.4c: the arc length in x: int sqrt(1 + g'^2) = pi/2", integral(lambda x: 1 / sqrt(1 - x * x), -1 / sqrt(2), 1 / sqrt(2)), pi / 2)
+check("summary/P5.4c: int_(3pi/4)^(pi/4) (-1) dtheta = pi/2", integral(lambda th: -1.0, 3 * pi / 4, pi / 4), pi / 2)
+check("summary: the general formula gives pi/2 for the arc", plen(cos, sin, pi / 4, 3 * pi / 4), pi / 2)
+check("summary: the chords of the arc tend to pi/2", chord_len(cos, sin, pi / 4, 3 * pi / 4), pi / 2, 1e-7)
+# the general length formula: both forms agree where dx/dtheta > 0, and the second needs no division
+xf, yf = (lambda t: t * t + t), (lambda t: sin(t))
+check("summary/g5: sqrt(1 + (y'/x')^2) x' = sqrt(x'^2 + y'^2) (x' > 0)", integral(lambda t: sqrt(1 + (d1(yf, t) / d1(xf, t)) ** 2) * d1(xf, t), 0.2, 1.7), plen(xf, yf, 0.2, 1.7))
+check("summary/g5: the length formula against chords", plen(xf, yf, 0.2, 1.7), chord_len(xf, yf, 0.2, 1.7), 1e-7)
+check("summary: the whole unit circle (dx/dtheta = 0 at 0 and pi) has length 2pi", plen(cos, sin, 0, 2 * pi), 2 * pi)
+check("summary: the vertical line x = 1, y = theta on [0,3] has length 3", plen(lambda t: 1.0, lambda t: t, 0, 3), 3)
+check("summary/g5: slope dy/dx = (dy/dt)/(dx/dt) (x = t^2 + t, y = sin t at 0.8)", d1(yf, 0.8) / d1(xf, 0.8), cos(0.8) / (2 * 0.8 + 1), 1e-6)
+# polar: the sum of squares of the derivatives
+for (rf, name) in ((lambda th: 1 + cos(th), '1 + cos'), (lambda th: 2 * th, '2 theta'), (lambda th: exp(th), 'e^theta'), (lambda th: th * th - 3, 'theta^2 - 3')):
+    for th in (0.4, 1.3, 2.6):
+        dx = d1(lambda u: rf(u) * cos(u), th); dy = d1(lambda u: rf(u) * sin(u), th)
+        check(f"summary/g5b: x'^2 + y'^2 = r^2 + r'^2 for r = {name} at {th}", dx * dx + dy * dy, rf(th) ** 2 + d1(rf, th) ** 2, 1e-6)
+check("summary: the circle r = a has length 2 pi a (a = 1.5)", polar_len(lambda th: 1.5, 0, 2 * pi), 3 * pi)
+# the cardioid r = 1 + cos theta
+card = lambda th: 1 + cos(th)
+for th in (0.3, 1.7, 3.0, 4.4, 6.0):
+    check(f"summary/P5.6a: r^2 + r'^2 = 2 + 2cos = 4cos^2(theta/2) at {th}", card(th) ** 2 + sin(th) ** 2, 4 * cos(th / 2) ** 2)
+check("summary/P5.6b: the cardioid's length is 8", polar_len(card, 0, 2 * pi, 8000), 8, 1e-7)
+check("summary/P5.6b: 2 int_0^pi cos(theta/2) = 4", 2 * integral(lambda th: cos(th / 2), 0, pi), 4)
+check("summary/P5.6b: -2 int_pi^2pi cos(theta/2) = 4", -2 * integral(lambda th: cos(th / 2), pi, 2 * pi), 4)
+check("watch/P5.6: without | |, 2 int_0^2pi cos(theta/2) = 0", 2 * integral(lambda th: cos(th / 2), 0, 2 * pi), 0, 1e-9)
+check("summary: the cardioid's chords tend to 8", chord_len(lambda th: card(th) * cos(th), lambda th: card(th) * sin(th), 0, 2 * pi, 40000), 8, 1e-6)
+check("g5b: sqrt(cos^2(theta/2)) = |cos(theta/2)| at 4.4", sqrt(cos(2.2) ** 2), abs(cos(2.2)))
+for th in (0.5, 2.0, 4.0):
+    check(f"g5b: half-angle 1 + cos = 2cos^2(theta/2) at {th}", 1 + cos(th), 2 * cos(th / 2) ** 2)
+    check(f"g5b: half-angle 1 - cos = 2sin^2(theta/2) at {th}", 1 - cos(th), 2 * sin(th / 2) ** 2)
+# exercises (1) and (2)
+L1 = sqrt(2) / 2 + log(1 + sqrt(2)) / 2
+check("summary/P5.3: length of y = x^2/2 on [0,1]", integral(lambda x: sqrt(1 + x * x), 0, 1), L1)
+check("P5.3: [x sqrt(1+x^2)]_0^1 = sqrt2", 1 * sqrt(2) - 0, sqrt(2))
+check("P5.3: int_0^1 x^2/sqrt(1+x^2) = ell - ln(1+sqrt2)", integral(lambda x: x * x / sqrt(1 + x * x), 0, 1), L1 - log(1 + sqrt(2)))
+check("P5.3: by parts: ell = sqrt2 - int x^2/sqrt(1+x^2)", sqrt(2) - integral(lambda x: x * x / sqrt(1 + x * x), 0, 1), L1)
+for x in XS:
+    check(f"P5.3: x^2/sqrt(1+x^2) = sqrt(1+x^2) - 1/sqrt(1+x^2) at {x}", x * x / sqrt(1 + x * x), sqrt(1 + x * x) - 1 / sqrt(1 + x * x))
+for a0 in (1.0, 2.0, 0.5):
+    primitive(f"summary/g5b: ln|x + sqrt(x^2+a^2)| (a={a0})", lambda x, a0=a0: log(abs(x + sqrt(x * x + a0 * a0))), lambda x, a0=a0: 1 / sqrt(x * x + a0 * a0), XS)
+    primitive(f"tricks/gs: the ready-made primitive of sqrt(x^2+a^2) (a={a0})", lambda x, a0=a0: 0.5 * (x * sqrt(x * x + a0 * a0) + a0 * a0 * log(abs(x + sqrt(x * x + a0 * a0)))), lambda x, a0=a0: sqrt(x * x + a0 * a0), XS)
+check("watch: int dx/(x^2+4) on [0,2] is an arctan: (1/2)arctan(1)", integral(lambda x: 1 / (x * x + 4), 0, 2), atan(1) / 2)
+check("summary/P5.5: length of r = 2 theta on [0,1]", polar_len(lambda th: 2 * th, 0, 1), sqrt(2) + log(1 + sqrt(2)))
+check("P5.5: = 2 x exercise (1)", 2 * L1, sqrt(2) + log(1 + sqrt(2)))
+check("P5.5: about 2.30, more than 2", sqrt(2) + log(1 + sqrt(2)), 2.2955871494, 1e-9)
+# conversion of summation, area and length with x = 3t^2, y = 3t - t^3
+X3, Y3 = (lambda t: 3 * t * t), (lambda t: 3 * t - t ** 3)
+for t in (0.4, 1.0, 1.6):
+    check(f"summary/g5: dx/dt = 6t at {t}", d1(X3, t), 6 * t, 1e-6)
+fcos = lambda x: cos(x) + x * x
+check("summary/g5: int f(x) dx over [0,9] = int f(x(t)) dx/dt dt over [0,sqrt3]", integral(fcos, 0, 9), integral(lambda t: fcos(X3(t)) * 6 * t, 0, sqrt(3)))
+for N in (50, 400):
+    ts = [sqrt(3) * k / N for k in range(N + 1)]
+    S = sum(fcos(X3(ts[k])) * (X3(ts[k]) - X3(ts[k - 1])) / (ts[k] - ts[k - 1]) * (ts[k] - ts[k - 1]) for k in range(1, N + 1))
+    check(f"summary: the converted sum tends to the integral (N={N})", S, integral(fcos, 0, 9), 3 / N * 20)
+check("summary/P5.7a: y = 0 at t = sqrt3, x = 9", Y3(sqrt(3)), 0, 1e-12); check("P5.7a: x(sqrt3) = 9", X3(sqrt(3)), 9)
+check("summary/P5.7b: area int_0^sqrt3 (3t - t^3) 6t = 36 sqrt3/5", integral(lambda t: Y3(t) * 6 * t, 0, sqrt(3)), 36 * sqrt(3) / 5)
+check("P5.7b: 18 sqrt3 - 54 sqrt3/5", 18 * sqrt(3) - 54 * sqrt(3) / 5, 36 * sqrt(3) / 5)
+yofx = lambda x: Y3(sqrt(x / 3))
+check("P5.7b: the same area in x: int_0^9 y dx", integral(yofx, 0, 9, 20000), 36 * sqrt(3) / 5, 1e-6)
+for t in (0.3, 1.2, 1.9):
+    check(f"summary/P5.7c: 36t^2 + 9(1-t^2)^2 = 9(1+t^2)^2 at {t}", 36 * t * t + 9 * (1 - t * t) ** 2, 9 * (1 + t * t) ** 2)
+check("summary/P5.7c: length on 0 <= x <= 12 (t to 2) = 14", plen(X3, Y3, 0, 2), 14)
+check("P5.7c: x = 12 at t = 2", X3(2), 12)
+check("P5.7c: chords tend to 14", chord_len(X3, Y3, 0, 2), 14, 1e-7)
+check("P5.7d: the arch's length 6 sqrt3", plen(X3, Y3, 0, sqrt(3)), 6 * sqrt(3))
+check("tricks/gs: (A-B)^2 + 4AB = (A+B)^2 with A = t^2, B = 1 at 1.3", (1.69 - 1) ** 2 + 4 * 1.69, (1.69 + 1) ** 2)
+# P5.8: x = t^2, y = t - t^3/3
+X8, Y8 = (lambda t: t * t), (lambda t: t - t ** 3 / 3)
+check("P5.8a: slope at t = 2 is -3/4", d1(Y8, 2) / d1(X8, 2), -0.75, 1e-6)
+check("P5.8b: y(sqrt3) = 0", Y8(sqrt(3)), 0, 1e-12); check("P5.8b: x(sqrt3) = 3", X8(sqrt(3)), 3)
+check("P5.8c: area 4 sqrt3/5", integral(lambda t: Y8(t) * 2 * t, 0, sqrt(3)), 4 * sqrt(3) / 5)
+check("P5.8c: 2 sqrt3 - 6 sqrt3/5", 2 * sqrt(3) - 6 * sqrt(3) / 5, 4 * sqrt(3) / 5)
+check("P5.8d: length of the arch 2 sqrt3", plen(X8, Y8, 0, sqrt(3)), 2 * sqrt(3))
+for t in (0.5, 1.4):
+    check(f"P5.8d: 4t^2 + (1-t^2)^2 = (1+t^2)^2 at {t}", 4 * t * t + (1 - t * t) ** 2, (1 + t * t) ** 2)
+# P5.9: polar lengths
+check("P5.9a: r = e^theta on [0,1]: sqrt2 (e - 1)", polar_len(exp, 0, 1), sqrt(2) * (math.e - 1))
+check("P5.9b: r = theta^2 on [0, sqrt5]: 19/3", polar_len(lambda th: th * th, 0, sqrt(5)), 19 / 3)
+check("P5.9b: (1/2) int_4^9 sqrt u du = 19/3", 0.5 * integral(sqrt, 4, 9), 19 / 3)
+check("P5.9c: r = 1 - cos theta on [0, 2pi]: 8", polar_len(lambda th: 1 - cos(th), 0, 2 * pi, 8000), 8, 1e-7)
+check_true("P5.9c: sin(theta/2) >= 0 on [0, 2pi]", all(sin(k * pi / 200) >= -1e-15 for k in range(0, 201)))
+# P5.10: shortcuts
+check("P5.10a: int_0^2 sqrt(x^2+4) = 2 sqrt2 + 2 ln(1+sqrt2)", integral(lambda x: sqrt(x * x + 4), 0, 2), 2 * sqrt(2) + 2 * log(1 + sqrt(2)))
+check("P5.10b: length of y = x^2/4 on [0,2] = sqrt2 + ln(1+sqrt2)", integral(lambda x: sqrt(1 + x * x / 4), 0, 2), sqrt(2) + log(1 + sqrt(2)))
+check("tricks/P5.10c: the cardioid's top half doubled: 2 * 2 int_0^pi cos(theta/2) = 8", 2 * 2 * integral(lambda th: cos(th / 2), 0, pi), 8)
+check("tricks: the cardioid's top half is half its length", polar_len(card, 0, pi), 4)
+# speed: a point moving along x = cos t, y = sin t at unit speed covers 2 pi in one turn
+check("tricks: speed sqrt(x'^2 + y'^2) = 1 for (cos t, sin t)", sqrt(d1(cos, 0.9) ** 2 + d1(sin, 0.9) ** 2), 1, 1e-6)
+# habit
+check("habit: (theta^2 + 1)^2 = theta^4 + 2 theta^2 + 1 at 1.7", (1.7 ** 2 + 1) ** 2, 1.7 ** 4 + 2 * 1.7 ** 2 + 1)
+
+# ================= FOLLOW-UPS (Quiz 09) =================
+# 09-A
+r9a = lambda th: 3 * th * th - 3
+for th in (0.6, 2.1):
+    check(f"09A Q1(1) x = (3 theta^2 - 3) cos theta is r cos theta at {th}", r9a(th) * cos(th), (3 * th * th - 3) * cos(th))
+    check(f"09A Q1(2) r^2 + r'^2 = 9(theta^2+1)^2 at {th}", r9a(th) ** 2 + d1(r9a, th) ** 2, 9 * (th * th + 1) ** 2, 1e-6)
+check("09A Q1(2) length on [0, pi] = pi^3 + 3 pi", polar_len(r9a, 0, pi), pi ** 3 + 3 * pi)
+y9a = lambda t: -t ** 3 + 2 * t * t + 3 * t
+check("09A Q2(1) y(3) = 0", y9a(3), 0); check_true("09A Q2(1) y >= 0 on [1,3], < 0 after", all(y9a(1 + k / 100) >= -1e-12 for k in range(201)) and y9a(3.01) < 0)
+check("09A Q2(1) x = ln 3 at t = 3", log(3), log(3))
+check("09A Q2(2) area int_1^3 y (1/t) dt = 16/3", integral(lambda t: y9a(t) / t, 1, 3), 16 / 3)
+check("09A Q2(2) the same area in x: int_0^ln3 y dx", integral(lambda x: y9a(exp(x)), 0, log(3)), 16 / 3)
+# 09-B
+r9b = lambda th: 2 + 2 * cos(th)
+for th in (0.5, 3.5, 5.0):
+    check(f"09B Q1(2) r^2 + r'^2 = 16 cos^2(theta/2) at {th}", r9b(th) ** 2 + d1(r9b, th) ** 2, 16 * cos(th / 2) ** 2, 1e-6)
+check("09B Q1(2) length on [0, 2pi] = 16", polar_len(r9b, 0, 2 * pi, 8000), 16, 1e-7)
+check("09B Q1(2) without | |: 0", 4 * integral(lambda th: cos(th / 2), 0, 2 * pi), 0, 1e-9)
+y9b = lambda t: 4 * t - t ** 3
+check_true("09B Q2(1) y >= 0 on [1,2], < 0 after", all(y9b(1 + k / 100) >= -1e-12 for k in range(101)) and y9b(2.01) < 0)
+check("09B Q2(2) area int_1^2 y/t dt = 5/3", integral(lambda t: y9b(t) / t, 1, 2), 5 / 3)
+check("09B Q2(2) the same area in x: int_0^ln2 y dx", integral(lambda x: y9b(exp(x)), 0, log(2)), 5 / 3)
+check("09B Q2(2) without the 1/t: 9/4", integral(y9b, 1, 2), 9 / 4)
+
 # ================= GRAPH (riemann) =================
 check("graph: n = 4 right sum, as in P1.1", riemann(sq, 0, 2, 4, 'right'), Fr(15, 4))
 check("graph: area 8/3 shown as 2.6667", round(8 / 3, 4), 2.6667)

@@ -5,6 +5,7 @@ const NOV6 = '2026-11-06';
 const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
+const NOV17 = '2026-11-17';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -53,6 +54,16 @@ export const tags = {
   '4.9': 'reduction formula integration by parts cos^n sin^n powers of sine cosine C_n S_n I_n half-angle',
   '4.10': 'products of sines and cosines product to sum orthogonal sin mx sin nx cos mx cos nx power-reducing',
   '4.11': 'shortcut trick reduction formula in one line Wallis sin^2 cos^2 quarter turn',
+  '5.1': 'parametrization parameter t class example y = sqrt(x) x = t^2 eliminate t circle area with a parameter',
+  '5.2': 'polar coordinates cartesian convert r theta x = r cos y = r sin circle r = 2 cos theta',
+  '5.3': "class exercise line length y = x^2/2 integration by parts 1 times sqrt(x^2+1) ln|x + sqrt(x^2+a^2)| the integral comes back",
+  '5.4': 'class example arc length x = cos theta conversion of the region of integral reversed limits minus sign pi/2',
+  '5.5': 'class exercise polar length r = 2 theta dr/dtheta sqrt(r^2 + r\'^2)',
+  '5.6': 'class example cardioid r = 1 + cos theta length 8 absolute value |cos(theta/2)| half-angle the length element is positive',
+  '5.7': 'class exercises parameterized curve x = 3t^2 y = 3t - t^3 area enclosed x axis line length 0 <= x <= 12 perfect square',
+  '5.8': 'parametric curve slope dy/dx area under the curve length of the arch perfect square',
+  '5.9': 'polar length e^theta theta^2 1 - cos theta cardioid substitution half-angle',
+  '5.10': 'shortcut trick ready-made primitive sqrt(x^2 + a^2) symmetry half of the cardioid',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -168,10 +179,30 @@ export const formulas = [
     ['Whole m, n with |m| ≠ |n|: sines', R`\int_0^{\pi}\sin mx\sin nx\,dx=0`],
     ['Whole m, n with |m| ≠ |n|: cosines', R`\int_0^{\pi}\cos mx\cos nx\,dx=0`],
   ]},
+  { id: 'g5', title: 'Parametric curves', quiz: 'Day 22 & 23 · Quiz 09', added: NOV17, rows: [
+    ['Parametrization', R`x=x(t),\quad y=y(t)`],
+    ['The class example', R`y=\sqrt x\ (1\le x\le4):\ x=t^2,\ y=t\ (1\le t\le2)`],
+    ['Conversion of summation', R`\sum f(x_k)\,\Delta x\ \to\ \sum f(x(t_k))\,\frac{\Delta x}{\Delta t}\,\Delta t`],
+    ['Converting an integral', R`\int f(x)\,dx=\int f(x(t))\,\frac{dx}{dt}\,dt`],
+    ['Region of integral', R`a\le x\le b\ \to\ t_a\le t\le t_b,\quad x(t_a)=a,\ x(t_b)=b`],
+    ['Slope', R`\frac{dy}{dx}=\frac{dy/dt}{dx/dt}`],
+    ['Area under the curve', R`A=\int_{t_a}^{t_b}y(t)\,\frac{dx}{dt}\,dt`],
+    ['Length', R`\ell=\int_a^b\sqrt{\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2}\,dt`],
+  ]},
+  { id: 'g5b', title: 'Polar curves', quiz: 'Day 22 & 23 · Quiz 09', added: NOV17, rows: [
+    ['Polar to Cartesian', R`x=r\cos\theta,\quad y=r\sin\theta`],
+    ['Cartesian to polar', R`r=\sqrt{x^2+y^2},\quad\tan\theta=\frac{y}{x}`],
+    ['A curve r = r(θ)', R`x=r(\theta)\cos\theta,\quad y=r(\theta)\sin\theta`],
+    ['Sum of squares', R`\left(\frac{dx}{d\theta}\right)^2+\left(\frac{dy}{d\theta}\right)^2=r^2+\left(\frac{dr}{d\theta}\right)^2`],
+    ['Length in polar', R`\ell=\int_a^b\sqrt{r^2+\left(\frac{dr}{d\theta}\right)^2}\,d\theta`],
+    ['The length element is positive', R`\sqrt{\cos^2\frac{\theta}{2}}=\left|\cos\frac{\theta}{2}\right|`],
+    ['Half-angle', R`1+\cos\theta=2\cos^2\frac{\theta}{2},\quad1-\cos\theta=2\sin^2\frac{\theta}{2}`],
+    ['The relation from class', R`\int\frac{dx}{\sqrt{x^2+a^2}}=\ln\left|x+\sqrt{x^2+a^2}\right|+C`],
+  ]},
   // extras from outside the lectures, added at the user's request; its label matches no lesson, so the night-before
   // sheet lists it with the values to know
-  // added moved to 13 Nov with the Day 20 & 21 rows (the reduction formula in one line, sin² and cos², a perfect square)
-  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV13, rows: [
+  // added moved to 17 Nov with the Day 22 & 23 rows (a ready-made primitive for √(x² + a²), a sum of squares)
+  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV17, rows: [
     ['Odd function on [−a, a]', R`f(-x)=-f(x)\ \Rightarrow\ \int_{-a}^{a}f(x)\,dx=0`],
     ['Even function on [−a, a]', R`f(-x)=f(x)\ \Rightarrow\ \int_{-a}^{a}f\,dx=2\int_0^{a}f\,dx`],
     ['Half a circle', R`\int_{-r}^{r}\sqrt{r^2-x^2}\,dx=\frac{\pi r^2}{2}`],
@@ -183,6 +214,8 @@ export const formulas = [
     ['Reduction in one line, odd n', R`I_n=\frac{(n-1)(n-3)\cdots2}{n(n-2)\cdots3}`],
     ['sin² and cos² on a quarter turn', R`\int_0^{\pi/2}\sin^2x\,dx=\int_0^{\pi/2}\cos^2x\,dx=\frac{\pi}{4}`],
     ['A perfect square in a length', R`f'=A-B,\ AB=\tfrac{1}{4}\ \Rightarrow\ \sqrt{1+f'^2}=A+B`],
+    ['√(x² + a²), ready-made', R`\begin{aligned}&\int\sqrt{x^2+a^2}\,dx=\tfrac{1}{2}x\sqrt{x^2+a^2}\\&\quad+\tfrac{a^2}{2}\ln\left|x+\sqrt{x^2+a^2}\right|+C\end{aligned}`],
+    ['A sum of squares', R`(A-B)^2+4AB=(A+B)^2`],
   ]},
 ];
 
