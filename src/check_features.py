@@ -330,8 +330,8 @@ with sync_playwright() as p:
         check(f'{label}: Exams builds on first open', pg.locator('#lazy-exams').count() == 0 and pg.locator('#view-exams .sheet.mock').count() == 3)
         check(f'{label}: upcoming list has the five exams', pg.locator('#view-exams .up-item').count() == 5)
         check(f'{label}: mock 1 has six questions and 60 points', pg.locator('#m1 .rq').count() == 6 and '60 pt' in pg.locator('#m1 .sheet-sub').inner_text())
-        check(f'{label}: past midterms are locked: three password panels (AY2022, AY2023, AY2026), no questions', pg.locator('#past .sheet.lock').count() == 3
-              and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 3)
+        check(f'{label}: past midterms are locked: four password panels (AY2022, AY2023, AY2024, AY2026), no questions', pg.locator('#past .sheet.lock').count() == 4
+              and pg.locator('#past .rq').count() == 0 and pg.locator('#past .seg-btn').count() == 4)
         check(f'{label}: mock timer starts at 60:00', pg.locator('#m1 .time').inner_text() == '60:00')
         pg.locator('#m1 .t-go').click()
         pg.wait_for_timeout(1300)
@@ -407,18 +407,24 @@ with sync_playwright() as p:
     dots = lambda page: page.evaluate("Array.from(document.querySelectorAll('.tab.has-new')).map((t) => t.dataset.view)")
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    # a day dated after the page's moment (13 Nov at noon on 11 Nov) isn't New yet: count the days up to 12 Nov
+    # a day dated after the page's moment (13 Nov at noon on 11 Nov) isn't New yet; What's new shows the latest six
+    # entries, which may all be from after it: each day shown up to 12 Nov is New, and none after it
     fresh_days = pg.evaluate("[...document.querySelectorAll('#news .n-day time')].filter((t) => t.getAttribute('datetime') <= '2026-11-12').length")
-    check('new: first visit: the Math card and each day in What\'s new are New', pg.locator('#card-math .new-pill').count() == 1
-          and fresh_days >= 1 and pg.locator('#news .new-pill').count() == fresh_days, (pg.locator('#news .new-pill').count(), fresh_days))
+    later_new = pg.evaluate("[...document.querySelectorAll('#news .n-day')].filter((d) => d.querySelector('time').getAttribute('datetime') > '2026-11-12' && d.querySelector('.new-pill')).length")
+    check('new: first visit: the Math card is New, and each day in What\'s new up to this moment', pg.locator('#card-math .new-pill').count() == 1
+          and pg.locator('#news .new-pill').count() == fresh_days and later_new == 0, (pg.locator('#news .new-pill').count(), fresh_days, later_new))
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
-    # Calculus midterm 2 was last updated on 13 Nov, more than a day after this moment, so its card waits (see 13 Nov below)
-    check('new: first visit: the picker marks Calculus midterm 1 New', pg.locator('#exam-derivatives .new-pill').count() == 1
-          and pg.locator('#exam-integrals .new-pill').count() == 0)
+    # a card is New for 14 days from its page's last update, and not before: both Calculus midterms were last updated
+    # after this moment (their past papers of 17 Nov), so their cards wait (see the picker's own moment below)
+    picker_new = pg.evaluate("[...document.querySelectorAll('a.exam')].filter((a) => a.querySelector('.new-pill')).map((a) => a.id)")
+    want = [f'exam-{x}' for x, d in re.findall(r'id="exam-([\w-]+)"[^>]*data-updated="([\d-]+)"', open(os.path.join(SITE, 'math', 'index.html'), encoding='utf-8').read())
+            if datetime.date(2026, 11, 11) - datetime.timedelta(days=13) <= datetime.date(*map(int, d.split('-'))) <= datetime.date(2026, 11, 12)]
+    check('new: first visit: the picker marks the exams updated in the 14 days up to this moment, and none from later', picker_new == want, (picker_new, want))
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
-    check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas', 'exams'], dots(pg))
+    # Exams holds the mocks of 29 Oct, but its newest item (the AY2024 past midterm, 17 Nov) is after this moment: no dot
+    check('new: first visit: every tab with new things has a dot but the open one', dots(pg) == ['practice', 'formulas'], dots(pg))
     check('new: first visit: Summary graphs carry New labels', pg.locator('#view-summary .gx-title .new-pill').count() == 7,
           pg.locator('#view-summary .gx-title .new-pill').count())
     pg.click('#tab-exams')
@@ -482,18 +488,29 @@ with sync_playwright() as p:
           pg.locator('#news .n-day:has(time[datetime="2026-11-17"]) .new-pill').count() == 1)
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')
-    check('new (17 Nov): Calculus midterm 2 has its own tab dots', dots(pg) == ['practice', 'formulas', 'quizzes'], dots(pg))
+    check('new (17 Nov): Calculus midterm 2 has its own tab dots, Exams with its past midterms', dots(pg) == ['practice', 'formulas', 'quizzes', 'exams'], dots(pg))
     pills = [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4', 'u5')]
     check('new (17 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
           pills == [0, 1, 1, 1, 1] and pg.locator('#gx-riemann .new-pill').count() == 0, pills)
     pg.click('#tab-quizzes')
     pg.wait_for_selector('#qg09')
     check('new (17 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
+    pg.click('#tab-exams')
+    pg.wait_for_selector('#past')
+    check('new (17 Nov): the past midterms of the integral part are New, even locked', pg.locator('#past .sheet-title .new-pill').count() == 3 and 'exams' not in dots(pg))
+    # Calculus midterm 1's lessons are past their 14 days; only its AY2024 past midterm (17 Nov) is New
+    pg.goto(BASE + '/math/derivatives/')
+    pg.wait_for_selector('.calc-fab')
+    check('new (17 Nov): Calculus midterm 1 has a dot on Exams only', dots(pg) == ['exams'], dots(pg))
+    pg.click('#tab-exams')
+    pg.wait_for_selector('#past')
+    check('new (17 Nov): its AY2024 past midterm is New, the older ones not', pg.locator('#p2024 .sheet-title .new-pill').count() == 1
+          and pg.locator('#past .sheet-title .new-pill').count() == 1, pg.locator('#past .sheet-title .new-pill').count())
     ctx.close()
 
-    # ---- the picker at noon on the day Calculus midterm 2 was last updated (its card's date, which each What's new line
-    # that links to the page moves on, so this moment moves with it): its card is New, and midterm 1's (last updated
-    # on 30 Oct) is not ----
+        # ---- the picker at noon on the day Calculus midterm 2 was last updated (its card's date, which each What's new line
+    # that links to the page moves on, so this moment moves with it): its card is New, and so is every card whose page
+    # was updated in the 14 days up to then, and no other ----
     upd = re.search(r'id="exam-integrals"[^>]*data-updated="([\d-]+)"', open(os.path.join(SITE, 'math', 'index.html'), encoding='utf-8').read()).group(1)
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
     ctx.clock.set_fixed_time(datetime.datetime(*map(int, upd.split('-')), 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
@@ -501,8 +518,11 @@ with sync_playwright() as p:
     pg = ctx.new_page()
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
-    check(f'new ({upd}): the picker marks Calculus midterm 2 New, and midterm 1 no longer', pg.locator('#exam-integrals .new-pill').count() == 1
-          and pg.locator('#exam-derivatives .new-pill').count() == 0)
+    moment = datetime.date(*map(int, upd.split('-')))
+    want = [f'exam-{x}' for x, d in re.findall(r'id="exam-([\w-]+)"[^>]*data-updated="([\d-]+)"', open(os.path.join(SITE, 'math', 'index.html'), encoding='utf-8').read())
+            if moment - datetime.timedelta(days=13) <= datetime.date(*map(int, d.split('-'))) <= moment + datetime.timedelta(days=1)]
+    picker_new = pg.evaluate("[...document.querySelectorAll('a.exam')].filter((a) => a.querySelector('.new-pill')).map((a) => a.id)")
+    check(f'new ({upd}): the picker marks Calculus midterm 2 New, with every exam updated in the 14 days up to then', 'exam-integrals' in picker_new and picker_new == want, (picker_new, want))
     ctx.close()
 
     # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
@@ -554,7 +574,7 @@ with sync_playwright() as p:
         pg.click('#tab-exams')
         pg.wait_for_timeout(400)
         etoc = pg.locator('#view-exams .toc')
-        check('side menu: Exams lists each mock and past paper', etoc.locator('.toc-paper').count() == 6)
+        check('side menu: Exams lists each mock and past paper', etoc.locator('.toc-paper').count() == 7)
         etoc.locator('.toc-paper', has_text='Mock 2').click()
         pg.wait_for_timeout(500)
         check('side menu: tapping a paper opens it', pg.locator('#m2').is_visible() and not pg.locator('#m1').is_visible()

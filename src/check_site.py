@@ -260,7 +260,10 @@ with sync_playwright() as p:
             page.click('#tab-exams')
             page.wait_for_selector('#past')
             past = page.locator('#past')
-            check(f'{label}: the past midterms open with the same password', past.locator('.sheet.lock').count() == 0 and past.locator('.sheet.mock').count() == 3)
+            check(f'{label}: the past midterms open with the same password', past.locator('.sheet.lock').count() == 0 and past.locator('.sheet.mock').count() == 4
+                  and [x.inner_text().strip() for x in past.locator('.seg-btn').all()] == ['AY2022', 'AY2023', 'AY2024', 'AY2026'])
+            check(f'{label}: past midterm AY2024 has four questions, its one-question [4] drawn without a label',
+                  past.locator('#p2024 .rq').count() == 4 and past.locator('#p2024 .parts li.solo').count() == 1 and past.locator('#p2024 .parts li.solo .pn').count() == 0)
             p26 = past.locator('#p2026')
             check(f'{label}: past midterm AY2026 has six questions and 100 points', p26.locator('.rq').count() == 6 and '100 pt' in p26.locator('.sheet-sub').inner_text())
             p1 = past.locator('#p2022')
@@ -407,6 +410,18 @@ with sync_playwright() as p:
         page.wait_for_selector('#view-exams .up-item')
         check(f'{label}: midterm 2 Exams lists the five Math exams, mocks to come', page.locator('#view-exams .up-item').count() == 5
               and page.locator('#mocks .soon-box').count() == 1)
+        check(f'{label}: midterm 2 Exams has the past midterms of the integral part, AY2022 to AY2024',
+              [x.inner_text().strip() for x in page.locator('#past .seg-btn').all()] == ['AY2022', 'AY2023', 'AY2024'] and page.locator('#past h2').inner_text() == 'Past midterms')
+        if PASSWORD:
+            check(f'{label}: the one unlock opens them too, as mock-like sheets with their questions',
+                  page.locator('#past .sheet.lock').count() == 0 and page.locator('#past .sheet.mock').count() == 3 and page.locator('#p2022 .rq').count() == 3
+                  and page.locator('#p2023 .rq').count() == 3 and page.locator('#p2024 .rq').count() == 4 and page.locator('#p2024 .parts li.solo').count() == 3
+                  and page.locator('#p2024 .time').inner_text() == '60:00' and '100 pt' in page.locator('#p2024 .sheet-sub').inner_text())
+            hits = search(page, 'container')
+            check(f'{label}: midterm 2 search finds the past midterms after unlocking', any(t.startswith('Midterm AY2023 · [3]') for t in hits), hits[:4])
+        else:
+            check(f'{label}: midterm 2 past midterms are locked', page.locator('#past .sheet.lock').count() == 3 and page.locator('#past .rq').count() == 0)
+        check(f'{label}: midterm 2 Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
         hits = search(page, 'riemann')
         check(f'{label}: midterm 2 search finds the lesson and its practice', any(t.startswith('Practice · Day 14 & 15') for t in hits)
               and any('Riemann sum and definite integrals' in t for t in hits), hits[:4])

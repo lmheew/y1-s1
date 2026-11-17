@@ -12,8 +12,10 @@ const ROOT = path.resolve(SRC, '..', '..');
 const inclass = path.join(SRC, 'private', 'inclass.mjs');
 if (!fs.existsSync(inclass)) { console.error('error: src/math/private/inclass.mjs is missing; run `node src/math/build.mjs open` first.'); process.exit(1); }
 const { quizzes } = await import(pathToFileURL(inclass).href);
-const pastFile = path.join(SRC, 'private', 'past.mjs');
-const past = fs.existsSync(pastFile) ? (await import(pathToFileURL(pastFile).href)).past : [];
+// every page's past papers: private/past.mjs (Calculus midterm 1) and private/past-<page>.mjs
+const pastFiles = fs.readdirSync(path.join(SRC, 'private')).filter((f) => /^past(-[\w-]+)?\.mjs$/.test(f));
+const past = [];
+for (const f of pastFiles) past.push(...(await import(pathToFileURL(path.join(SRC, 'private', f)).href)).past);
 // Calculus midterm 2's in-class sheets (math/integrals/locked.json)
 const intFile = path.join(SRC, 'private', 'inclass-integrals.mjs');
 const intQuizzes = fs.existsSync(intFile) ? (await import(pathToFileURL(intFile).href)).quizzes : [];
@@ -53,6 +55,6 @@ for (const x of privateQs) {
     if (pub.includes(esc(t))) { leaks++; console.log('text in the public page:', t); }
   }
 }
-const ids = (pub.match(/id="(rq\d+|p\d{4})-q\d+"/g) || []).length + (index.match(/"id":"(rq\d+|p\d{4})-q\d+"/g) || []).length;
-console.log(`checked ${checked} private formulas and sentences (${quizzes.length + intQuizzes.length} in-class sheets and ${past.length} past midterms) against ${exams.length + 1} pages: ${leaks} in public; private question ids: ${ids}`);
+const ids = (pub.match(/id="(rq\d+|p\d{4}\w*)-q\d+"/g) || []).length + (index.match(/"id":"(rq\d+|p\d{4}\w*)-q\d+"/g) || []).length;
+console.log(`checked ${checked} private formulas and sentences (${quizzes.length + intQuizzes.length} in-class sheets and ${past.length} past papers in ${pastFiles.join(', ')}) against ${exams.length + 1} pages: ${leaks} in public; private question ids: ${ids}`);
 process.exit(leaks || ids ? 1 : 0);

@@ -320,6 +320,7 @@ svg.ic .fill { fill: currentColor; stroke: none; }
 .parts li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); align-items: baseline; }
 .parts .pn { font-size: 14px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .parts .pt { min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.parts li.solo { grid-template-columns: minmax(0, 1fr); } /* a question that is one question: no label */
 .reveal { margin-top: 10px; display: grid; border-top: 1px solid var(--line); }
 details + details { border-top: 1px solid var(--line); }
 details > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 2px; font-size: 14.5px; font-weight: 700; color: var(--green-text); cursor: pointer; }

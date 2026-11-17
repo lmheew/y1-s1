@@ -159,8 +159,11 @@ export const practiceButtons = `<div class="ov-btns"><button type="button" class
 export const nightTools = `<div class="night-tools"><button type="button" class="pill" data-night-print>${UI_ICONS.print}<span>Print</span></button><button type="button" class="linkbtn" data-night-back>Back</button></div>`;
 export const nightLink = (what) => `<a class="night-link" href="#night">${UI_ICONS.night}<span class="nl-t"><b>Night-before sheet</b><small>${what}</small></span>${UI_ICONS.arrow}</a>`;
 
+// labels: the paper's own ((a), 1a); '' for a question that is one question, drawn without a label
 export const partsList = (parts, labels) => parts.length
-  ? `<ol class="parts">${parts.map((p, i) => `<li><span class="pn">(${labels ? labels[i] : i + 1})</span><span class="pt">${inline(p)}</span></li>`).join('')}</ol>` : '';
+  ? `<ol class="parts">${parts.map((p, i) => (labels && labels[i] === ''
+    ? `<li class="solo"><span class="pt">${inline(p)}</span></li>`
+    : `<li><span class="pn">(${labels ? labels[i] : i + 1})</span><span class="pt">${inline(p)}</span></li>`)).join('')}</ol>` : '';
 export const answerBox = (answer) => `<div class="answer"><span class="lbl">Answer</span><ul>${answer.map((a) => `<li>${inline(a)}</li>`).join('')}</ul></div>`;
 export const MARU = `<svg class="maru" viewBox="0 0 64 40" preserveAspectRatio="none" aria-hidden="true"><path pathLength="100" d="M52 7C41 1 15 2 7 14C1 24 13 36 33 35C50 34 61 25 58 14C56 8 49 4 41 4"/></svg>`;
 export const band = (en, jp, lede) => `<div class="band"><div class="wrap"><h1 class="band-title"><span class="en">${en}</span><span class="jp" lang="ja">${jp}</span></h1><p class="band-lede">${lede}</p></div></div>`;

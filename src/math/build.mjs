@@ -7,17 +7,17 @@
 // once and each exam page carries only its own notes.
 //
 //   node src/math/build.mjs site               writes math/index.html (the picker), the exam pages and math/assets/,
-//                                              and each page's locked.json (math/derivatives/, math/integrals/)
-//                                              when SITE_PASSWORD is set
+//                                              and each page's locked.json (math/<exam>/locked.json) when
+//                                              SITE_PASSWORD is set
 //   node src/math/build.mjs artifact <out>     writes one self-contained page with the in-class sheets in plain view
 //   node src/math/build.mjs open               decrypts src/math/private.sealed.json into src/math/private/
 //   node src/math/build.mjs seal               encrypts src/math/private/ into src/math/private.sealed.json
 //   node src/math/build.mjs rekey              changes the password (SITE_PASSWORD = current, NEW_SITE_PASSWORD = new)
 //
-// The in-class quiz sheets are private. Their source (src/math/private/, git-ignored) is kept in the repository only
-// encrypted, and the site gets them only as each exam page's locked.json, opened in the browser with the password:
-// math/derivatives/locked.json (private/inclass.mjs and past.mjs) and math/integrals/locked.json
-// (private/inclass-integrals.mjs). Both use the same password and salt, so one unlock opens every page.
+// The in-class quiz sheets and the past exam papers are private. Their source (src/math/private/, git-ignored) is kept
+// in the repository only encrypted, and the site gets them only as each exam page's locked.json, opened in the browser
+// with the password: a page's in-class sheets (`quizFile`) and past papers (`pastFile`), from src/math/private/. Every
+// locked file uses the same password and salt, so one unlock opens every page.
 // Without SITE_PASSWORD the build keeps the current locked files as they are.
 import crypto from 'crypto';
 import fs from 'fs';
@@ -38,11 +38,9 @@ import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, 
 const SRC = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SRC, '..', '..');
 const MATH = path.join(ROOT, 'math');
-// the shared files of every exam page, and the locked sheets of Calculus midterm 1 (in-class quizzes, past midterms)
+// the shared files of every exam page; each page's locked sheets are in math/<exam>/locked.json (lockedFile)
 const ASSETS = path.join(MATH, 'assets');
-const LOCKED = path.join(MATH, 'derivatives', 'locked.json');
-// Calculus midterm 2's in-class sheets: the same password and salt as Calculus midterm 1's
-const LOCKED_INT = path.join(MATH, 'integrals', 'locked.json');
+const lockedFile = (P) => path.join(MATH, P.id, 'locked.json');
 const SEALED = path.join(SRC, 'private.sealed.json');
 const PRIVATE = path.join(SRC, 'private');
 const rel = (p) => path.relative(ROOT, p);
@@ -51,7 +49,7 @@ const SITE = JSON.parse(fs.readFileSync(path.join(ROOT, 'site.json'), 'utf8'));
 const fail = (msg) => { console.error('error: ' + msg); process.exit(1); };
 const newestOf = (dates) => dates.filter(Boolean).sort().pop() || '';
 // "Last updated" of an exam page: the newest date in What's new that links to the page (site.json) or on anything
-// in it (`added`). The picker's is the newest of all of them.
+// in it (`added`, past papers included). The picker's is the newest of all of them.
 const mathNews = SITE.news.filter((n) => n.subject === 'math' || n.subject === 'all');
 const pageUpdated = (P) => newestOf([
   ...mathNews.filter((n) => (n.link || '').startsWith(`math/${P.id}/`)).map((n) => n.date),
@@ -113,10 +111,16 @@ const soon = (text) => `<p class="soon-box">${UI_ICONS.calendar}<span>${esc(text
 // (Calculus midterm 1 keeps page.js's defaults): store (practice marks, the open tab), seen (its key in study-seen, for
 // New labels and its card on the picker; the home page finds it from a What's new entry's link) and scores (mock scores).
 // lede: the band texts that differ between pages; soon: what a tab says while its content is still to come.
+// quizFile and pastFile: its in-class sheets and past papers in src/math/private/ (locked); pastText: how the Exams tab
+// names the past papers (the section's heading, the note on the password panels, the note above each paper; a paper's
+// own `focus` replaces that note).
+const PAST_FOCUS = 'A real midterm paper, retyped. The paper gives no time limit or points, so the timer and the points here are estimates. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.';
 const DERIVATIVES = {
   id: 'derivatives', name: 'Calculus midterm 1', short: 'Midterm 1 · Derivatives',
   units, habits, practice, tags, formulas, followups, mocks, icons: UNIT_ICONS, graphs: GRAPHS, graphsAdded: GRAPHS_ADDED,
-  testbarAdded: TESTBAR_ADDED, seen: 'math', conf: null,
+  testbarAdded: TESTBAR_ADDED, seen: 'math', conf: null, quizFile: 'inclass.mjs', pastFile: 'past.mjs',
+  pastText: { kicker: 'Real midterm papers', title: 'Past midterms', noun: 'past midterms', focus: PAST_FOCUS,
+    lock: 'The past midterms are locked. The mock exams above are open to everyone.' },
   title: 'CLA1 Midterm 1 Review',
   description: 'Review for Calculus midterm 1 (derivatives) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
   og: {
@@ -134,6 +138,9 @@ const INTEGRALS = {
   id: 'integrals', name: 'Calculus midterm 2', short: 'Midterm 2 · Integrals',
   units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: INTF.followups, mocks: [],
   icons: INTX.UNIT_ICONS, graphs: INTX.GRAPHS, graphsAdded: INTX.GRAPHS_ADDED, testbarAdded: '', seen: 'math-integrals',
+  quizFile: 'inclass-integrals.mjs', pastFile: 'past-integrals.mjs',
+  pastText: { kicker: 'Real midterm papers', title: 'Past midterms', noun: 'past midterms', focus: PAST_FOCUS,
+    lock: 'The past midterms are locked with the same password as the in-class sheets.' },
   conf: { store: 'cla1-integrals-review', seen: 'math-integrals', home: 'summary', scores: 'cla1-integrals-mock-scores',
     suggest: ['substitution', 'by parts', 'partial fractions', 'arctan', 'primitive', 'Riemann sum'], tryWords: '"substitution" or "by parts"' },
   title: 'CLA1 Midterm 2 Review',
@@ -149,7 +156,7 @@ const INTEGRALS = {
     practice: (total) => `${total} practice problems with worked solutions. Try each one on paper, open the answer, then mark how it went.`,
     formulas: 'Every formula from the lessons so far on one page, plus the exact trig values you need without a calculator.',
     quizzes: 'From 5 &amp; 6 Nov, each lesson pair has an in-class quiz. Its sheet (password needed) and two open follow-ups are added here after the class.',
-    exams: 'Upcoming exams with a countdown. Mock midterms for Calculus midterm 2 follow once more lessons are covered.',
+    exams: (n, lock) => `Upcoming exams with a countdown${n ? `, and ${n} past midterms of the integral part${lock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Mock midterms for Calculus midterm 2 follow once more lessons are covered.`,
   },
   soon: {
     quizzes: 'The first in-class quiz on integrals is on 5 & 6 Nov.',
@@ -158,8 +165,9 @@ const INTEGRALS = {
 };
 const PAGES = [DERIVATIVES, INTEGRALS];
 for (const P of PAGES) P.updated = pageUpdated(P);
-// the picker's "Last updated": the newest of every Math page and of Math's What's new
-const PICKER_UPDATED = newestOf([...mathNews.map((n) => n.date), ...PAGES.map((P) => P.updated)]);
+// the picker's "Last updated": the newest of every Math page and of Math's What's new (read once the pages are built,
+// since a page's past papers move its date too)
+const pickerUpdated = () => newestOf([...mathNews.map((n) => n.date), ...PAGES.map((P) => P.updated)]);
 
 // ---------- the page ----------
 // P: the exam page (DERIVATIVES, INTEGRALS).
@@ -356,7 +364,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
         <span class="up-left" aria-live="off"></span>
       </li>`).join('');
   const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.';
-  const PAST_FOCUS = "A real midterm paper, retyped. The paper gives no time limit or points, so the timer and the points here are estimates. Work on paper, without notes or a calculator, then open each answer and tick the parts you got right.";
+  const PT = P.pastText;
   const totalPts = (m) => m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
   function examSheet(m, seg, visible, about, focus, searchExtra, index) {
     const points = totalPts(m);
@@ -364,8 +372,11 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
       const id = `${m.id}-q${qi + 1}`;
       const qpts = x.pts.reduce((a, b) => a + b, 0);
       const lab = (pi) => (x.labels ? x.labels[pi] : String(pi + 1));
+      if (x.labels && x.labels.length !== x.parts.length) throw new Error(`${id}: ${x.labels.length} labels for ${x.parts.length} parts`);
+      if (x.pts.length !== x.parts.length || x.answer.length !== x.parts.length) throw new Error(`${id}: parts, pts and answers don't match`);
       index.push(entry('Exams', 'exams', id, `${m.title} · ${x.label} — ${x.topic}`, plain([x.stem, ...x.parts].join(' ')), plain(x.answer.join(' ')) + ' ' + searchExtra));
-      const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">(${lab(pi)}) ${p} pt</button>`).join('');
+      // a question that is one question has the label '' (no "(1)")
+      const marks = x.pts.map((p, pi) => `<button type="button" class="mk" data-k="${qi + 1}.${pi + 1}" data-pts="${p}" aria-pressed="false">${lab(pi) ? `(${lab(pi)}) ` : ''}${p} pt</button>`).join('');
       return `
     <div class="rq" id="${id}">
       <div class="rq-head"><b class="ql">${x.label}</b><span class="qtopic-wrap"><span class="qtopic">${esc(x.topic)}</span></span><span class="pts">${qpts} pt</span></div>
@@ -396,20 +407,20 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const pastLockHTML = (p, seg) => `
   <article class="sheet lock" id="${p.id}" data-seg="${seg}"${seg ? ' hidden' : ''}${addedAttr(p)}>
     <header class="sheet-head"><div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${meta([p.sub, `${p.minutes} min`, `${p.points} pt`])}</p></div></header>
-    ${unlockForm(p.id, 'The past midterms are locked. The mock exams above are open to everyone.')}
+    ${unlockForm(p.id, PT.lock)}
   </article>`;
   let pastSheets = '';
   pastList.forEach((p, pi) => {
     const full = past && past.find((x) => x.id === p.id);
     if (full) {
-      const html = examSheet(full, pi, pi === 0, full.sub, PAST_FOCUS, 'past midterm exam previous year real paper', locked ? PRIV : INDEX);
+      const html = examSheet(full, pi, pi === 0, full.sub, esc(full.focus || PT.focus), 'past midterm final exam previous year real paper', locked ? PRIV : INDEX);
       if (locked) { sheets[p.id] = html.trim(); pastSheets += pastLockHTML(p, pi); } else pastSheets += html;
     } else pastSheets += pastLockHTML(p, pi);
   });
   const pastHTML = pastList.length ? `
     <section class="qgroup mockgroup" id="past">
-      <header class="qg-head"><p class="kicker">Real midterm papers</p><h2>Past midterms</h2></header>
-      <div class="seg" role="tablist" aria-label="Past midterms">${pastList.map((p, pi) =>
+      <header class="qg-head"><p class="kicker">${esc(PT.kicker)}</p><h2>${esc(PT.title)}</h2></header>
+      <div class="seg" role="tablist" aria-label="${esc(PT.title)}">${pastList.map((p, pi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${pi}" aria-controls="${p.id}" aria-selected="${pi === 0}">${esc(p.seg)}${pastLock ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : ''}<span class="seg-score"></span></button>`).join('')}</div>
       ${pastSheets}
     </section>` : '';
@@ -542,7 +553,7 @@ ${SB_FOOT}
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', !mocks.length ? P.lede.exams : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} past midterms${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', !mocks.length ? (typeof P.lede.exams === 'function' ? P.lede.exams(pastList.length, pastLock) : P.lede.exams) : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} ${PT.noun}${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 
@@ -603,7 +614,7 @@ function writeAssets() {
 // stay unlocked after a rebuild, and refuses a password that doesn't open them: a typo here would lock everyone out.
 async function keyring(pw, { fresh = false } = {}) {
   if (!pw || !normalize(pw)) fail('set SITE_PASSWORD (the password for the in-class sheets).');
-  const current = [readJSON(LOCKED), readJSON(LOCKED_INT), readJSON(SEALED)].filter(Boolean);
+  const current = [...PAGES.map((P) => readJSON(lockedFile(P))), readJSON(SEALED)].filter(Boolean);
   if (current.length && !fresh) {
     const ring = { salt: unb64(current[0].salt), iter: current[0].iter };
     ring.key = await deriveKey(pw, ring.salt, ring.iter);
@@ -647,14 +658,15 @@ async function loadPrivate(ring, file, name) {
   if (!files || !files[file]) return null;
   return (await import('data:text/javascript;base64,' + Buffer.from(files[file]).toString('base64')))[name];
 }
-const loadQuizzes = (ring) => loadPrivate(ring, 'inclass.mjs', 'quizzes');
-const loadPast = (ring) => loadPrivate(ring, 'past.mjs', 'past');
-const loadIntQuizzes = (ring) => loadPrivate(ring, 'inclass-integrals.mjs', 'quizzes');
+const loadQuizzes = (ring) => loadPrivate(ring, DERIVATIVES.quizFile, 'quizzes');
+const loadPast = (ring) => loadPrivate(ring, DERIVATIVES.pastFile, 'past');
 
-// An exam page's locked file: its in-class sheets (and past papers), sealed with the ring and rewritten only when they
-// change. `quizzes` null (no password): the current file stays as it is. Returns the box the page links to.
+// An exam page's locked file: its in-class sheets and past papers, sealed with the ring and rewritten only when they
+// change. `quizzes` null (no password): the current file stays as it is ([] on a page without in-class sheets).
+// Returns the box the page links to.
 async function sealLocked(ring, file, box, quizzes, r) {
   if (!quizzes) return box;
+  if (!r.hasLocks) return box; // nothing to lock on this page (yet)
   const payload = { sheets: r.sheets, index: r.PRIV };
   let same = false;
   if (box) { try { same = JSON.stringify(await openBox(ring.key, box)) === JSON.stringify(payload) && JSON.stringify(box.past || []) === JSON.stringify(r.pastList); } catch { same = false; } }
@@ -680,22 +692,22 @@ async function buildSite(pw = PASSWORD, { afterRekey = false } = {}) {
   const ring = pw ? await keyring(pw) : null;
   if (ring) await syncSeal(ring);
   else if (!afterRekey && readPrivateDir()) console.warn('note: src/math/private/ exists but SITE_PASSWORD is not set, so the locked in-class sheets were not rebuilt.');
-  const quizzes = ring ? await loadQuizzes(ring) : null;
-  const past = ring ? await loadPast(ring) : null;
-  let box = readJSON(LOCKED);
-  const r = render(DERIVATIVES, { quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
-  box = await sealLocked(ring, LOCKED, box, quizzes, r);
-  const lockedSrc = lockedAddress(DERIVATIVES, r, box, LOCKED);
-  // Calculus midterm 2: its own in-class sheets (private/inclass-integrals.mjs) and locked file
-  const intQuizzes = ring ? await loadIntQuizzes(ring) : null;
-  let boxI = readJSON(LOCKED_INT);
-  const ri = render(INTEGRALS, { quizzes: intQuizzes, past: null, locked: true, lockedNos: boxI ? boxI.quizzes : [] });
-  boxI = await sealLocked(ring, LOCKED_INT, boxI, intQuizzes, ri);
-  const lockedSrcI = lockedAddress(INTEGRALS, ri, boxI, LOCKED_INT);
   const a = writeAssets();
-  writePage(DERIVATIVES, r, a, lockedSrc);
-  writePage(INTEGRALS, ri, a, lockedSrcI);
-  const picker = pickerHTML(a, { derivatives: r, integrals: ri });
+  const built = {};
+  // each exam page with its own in-class sheets and past papers (src/math/private/) and its own locked file
+  for (const P of PAGES) {
+    const file = lockedFile(P);
+    const quizzes = !ring ? null : P.quizFile ? await loadPrivate(ring, P.quizFile, 'quizzes') : [];
+    const past = ring && P.pastFile ? await loadPrivate(ring, P.pastFile, 'past') : null;
+    let box = readJSON(file);
+    // "Last updated" counts the page's past papers too (their dates stay readable in the locked file)
+    P.updated = newestOf([pageUpdated(P), ...(past || (box && box.past) || []).map((p) => p.added)]);
+    const r = render(P, { quizzes, past, locked: true, lockedNos: box ? box.quizzes : [], lockedPast: (box && box.past) || [] });
+    box = await sealLocked(ring, file, box, quizzes, r);
+    writePage(P, r, a, lockedAddress(P, r, box, file));
+    built[P.id] = r;
+  }
+  const picker = pickerHTML(a, built);
   writeIfChanged(path.join(MATH, 'index.html'), picker);
   console.log('wrote', rel(path.join(MATH, 'index.html')), (picker.length / 1024).toFixed(0) + ' KB · exams:', EXAMS.map((x) => x.id + (x.page ? '' : ' (soon)')).join(', '),
     '· shared files:', a.css, a.js, `and ${a.fonts.length} fonts in`, rel(ASSETS));
@@ -810,7 +822,7 @@ ${SB_EDGE}
 <footer class="site-foot"><div class="wrap">
   <p class="foot-links"><a href="../">← All subjects</a></p>
   <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page.</p>
-  <p class="fine">Last updated <time datetime="${PICKER_UPDATED}">${fmtDate(PICKER_UPDATED)}</time>.</p>
+  <p class="fine">Last updated <time datetime="${pickerUpdated()}">${fmtDate(pickerUpdated())}</time>.</p>
 </div></footer>
 <script>${PICKER_JS}</script>
 </body>
@@ -867,7 +879,7 @@ async function rekey() {
   if (!normalize(next)) fail('set NEW_SITE_PASSWORD as well.');
   const old = await keyring(PASSWORD);
   const sealedBox = readJSON(SEALED);
-  const lockedFiles = [LOCKED, LOCKED_INT].map((file) => ({ file, box: readJSON(file) })).filter((x) => x.box);
+  const lockedFiles = PAGES.map((P) => ({ file: lockedFile(P), box: readJSON(lockedFile(P)) })).filter((x) => x.box);
   for (const x of lockedFiles) x.data = await openBox(old.key, x.box);
   const sealedData = sealedBox && await openBox(old.key, sealedBox);
   const ring = await keyring(next, { fresh: true });

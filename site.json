@@ -62,6 +62,13 @@
     {
       "date": "2026-11-17",
       "subject": "math",
+      "title": "Past midterms: three for Calculus midterm 2, one more for midterm 1",
+      "text": "Calculus midterm 2's Exams tab has the past midterms of the integral part from AY2022, AY2023 and AY2024, and Calculus midterm 1's has one more, AY2024. They are retyped with step-by-step answers and locked with the same password as the in-class sheets. Each works like a mock: a 60-minute timer, Print buttons, and parts to tick for a score. The time and points are estimates, since the papers give none.",
+      "link": "math/integrals/#exams"
+    },
+    {
+      "date": "2026-11-17",
+      "subject": "math",
       "title": "Calculus midterm 2: parametric and polar curves and Quiz 09",
       "text": "Calculus midterm 2: Day 22 & 23 are added: parametrization, polar coordinates, the conversion of the region of integral, the length of a parametric curve and of a polar curve (with the class arc, the cardioid and r = 2θ), and areas and lengths with a parameter (the conversion of summation, x = 3t², y = 3t − t³). Practice has ten new problems, including all four class exercises; Formulas has two new groups. Quizzes has In-class Quiz 09 (password needed) with Follow-up A and B.",
       "link": "math/integrals/"
