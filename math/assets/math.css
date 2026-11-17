@@ -499,6 +499,7 @@ details[open] .when-open { display: inline; }
 .soon-box { display: flex; align-items: center; gap: 12px; margin-top: 4px; padding: 13px 16px; border: 1px dashed var(--line); border-radius: 16px;
   font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
 .soon-box .ic { width: 20px; height: 20px; color: var(--green-text); }
+.soon-box a { color: var(--green-text); font-weight: 600; text-underline-offset: 2px; } /* a placeholder that points to another page */
 .unit .soon-box { margin-top: 0; }
 .fgroup .soon-box, .punit .soon-box { margin-top: 10px; }
 .mockgroup .soon-box, .qgroup .soon-box { margin-top: 0; }

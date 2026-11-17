@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CLA1 Calculus Final Review</title>
+<meta name="description" content="Past Calculus finals of Calculus &amp; Linear Algebra 1 (the Calculus part), with worked answers.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Study Notes">
+<meta property="og:title" content="CLA1 Review · Calculus final">
+<meta property="og:description" content="Unofficial review notes for the Calculus final: past finals with worked answers, including the MATLAB parts.">
+<meta property="og:url" content="https://lmheew.github.io/y1-s1/math/calculus-final/">
+<meta property="og:image" content="https://lmheew.github.io/y1-s1/og-math-calculus-final.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CLA1 Review, Calculus final: past finals with worked answers, notes to follow">
+<meta name="twitter:card" content="summary_large_image">
+<style>@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }</style>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ECF3EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101713" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../favicon-math.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="manifest" href="../../manifest.webmanifest">
+<script>try{var o=JSON.parse(localStorage.getItem('cla1-midterm-review')||'null')||{},d=document.documentElement,t=o.theme,l=o.look;if(t==='light'||t==='dark'){d.setAttribute('data-theme',t);d.setAttribute('data-theme-early','')}if(l==='classic'||l==='paper'){d.setAttribute('data-look',l);var c=l==='paper'?['#F4F0E7','#1E1D1B']:['#FFFFFF',''];document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){var k=c[/dark/.test(m.media)?1:0];if(k){m.setAttribute('data-glass',m.content);m.content=k}})}}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
+<link rel="preload" href="../assets/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/math.js?v=e288553ebb" as="script">
+<link rel="stylesheet" href="../assets/math.css?v=6aaaa6768e">
+</head>
+<body data-page="{&quot;name&quot;:&quot;Calculus final&quot;,&quot;store&quot;:&quot;cla1-calculus-final-review&quot;,&quot;seen&quot;:&quot;math-calculus-final&quot;,&quot;home&quot;:&quot;exams&quot;,&quot;scores&quot;:&quot;cla1-calculus-final-scores&quot;,&quot;suggest&quot;:[&quot;Taylor&quot;,&quot;MATLAB&quot;,&quot;by parts&quot;,&quot;volume&quot;,&quot;implicit&quot;,&quot;container&quot;],&quot;tryWords&quot;:&quot;\&quot;Taylor\&quot; or \&quot;volume\&quot;&quot;}">
+<div class="sb-edge" aria-hidden="true"></div>
+
+<header class="appbar"><div class="wrap appbar-row">
+  <a class="brand" href="#summary" aria-label="CLA1 Review, Calculus final, go to Summary"><svg class="badge" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" class="b-bg"/><path d="M6 24Q16 -6 26 24" class="b-curve"/><path d="M5.5 21L16.5 4.5" class="b-tan"/><circle cx="11" cy="12.75" r="2.4" class="b-dot"/></svg><span class="brand-text"><b>CLA1 Review</b><small>Calculus final</small></span></a>
+  <div class="appbar-actions">
+    <a class="icon-btn subj-btn" href="../../physics/" aria-label="Switch to Physics (EP1)" title="Switch to Physics (EP1)"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1F4B8F"/><path d="M8.5 6.5h15" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><path d="M16 6.5L21.2 19.2" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9 20.5Q16 27 23 20.5" fill="none" stroke="#8FB4EC" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="1.6 2.6"/><circle cx="21.9" cy="21" r="3.3" fill="#8FB4EC"/></svg></a>
+    <button type="button" class="icon-btn" id="theme-btn" data-mode="system" aria-label="Theme: system. Tap to change."><span class="t-system"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="fill"/></svg></span><span class="t-light"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></span><span class="t-dark"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></svg></span></button>
+    <button type="button" class="icon-btn" id="search-btn" aria-label="Search everything"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg></button>
+  </div>
+</div></header>
+
+<div class="sb-foot" aria-hidden="true"></div>
+<nav class="tabbar" aria-label="Sections" data-updated="2026-11-17"><div class="tabbar-row" role="tablist">
+  <button type="button" class="tab" role="tab" id="tab-summary" data-view="summary" aria-controls="view-summary" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M3.5 5.5c0-.8.7-1.5 1.5-1.5h6.2v15.5H5a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M20.5 5.5c0-.8-.7-1.5-1.5-1.5h-6.2v15.5H19a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M6.5 8.5h2.2M15.3 8.5h2.2M15.3 12h2.2"/></svg><span>Summary</span></button><button type="button" class="tab" role="tab" id="tab-practice" data-view="practice" aria-controls="view-practice" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="4" y="3" width="12.5" height="18" rx="2"/><path d="M7.5 8h5.5M7.5 11.5h5.5M7.5 15h3"/><path d="M14.2 19.8l6.1-6.1 1.6 1.6-6.1 6.1h-1.6z"/></svg><span>Practice</span></button><button type="button" class="tab" role="tab" id="tab-formulas" data-view="formulas" aria-controls="view-formulas" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M15.5 8H8.8l3.6 4-3.6 4h6.7"/></svg><span>Formulas</span></button><button type="button" class="tab" role="tab" id="tab-quizzes" data-view="quizzes" aria-controls="view-quizzes" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4M8.5 16.2h7"/></svg><span>Quizzes</span></button><button type="button" class="tab" role="tab" id="tab-exams" data-view="exams" aria-controls="view-exams" aria-selected="false" data-newest="2026-11-17"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2.2 2.2 4.8-4.8"/></svg><span>Exams</span></button>
+</div></nav>
+
+<main data-locked="locked.json?v=fc272c8078">
+  <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Summary</span><span class="jp" lang="ja">まとめ</span></h1><p class="band-lede">Notes for the final come after the midterms. Until then, every lesson is on the Calculus midterm 1 and 2 pages.</p></div></div>
+    <div class="wrap content">
+      
+    <section class="qgroup" id="su-soon">
+      <header class="qg-head"><p class="kicker">Notes for the final</p><h2>On the midterm pages for now</h2></header>
+      <p class="soon-box"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Every lesson so far, with its key ideas and common mistakes, is on the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages. Notes for the final follow after the midterms.</span></p>
+    </section>
+    </div>
+  </section>
+
+  <section id="view-practice" class="view" role="tabpanel" aria-labelledby="tab-practice" hidden>
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Practice</span><span class="jp" lang="ja">練習問題</span></h1><p class="band-lede">Practice problems for the final come later. Until then, Practice on the Calculus midterm 1 and 2 pages covers every lesson.</p></div></div>
+    <div class="wrap content" data-lazy="practice"><p class="lazy-wait">Loading…</p></div>
+  </section>
+
+  <section id="view-formulas" class="view" role="tabpanel" aria-labelledby="tab-formulas" hidden>
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Formulas</span><span class="jp" lang="ja">公式集</span></h1><p class="band-lede">The formulas are on the Calculus midterm 1 and 2 pages for now.</p></div></div>
+    <div class="wrap content" data-lazy="formulas"><p class="lazy-wait">Loading…</p></div>
+  </section>
+
+  <section id="view-quizzes" class="view" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Quizzes</span><span class="jp" lang="ja">小テスト</span></h1><p class="band-lede">The in-class quizzes are on the Calculus midterm 1 and 2 pages.</p></div></div>
+    <div class="wrap content" data-lazy="quizzes"><p class="lazy-wait">Loading…</p></div>
+  </section>
+
+  <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Exams</span><span class="jp" lang="ja">試験</span></h1><p class="band-lede">Upcoming exams with a countdown, and 2 past finals <span class="nw">(password needed)</span>: their Calculus part, MATLAB problems included. Start the timer, work on paper, then open the answers and mark your paper.</p></div></div>
+    <div class="wrap content" data-lazy="exams"><p class="lazy-wait">Loading…</p></div>
+  </section>
+
+  <section id="view-night" class="view night" aria-label="Night-before sheet" hidden>
+    <div class="band"><div class="wrap"><h1 class="band-title"><span class="en">Night before</span><span class="jp" lang="ja">直前チェック</span></h1><p class="band-lede">The night-before sheet for Calculus final comes with its notes.</p></div></div>
+    <div class="wrap content" data-lazy="night"><p class="lazy-wait">Loading…</p></div>
+  </section>
+</main>
+<script type="text/x-lazy-html" id="lazy-night"><div class="night-tools"><button type="button" class="pill" data-night-print><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M7 8.5V3.5h10v5"/><rect x="3.5" y="8.5" width="17" height="8.5" rx="2"/><path d="M7 14h10v6.5H7z"/></svg><span>Print</span></button><button type="button" class="linkbtn" data-night-back>Back</button></div>
+    <section class="qgroup" id="nt-soon">
+      <header class="qg-head"><p class="kicker">The night before</p><h2>Comes with the notes</h2></header>
+      <p class="soon-box"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Until the final has notes of its own, use the night-before sheets of the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages.</span></p>
+    </section></script>
+<script type="text/x-lazy-html" id="lazy-practice"><section class="qgroup" id="pu-soon">
+      <header class="qg-head"><p class="kicker">Practice</p><h2>On the midterm pages for now</h2></header>
+      <p class="soon-box"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Practice problems with worked solutions for every lesson are on the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages.</span></p>
+    </section></script>
+<script type="text/x-lazy-html" id="lazy-formulas"><section class="qgroup" id="fg-soon">
+      <header class="qg-head"><p class="kicker">Formulas</p><h2>On the midterm pages for now</h2></header>
+      <p class="soon-box"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>Each lesson's formulas, and the exact trig values, are on the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages.</span></p>
+    </section></script>
+<script type="text/x-lazy-html" id="lazy-quizzes"><section class="qgroup" id="qg-soon">
+      <header class="qg-head"><p class="kicker">In-class quizzes</p><h2>On the midterm pages</h2></header>
+      <p class="soon-box"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg><span>The in-class quizzes and their follow-ups are on the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages.</span></p>
+    </section></script>
+<script type="text/x-lazy-html" id="lazy-exams"><section class="exam-up" id="ex-upcoming">
+      <h2 class="sec-title">Upcoming exams</h2>
+      <ul class="up-list">
+      <li class="up-item" data-date="2026-10-30" data-time="">
+        <span class="up-cal" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+        <span class="up-main"><b class="up-name">Calculus midterm 1</b><span class="up-when"></span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li>
+      <li class="up-item" data-date="2026-11-23" data-time="">
+        <span class="up-cal" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+        <span class="up-main"><b class="up-name">Calculus midterm 2 (integrals)</b><span class="up-when"></span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li>
+      <li class="up-item" data-date="" data-time="">
+        <span class="up-cal" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+        <span class="up-main"><b class="up-name">Linear Algebra midterm</b><span class="up-when">Date to be announced</span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li>
+      <li class="up-item" data-date="" data-time="">
+        <span class="up-cal" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+        <span class="up-main"><b class="up-name">Calculus final</b><span class="up-when">Date to be announced</span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li>
+      <li class="up-item" data-date="" data-time="">
+        <span class="up-cal" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+        <span class="up-main"><b class="up-name">Linear Algebra final</b><span class="up-when">Date to be announced</span></span>
+        <span class="up-left" aria-live="off"></span>
+      </li></ul>
+      
+    </section>
+    <section class="qgroup mockgroup" id="past">
+      <header class="qg-head"><p class="kicker">Real final papers</p><h2>Past finals</h2></header>
+      <div class="seg" role="tablist" aria-label="Past finals"><button type="button" class="seg-btn" role="tab" data-seg="0" aria-controls="p2022" aria-selected="true">AY2022<span class="seg-lock"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></svg></span><span class="seg-score"></span></button><button type="button" class="seg-btn" role="tab" data-seg="1" aria-controls="p2023" aria-selected="false">AY2023<span class="seg-lock"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></svg></span><span class="seg-score"></span></button></div>
+      
+  <article class="sheet lock" id="p2022" data-seg="0" data-added="2026-11-17">
+    <header class="sheet-head"><div><h3 class="sheet-title">Final AY2022</h3><p class="sheet-sub"><span class="nw">Calculus part</span> · <span class="nw">90 min</span> · <span class="nw">100 pt</span></p></div></header>
+    
+    <form class="unlock" novalidate>
+      <div class="u-head"><span class="u-icon"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></svg></span><div><p class="u-title">Password needed</p><p class="u-text">The past finals are locked with the same password as the in-class sheets.</p></div></div>
+      <div class="u-row">
+        <div class="u-field"><label class="sr" for="pw-p2022">Password</label><input id="pw-p2022" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Password"><button type="button" class="u-show" aria-pressed="false" aria-controls="pw-p2022">Show</button></div>
+        <button type="submit" class="u-go">Unlock</button>
+      </div>
+      <p class="u-msg" role="status" aria-live="polite"></p>
+      <label class="u-remember"><input type="checkbox" name="remember"><span>Remember on this device</span></label>
+    </form>
+  </article>
+  <article class="sheet lock" id="p2023" data-seg="1" hidden data-added="2026-11-17">
+    <header class="sheet-head"><div><h3 class="sheet-title">Final AY2023</h3><p class="sheet-sub"><span class="nw">Calculus part</span> · <span class="nw">90 min</span> · <span class="nw">100 pt</span></p></div></header>
+    
+    <form class="unlock" novalidate>
+      <div class="u-head"><span class="u-icon"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></svg></span><div><p class="u-title">Password needed</p><p class="u-text">The past finals are locked with the same password as the in-class sheets.</p></div></div>
+      <div class="u-row">
+        <div class="u-field"><label class="sr" for="pw-p2023">Password</label><input id="pw-p2023" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Password"><button type="button" class="u-show" aria-pressed="false" aria-controls="pw-p2023">Show</button></div>
+        <button type="submit" class="u-go">Unlock</button>
+      </div>
+      <p class="u-msg" role="status" aria-live="polite"></p>
+      <label class="u-remember"><input type="checkbox" name="remember"><span>Remember on this device</span></label>
+    </form>
+  </article>
+    </section></script>
+
+
+<footer class="site-foot"><div class="wrap">
+  <p class="deco cheer">Good luck in your studies!</p>
+  <p class="foot-links"><a href="../">← All exams</a> <a href="../../">All subjects</a></p>
+  <p class="fine">Study notes for Calculus &amp; Linear Algebra 1. Not an official Kyoto University of Advanced Science page. Every answer was checked numerically before publishing.</p>
+  <p class="fine">Last updated <time datetime="2026-11-17">17 Nov 2026</time>.</p>
+  <p class="fine">Math typeset with KaTeX (<a href="../../src/vendor/katex/LICENSE.txt">MIT License</a>).</p>
+</div></footer>
+
+<div class="search-sheet" id="search" role="dialog" aria-modal="true" aria-label="Search" hidden>
+  <div class="search-bar"><div class="wrap search-row">
+    <label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg><input id="search-input" type="search" placeholder="Search problems, formulas, notes" autocomplete="off" enterkeyhint="search"></label>
+    <button type="button" class="icon-btn" id="search-close" aria-label="Close search"><svg viewBox="0 0 24 24" aria-hidden="true" class="ic"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div></div>
+  <div class="wrap search-results" id="search-results"></div>
+</div>
+<script type="application/json" id="search-index">[]</script>
+<script src="../assets/math.js?v=e288553ebb"></script>
+</body>
+</html>

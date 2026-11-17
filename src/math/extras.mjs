@@ -157,4 +157,6 @@ export const EXAM_ICONS = {
   derivatives: big('<path d="M8 8v32h32"/><path d="M11 36Q26 34 41 12"/><path d="M14 38.6L40 17.8" class="lime-stroke"/><circle cx="26" cy="29" r="2.6" class="lime-fill"/>'),
   integrals: big('<path d="M16 40V24.4Q25 13.6 34 24.4V40z" class="lime-fill" fill-opacity=".55"/><path d="M8 8v32h32"/><path d="M10 34Q25 4 40 34"/>'),
   'linear-algebra': big('<path d="M14 8H9v32h5M34 8h5v32h-5"/><circle cx="18.5" cy="17" r="2.6" class="lime-fill"/><circle cx="29.5" cy="17" r="2.4"/><circle cx="18.5" cy="31" r="2.4"/><circle cx="29.5" cy="31" r="2.6" class="lime-fill"/>'),
+  // the final: the curve with both halves of the course on it, an area under it and a tangent
+  'calculus-final': big('<path d="M27 40V16.6Q32.9 13.7 40 13.5V40z" class="lime-fill" fill-opacity=".55"/><path d="M8 8v32h32"/><path d="M10 36Q20 14 40 13.5"/><path d="M11 32L25 16" class="lime-stroke"/><circle cx="17.6" cy="24.4" r="2.6" class="lime-fill"/>'),
 };

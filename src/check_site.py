@@ -91,11 +91,13 @@ with sync_playwright() as p:
         check(f'{label}: home: back-to-top ' + ('shows once scrolled down' if far else 'stays hidden on a short page'), totop_on() == far)
         page.evaluate('scrollTo(0, 0)')
         page.click('a.subject[href="math/"]')
-        # the Math card opens the exam picker: one card per exam, the ones without notes yet marked coming soon
+        # the Math card opens the exam picker: one card per exam, in course order (an exam without a page would say coming soon)
         page.wait_for_selector('.exams')
-        check(f'{label}: exam picker has the Calculus midterm 1 and 2 cards and one coming soon',
-              page.locator('a.exam[href="derivatives/"]').count() == 1 and page.locator('a.exam[href="integrals/"]').count() == 1
-              and page.locator('.exam.soon .e-soon').count() == 1)
+        check(f'{label}: exam picker has a card for each exam page: midterms 1 and 2, Linear Algebra and the Calculus final',
+              [a.get_attribute('href') for a in page.locator('a.exam').all()] == ['derivatives/', 'integrals/', 'linear-algebra/', 'calculus-final/']
+              and page.locator('.exam.soon').count() == 0)
+        check(f'{label}: the past-exam pages say what they hold', page.locator('#exam-linear-algebra .e-stats').inner_text().replace('\n', ' ') == '1 past midterm · 3 past finals'
+              and page.locator('#exam-calculus-final .e-stats').inner_text() == '2 past finals', page.locator('#exam-linear-algebra .e-stats').inner_text())
         check(f'{label}: exam picker has no sideways scroll', overflow(page) <= 0, overflow(page))
         check(f'{label}: exam picker links home', page.locator('.foot-links a[href="../"]').count() == 1)
         shot(page, f'{label}-picker')
@@ -434,6 +436,54 @@ with sync_playwright() as p:
               page.locator('.foot-links a[href="../"]').count() == 1 and page.locator('a.subj-btn[href="../../physics/"]').count() == 1)
         check(f'{label}: midterm 2 has no console errors', not errors, errors[:3])
         ctx.close()
+
+        # ---- the pages that hold only past exams so far (Linear Algebra, the Calculus final), in a fresh browser: each
+        # opens on Exams, its other tabs say what is coming, and the one password opens its papers ----
+        for slug, brand, groups, papers in (('linear-algebra', 'Linear Algebra', {'past': ['AY2024'], 'past-finals': ['AY2022', 'AY2023', 'Remedial']},
+                                             {'p2024': 4, 'p2022': 3, 'p2023': 4, 'p2023r': 4}),
+                                            ('calculus-final', 'Calculus final', {'past': ['AY2022', 'AY2023']}, {'p2022': 4, 'p2023': 4})):
+            ctx = browser.new_context(viewport=vp)
+            ctx.route(re.compile(r'^https?://(?!localhost[:/])'), lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+            page = ctx.new_page()
+            errors = []
+            page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
+            page.on('pageerror', lambda e: errors.append(str(e)))
+            page.goto(BASE + '/math/')
+            page.click(f'a.exam[href="{slug}/"]')
+            page.wait_for_selector('#view-exams .up-item')
+            page.wait_for_load_state('load')
+            check(f'{label}: {brand} opens on Exams', page.locator('#view-exams').is_visible() and page.locator('.brand small').inner_text() == brand)
+            segs = {g: [b.inner_text().strip() for b in page.locator(f'#{g} .seg-btn').all()] for g in groups}
+            check(f'{label}: {brand} Exams has its past papers in their groups, locked, and no mocks', segs == groups and page.locator('#view-exams .sheet.lock').count() == len(papers)
+                  and page.locator('#view-exams .rq').count() == 0 and page.locator('#mocks').count() == 0 and page.locator('#view-exams .night-link').count() == 0, segs)
+            check(f'{label}: {brand} Exams lists the five Math exams', page.locator('#view-exams .up-item').count() == 5)
+            check(f'{label}: {brand} Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
+            shot(page, f'{label}-{slug}-exams')
+            for view in ('summary', 'practice', 'formulas', 'quizzes'):
+                page.click(f'#tab-{view}')
+                page.wait_for_selector(f'#view-{view} .soon-box')
+                check(f'{label}: {brand} {view} says what is coming', page.locator(f'#view-{view} .soon-box').count() == 1 and page.locator(f'#view-{view} .qgroup h2').count() == 1
+                      and page.locator(f'#view-{view} .prob, #view-{view} .frow, #view-{view} .unit').count() == 0)
+            if slug == 'calculus-final':
+                check(f'{label}: {brand} points to the midterm pages', page.locator('#view-quizzes .soon-box a[href="../derivatives/"]').count() == 1
+                      and page.locator('#view-quizzes .soon-box a[href="../integrals/"]').count() == 1)
+            if PASSWORD:
+                page.click('#tab-exams')
+                form = page.locator('#view-exams form.unlock').first
+                form.locator('input[name="password"]').fill(PASSWORD)
+                form.locator('.u-go').click()
+                page.wait_for_selector('body.unlocked', timeout=20000)
+                counts = {pid: page.locator(f'#{pid} .rq').count() for pid in papers}
+                check(f'{label}: the one password opens every past paper on {brand}, with its questions', counts == papers and page.locator('#view-exams .sheet.lock').count() == 0, counts)
+                first = list(papers)[0]
+                check(f'{label}: {brand}: an opened paper works like a mock (timer, print, ticks)', page.locator(f'#{first} .t-go').count() == 1
+                      and page.locator(f'#{first} .print-btn').count() == 2 and page.locator(f'#{first} .mk').count() > 0)
+                check(f'{label}: {brand} unlocked has no sideways scroll', overflow(page) <= 0, overflow(page))
+                hits = search(page, 'Christmas' if slug == 'linear-algebra' else 'MATLAB')
+                check(f'{label}: {brand} search finds its past papers after unlocking',
+                      any(t.startswith('Christmas exam AY2024 · [') if slug == 'linear-algebra' else t.startswith('Final AY20') for t in hits), hits[:4])
+            check(f'{label}: {brand} has no console errors', not errors, errors[:3])
+            ctx.close()
 
         # ---- Physics, in a fresh browser: home card → exam picker → the midterm page, which opens on Quizzes ----
         ctx = browser.new_context(viewport=vp)

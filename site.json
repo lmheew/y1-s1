@@ -23,7 +23,7 @@
       "name": "Linear Algebra midterm",
       "date": null,
       "time": null,
-      "page": null
+      "page": "math/linear-algebra/"
     },
     {
       "subject": "math",
@@ -31,7 +31,7 @@
       "name": "Calculus final",
       "date": null,
       "time": null,
-      "page": null
+      "page": "math/calculus-final/"
     },
     {
       "subject": "math",
@@ -39,7 +39,7 @@
       "name": "Linear Algebra final",
       "date": null,
       "time": null,
-      "page": null
+      "page": "math/linear-algebra/"
     },
     {
       "subject": "physics",
@@ -59,6 +59,20 @@
     }
   ],
   "news": [
+    {
+      "date": "2026-11-17",
+      "subject": "math",
+      "title": "Linear Algebra: a page with four past exams",
+      "text": "Linear Algebra has its own page, with past exams for now: the AY2024 Christmas exam (the one before the winter break), and the Linear Algebra part of the AY2022 and AY2023 finals with the AY2023 retake. Each is retyped with step-by-step answers, locked with the same password as the in-class sheets, and works like a mock, with a timer, Print buttons and parts to tick. Notes follow once the Linear Algebra classes start.",
+      "link": "math/linear-algebra/"
+    },
+    {
+      "date": "2026-11-17",
+      "subject": "math",
+      "title": "Calculus final: a page with two past finals",
+      "text": "The Calculus final has its own page, with the Calculus part of the AY2022 and AY2023 finals: derivatives, integrals, series and a few MATLAB problems, retyped with step-by-step answers (and the MATLAB commands) and locked with the same password as the in-class sheets. Notes for the final follow after the midterms.",
+      "link": "math/calculus-final/"
+    },
     {
       "date": "2026-11-17",
       "subject": "math",

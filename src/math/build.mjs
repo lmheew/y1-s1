@@ -66,8 +66,10 @@ const EXAMS = [
     text: 'Limits and continuity, derivative rules, extrema, series and Taylor polynomials, plus an introduction to differential equations.' },
   { id: 'integrals', page: 'integrals', exam: 'Calculus midterm 2 (integrals)', kicker: 'Calculus midterm 2', title: 'Integrals',
     text: 'Riemann sums and definite integrals, primitive functions, integration by parts and substitution, applications, polar curves and improper integrals. Notes are added after each class.' },
-  { id: 'linear-algebra', exam: 'Linear Algebra midterm', kicker: 'Linear Algebra midterm', title: 'Linear algebra',
-    text: 'Notes will appear here after the first Linear Algebra class.' },
+  { id: 'linear-algebra', page: 'linear-algebra', exam: 'Linear Algebra midterm', kicker: 'Linear Algebra', title: 'Linear algebra',
+    text: 'Past Linear Algebra exams with worked answers: the AY2024 Christmas exam, and the AY2022 and AY2023 finals with the AY2023 retake. Notes follow once the Linear Algebra classes start.' },
+  { id: 'calculus-final', page: 'calculus-final', exam: 'Calculus final', kicker: 'Calculus final', title: 'Derivatives, integrals and series',
+    text: 'The Calculus part of the AY2022 and AY2023 finals, with worked answers and their MATLAB problems. Notes for the final follow after the midterms.' },
 ];
 
 // A practice problem's id (the key for its saved mark): its own `id` when it was moved from another unit, else unit number.n
@@ -163,7 +165,77 @@ const INTEGRALS = {
     mocks: 'Mock midterms with a timer and self-scoring are coming as the lessons are covered.',
   },
 };
-const PAGES = [DERIVATIVES, INTEGRALS];
+// Pages that hold only past exams so far (examsOnly): no lessons, practice, formulas or quizzes yet, so those tabs say
+// what is coming (`later`: kicker, heading and the note, which may hold links) and the page opens on Exams.
+const MIDTERM_LINKS = 'the <a href="../derivatives/">Calculus midterm 1</a> and <a href="../integrals/">midterm 2</a> pages';
+const CALCULUS_FINAL = {
+  id: 'calculus-final', name: 'Calculus final', short: 'Calculus final', examsOnly: true,
+  units: [], habits: '', practice: {}, tags: {}, formulas: [], followups: {}, mocks: [], icons: { habits: '' }, graphs: {}, graphsAdded: '',
+  testbarAdded: '', seen: 'math-calculus-final', quizFile: null, pastFile: 'past-calculus-final.mjs',
+  pastText: { kicker: 'Real final papers', title: 'Past finals', noun: 'past finals', one: 'past final', focus: PAST_FOCUS,
+    lock: 'The past finals are locked with the same password as the in-class sheets.' },
+  conf: { store: 'cla1-calculus-final-review', seen: 'math-calculus-final', home: 'exams', scores: 'cla1-calculus-final-scores',
+    suggest: ['Taylor', 'MATLAB', 'by parts', 'volume', 'implicit', 'container'], tryWords: '"Taylor" or "volume"' },
+  title: 'CLA1 Calculus Final Review',
+  description: 'Past Calculus finals of Calculus &amp; Linear Algebra 1 (the Calculus part), with worked answers.',
+  og: {
+    title: 'CLA1 Review · Calculus final',
+    description: 'Unofficial review notes for the Calculus final: past finals with worked answers, including the MATLAB parts.',
+    url: 'math/calculus-final/', image: 'og-math-calculus-final.png',
+    alt: 'CLA1 Review, Calculus final: past finals with worked answers, notes to follow',
+  },
+  lede: {
+    summary: 'Notes for the final come after the midterms. Until then, every lesson is on the Calculus midterm 1 and 2 pages.',
+    practice: () => 'Practice problems for the final come later. Until then, Practice on the Calculus midterm 1 and 2 pages covers every lesson.',
+    formulas: 'The formulas are on the Calculus midterm 1 and 2 pages for now.',
+    quizzes: 'The in-class quizzes are on the Calculus midterm 1 and 2 pages.',
+    exams: (n, lock) => `Upcoming exams with a countdown, and ${n} past finals${lock ? ' <span class="nw">(password needed)</span>' : ''}: their Calculus part, MATLAB problems included. Start the timer, work on paper, then open the answers and mark your paper.`,
+  },
+  later: {
+    summary: ['Notes for the final', 'On the midterm pages for now', `Every lesson so far, with its key ideas and common mistakes, is on ${MIDTERM_LINKS}. Notes for the final follow after the midterms.`],
+    practice: ['Practice', 'On the midterm pages for now', `Practice problems with worked solutions for every lesson are on ${MIDTERM_LINKS}.`],
+    formulas: ['Formulas', 'On the midterm pages for now', `Each lesson's formulas, and the exact trig values, are on ${MIDTERM_LINKS}.`],
+    quizzes: ['In-class quizzes', 'On the midterm pages', `The in-class quizzes and their follow-ups are on ${MIDTERM_LINKS}.`],
+    night: ['The night before', 'Comes with the notes', `Until the final has notes of its own, use the night-before sheets of ${MIDTERM_LINKS}.`],
+  },
+};
+const LINEAR_ALGEBRA = {
+  id: 'linear-algebra', name: 'Linear Algebra', short: 'Linear Algebra', examsOnly: true,
+  units: [], habits: '', practice: {}, tags: {}, formulas: [], followups: {}, mocks: [], icons: { habits: '' }, graphs: {}, graphsAdded: '',
+  testbarAdded: '', seen: 'math-linear-algebra', quizFile: null, pastFile: 'past-linear-algebra.mjs',
+  // two groups: the exam before the winter break (this year's Linear Algebra midterm) and the finals
+  pastText: [
+    { id: 'past', group: 'midterm', kicker: 'Before the winter break', title: 'Past midterms', noun: 'past midterms', one: 'past midterm', focus: PAST_FOCUS,
+      lock: 'The past exams are locked with the same password as the in-class sheets.' },
+    { id: 'past-finals', group: 'final', kicker: 'Real final papers', title: 'Past finals', noun: 'past finals', one: 'past final', focus: PAST_FOCUS,
+      lock: 'The past exams are locked with the same password as the in-class sheets.' },
+  ],
+  conf: { store: 'cla1-linear-algebra-review', seen: 'math-linear-algebra', home: 'exams', scores: 'cla1-linear-algebra-scores',
+    suggest: ['determinant', 'inverse', 'Hermitian', 'row echelon', 'LDU', 'rank'], tryWords: '"determinant" or "rank"' },
+  title: 'CLA1 Linear Algebra Review',
+  description: 'Past Linear Algebra exams of Calculus &amp; Linear Algebra 1, with worked answers. Notes follow once the classes start.',
+  og: {
+    title: 'CLA1 Review · Linear Algebra',
+    description: 'Unofficial review notes for Linear Algebra: past exams with worked answers, notes to follow.',
+    url: 'math/linear-algebra/', image: 'og-math-linear-algebra.png',
+    alt: 'CLA1 Review, Linear Algebra: past exams with worked answers, notes to follow',
+  },
+  lede: {
+    summary: 'Notes for each Linear Algebra lesson are added here once the classes start.',
+    practice: () => 'Practice problems with worked solutions come with the Linear Algebra lessons.',
+    formulas: 'The formulas come with the Linear Algebra lessons.',
+    quizzes: 'The in-class quizzes of Linear Algebra are added here after each class.',
+    exams: (n, lock) => `Upcoming exams with a countdown, and ${n} past exams${lock ? ' <span class="nw">(password needed)</span>' : ''}: the one before the winter break, and the finals. Start the timer, work on paper, then open the answers and mark your paper.`,
+  },
+  later: {
+    summary: ['Linear Algebra', 'Notes after the first class', 'Each lesson gets its key ideas and common mistakes here, after its class.'],
+    practice: ['Practice', 'Comes with the lessons', 'Practice problems with worked solutions follow each Linear Algebra lesson.'],
+    formulas: ['Formulas', 'Comes with the lessons', 'Each lesson’s formulas are added here after its class.'],
+    quizzes: ['In-class quizzes', 'Coming with the lessons', 'Each in-class quiz, with two open follow-ups, is added here after its class.'],
+    night: ['The night before', 'Comes with the notes', 'The night-before sheet follows once the lessons have notes.'],
+  },
+};
+const PAGES = [DERIVATIVES, INTEGRALS, LINEAR_ALGEBRA, CALCULUS_FINAL];
 for (const P of PAGES) P.updated = pageUpdated(P);
 // the picker's "Last updated": the newest of every Math page and of Math's What's new (read once the pages are built,
 // since a page's past papers move its date too)
@@ -182,6 +254,12 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const UNIT_ICONS = P.icons;
   // the lessons taught so far; the rest of the schedule shows as greyed-out tiles
   const ready = units.filter((u) => !u.upcoming);
+  // what a tab of an exams-only page says instead: [kicker, heading, note (HTML, may hold links)]
+  const laterGroup = (id, [kicker, title, html]) => `
+    <section class="qgroup" id="${id}">
+      <header class="qg-head"><p class="kicker">${esc(kicker)}</p><h2>${esc(title)}</h2></header>
+      <p class="soon-box">${UI_ICONS.calendar}<span>${html}</span></p>
+    </section>`;
 
   // Summary
   const tileQ = (u) => u.quiz || (u.starred ? 'In-class quiz' : '');
@@ -272,7 +350,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     return `<div class="frow" id="${id}"><span class="fname">${esc(name)}</span><div class="fmath">${tex('\\displaystyle ' + t, false)}</div></div>`;
   }).join('')}</div>
 </section>`).join('');
-  INDEX.push(entry('Formulas', 'formulas', 'fg-exact', 'Exact trig values — cos, sin, tan',
+  if (!P.examsOnly) INDEX.push(entry('Formulas', 'formulas', 'fg-exact', 'Exact trig values — cos, sin, tan',
     'cos, sin and tan from 0 to π (0° to 180°): 0, π/6, π/4, π/3, π/2, 2π/3, 3π/4, 5π/6, π', 'unit circle special angles table degrees 30 45 60 90 120 135 150 180'));
   const EV = exactValues;
   const evCell = (v) => (v === null ? '<td class="na"><span class="sr">undefined</span></td>' : `<td>${tex('\\displaystyle ' + v, false)}</td>`);
@@ -352,7 +430,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const quizUnits = units.filter((u) => u.quiz);
   const qnum = (u) => u.quiz.replace(/^Quiz /, '');
   const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits.length ? quizUnits[0].quiz : '';
-  const daySpan = spanOf(units);
+  const daySpan = units.length ? spanOf(units) : '';
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
   // Exams: upcoming exams (dates from site.json; page.js shows the countdown) and the mock midterms
@@ -364,7 +442,9 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
         <span class="up-left" aria-live="off"></span>
       </li>`).join('');
   const MOCK_FOCUS = 'Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.';
-  const PT = P.pastText;
+  // the past papers, in one switcher per group: P.pastText, or a list of groups, each taking the papers of its `group`
+  const GROUPS = Array.isArray(P.pastText) ? P.pastText : [{ id: 'past', ...P.pastText }];
+  const PT = GROUPS[0];
   const totalPts = (m) => m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
   function examSheet(m, seg, visible, about, focus, searchExtra, index) {
     const points = totalPts(m);
@@ -400,47 +480,54 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   </article>`;
   }
   const mockSheets = mocks.map((m, mi) => examSheet(m, mi, mi === 0, span, MOCK_FOCUS, 'mock midterm exam practice test', INDEX)).join('');
-  // past midterms: locked like the in-class sheets (the panel shows only the title until the password opens it)
-  const pastMeta = (p) => ({ id: p.id, seg: p.seg, title: p.title, sub: p.sub, minutes: p.minutes, points: totalPts(p), added: p.added || '' });
+  // past papers: locked like the in-class sheets (the panel shows only the title until the password opens it)
+  const pastMeta = (p) => ({ id: p.id, ...(p.group ? { group: p.group } : {}), seg: p.seg, title: p.title, sub: p.sub, minutes: p.minutes, points: totalPts(p), added: p.added || '' });
   const pastList = past ? past.map(pastMeta) : lockedPast;
   const pastLock = locked && pastList.length > 0;
-  const pastLockHTML = (p, seg) => `
+  const inGroup = (G) => (p) => !G.group || p.group === G.group;
+  for (const p of pastList) if (!GROUPS.some((G) => inGroup(G)(p))) throw new Error(`${P.name}: the past paper ${p.id} is in no group of pastText`);
+  const pastHTML = GROUPS.map((G) => {
+    const list = pastList.filter(inGroup(G));
+    if (!list.length) return '';
+    const lockHTML = (p, seg) => `
   <article class="sheet lock" id="${p.id}" data-seg="${seg}"${seg ? ' hidden' : ''}${addedAttr(p)}>
     <header class="sheet-head"><div><h3 class="sheet-title">${esc(p.title)}</h3><p class="sheet-sub">${meta([p.sub, `${p.minutes} min`, `${p.points} pt`])}</p></div></header>
-    ${unlockForm(p.id, PT.lock)}
+    ${unlockForm(p.id, G.lock)}
   </article>`;
-  let pastSheets = '';
-  pastList.forEach((p, pi) => {
-    const full = past && past.find((x) => x.id === p.id);
-    if (full) {
-      const html = examSheet(full, pi, pi === 0, full.sub, esc(full.focus || PT.focus), 'past midterm final exam previous year real paper', locked ? PRIV : INDEX);
-      if (locked) { sheets[p.id] = html.trim(); pastSheets += pastLockHTML(p, pi); } else pastSheets += html;
-    } else pastSheets += pastLockHTML(p, pi);
-  });
-  const pastHTML = pastList.length ? `
-    <section class="qgroup mockgroup" id="past">
-      <header class="qg-head"><p class="kicker">${esc(PT.kicker)}</p><h2>${esc(PT.title)}</h2></header>
-      <div class="seg" role="tablist" aria-label="${esc(PT.title)}">${pastList.map((p, pi) =>
+    let sheetsHTML = '';
+    list.forEach((p, pi) => {
+      const full = past && past.find((x) => x.id === p.id);
+      if (full) {
+        const html = examSheet(full, pi, pi === 0, full.sub, esc(full.focus || G.focus), 'past midterm final exam previous year real paper', locked ? PRIV : INDEX);
+        if (locked) { sheets[p.id] = html.trim(); sheetsHTML += lockHTML(p, pi); } else sheetsHTML += html;
+      } else sheetsHTML += lockHTML(p, pi);
+    });
+    return `
+    <section class="qgroup mockgroup" id="${G.id}">
+      <header class="qg-head"><p class="kicker">${esc(G.kicker)}</p><h2>${esc(G.title)}</h2></header>
+      <div class="seg" role="tablist" aria-label="${esc(G.title)}">${list.map((p, pi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${pi}" aria-controls="${p.id}" aria-selected="${pi === 0}">${esc(p.seg)}${pastLock ? `<span class="seg-lock">${UI_ICONS.lock}</span>` : ''}<span class="seg-score"></span></button>`).join('')}</div>
-      ${pastSheets}
-    </section>` : '';
+      ${sheetsHTML}
+    </section>`;
+  }).join('');
   // an exam page without mocks yet says they are coming
   const mocksInner = mocks.length ? `<div class="seg" role="tablist" aria-label="Mock midterms">${mocks.map((m, mi) =>
     `<button type="button" class="seg-btn" role="tab" data-seg="${mi}" aria-controls="${m.id}" aria-selected="${mi === 0}">Mock ${mi + 1}<span class="seg-score"></span></button>`).join('')}</div>
-      ${mockSheets}` : soon(P.soon.mocks);
+      ${mockSheets}` : P.soon && P.soon.mocks ? soon(P.soon.mocks) : '';
+  // an exams-only page has no mocks section and no night-before link (yet)
   const examsHTML = `
     <section class="exam-up" id="ex-upcoming">
       <h2 class="sec-title">Upcoming exams</h2>
       <ul class="up-list">${upcomingHTML}</ul>
-      ${nightLink('Every formula, the common mistakes and the exam-day habits on one page')}
-    </section>
+      ${P.examsOnly ? '' : nightLink('Every formula, the common mistakes and the exam-day habits on one page')}
+    </section>${mocksInner ? `
     <section class="qgroup mockgroup" id="mocks">
       <header class="qg-head"><p class="kicker">Practice under exam conditions</p><h2>Mock midterms</h2></header>
       ${mocksInner}
-    </section>${pastHTML}`;
+    </section>` : ''}${pastHTML}`;
   // Quizzes: a jump row and one group per quiz, or, before the first quiz, when it is
   const quizzesTab = nos.length ? `<nav class="qjump" aria-label="Jump to a quiz">${quizJump}</nav>${quizzesHTML}
-      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}` : `
+      ${hasLocks ? '<div class="reset-row lockrow" id="lockrow" hidden><button type="button" class="linkbtn" id="lock-again">Lock again</button><span>The in-class sheets are open in this browser.</span></div>' : ''}` : P.examsOnly ? laterGroup('qg-soon', P.later.quizzes) : `
     <section class="qgroup" id="qg-soon">
       <header class="qg-head"><p class="kicker">In-class quizzes</p><h2>Coming with the next lesson</h2></header>
       ${soon(P.soon.quizzes)}
@@ -476,8 +563,8 @@ ${onExam.map((u) => `<section class="nsec" id="nt-${u.id}"><h2><span class="kick
   <div class="table-wrap">${exactWide}${exactTall}</div>
   ${loose.map((g) => `<h3 class="fmod">${esc(g.title)}</h3><div class="nrows">${g.rows.map(nrow).join('')}</div>`).join('')}</section>`;
   const LAZY = {
-    night: nightHTML,
-    practice: `
+    night: P.examsOnly ? `${nightTools}${laterGroup('nt-soon', P.later.night)}` : nightHTML,
+    practice: P.examsOnly ? laterGroup('pu-soon', P.later.practice) : `
       <div class="overview">
         <div class="ov-main">
           <div class="ring-big-wrap">${ring(38, 'ring-all', 'ring-lg')}<span class="ring-center"><b id="ring-all-text">0/${total}</b><small>got it</small></span></div>
@@ -497,7 +584,7 @@ ${onExam.map((u) => `<section class="nsec" id="nt-${u.id}"><h2><span class="kick
       <p class="empty-note" id="empty-note" hidden></p>
       ${practiceHTML}
       <div class="reset-row"><button type="button" class="linkbtn" id="reset">Clear all marks</button><span>Marks are saved in this browser only.</span></div>`,
-    formulas: `
+    formulas: P.examsOnly ? laterGroup('fg-soon', P.later.formulas) : `
       <div class="testbar"${P.testbarAdded ? ` data-added="${P.testbarAdded}"` : ''}>
         <button type="button" class="pill" id="test-btn" aria-pressed="false">${UI_ICONS.eye}<span>Test me</span></button>
         <p class="test-hint">Hides every formula and exact value. Say it to yourself, then tap to check.</p>
@@ -530,8 +617,8 @@ ${SB_FOOT}
   <section id="view-summary" class="view" role="tabpanel" aria-labelledby="tab-summary">
     ${band('Summary', 'まとめ', P.lede.summary)}
     <div class="wrap content">
-      <nav class="tiles" aria-label="Units">${tilesHTML}</nav>
-      ${summaryHTML}
+      ${P.examsOnly ? laterGroup('su-soon', P.later.summary) : `<nav class="tiles" aria-label="Units">${tilesHTML}</nav>
+      ${summaryHTML}`}
     </div>
   </section>
 
@@ -558,7 +645,7 @@ ${SB_FOOT}
   </section>
 
   <section id="view-night" class="view night" aria-label="Night-before sheet" hidden>
-    ${band('Night before', '直前チェック', `One page for the night before ${P.name}: the exam-day habits, then each lesson’s formulas and common mistakes, and the values to know without a calculator. Read it once more, or print it.`)}
+    ${band('Night before', '直前チェック', P.examsOnly ? `The night-before sheet for ${P.name} comes with its notes.` : `One page for the night before ${P.name}: the exam-day habits, then each lesson’s formulas and common mistakes, and the values to know without a calculator. Read it once more, or print it.`)}
     ${lazyBox('night')}
   </section>
 </main>
@@ -751,6 +838,11 @@ ${indexScript(r.INDEX)}
 
 // the facts under an exam's card on the picker
 function statsOf(P, r) {
+  // an exams-only page: how many past papers of each group
+  if (P.examsOnly) return (Array.isArray(P.pastText) ? P.pastText : [P.pastText]).map((G) => {
+    const n = r.pastList.filter((p) => !G.group || p.group === G.group).length;
+    return n ? `${n} ${n === 1 ? G.one || G.noun : G.noun}` : '';
+  });
   const ready = P.units.filter((u) => !u.upcoming).length, all = P.units.length;
   if (ready === all) return [`${all} lessons`, `${r.total} practice problems`, `${r.nos.length} quizzes`, `${P.mocks.length} mocks`, `${r.pastList.length} past midterms`];
   // an exam still being taught: the lessons so far, and only the parts it already has
@@ -790,12 +882,12 @@ function pickerHTML(a, built) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>if (location.hash.length > 1) location.replace('derivatives/' + location.hash);</script>
 <title>CLA1 Review</title>
-<meta name="description" content="Review notes for each exam of Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.">
+<meta name="description" content="Review notes for each exam of Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes, mock midterms and past exams.">
 ${ogTags({
     title: 'CLA1 Review · Calculus &amp; Linear Algebra 1',
-    description: 'Unofficial review notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.',
+    description: 'Unofficial review notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes, mock midterms and past exams.',
     url: 'math/', image: 'og-math.png',
-    alt: 'CLA1 Review, Calculus and Linear Algebra 1: Calculus midterm 1 (derivatives) and midterm 2 (integrals), with the Linear Algebra midterm coming soon',
+    alt: 'CLA1 Review, Calculus and Linear Algebra 1: Calculus midterm 1 (derivatives) and midterm 2 (integrals), Linear Algebra and the Calculus final',
   })}
 ${HEAD_COMMON('../')}
 ${THEME_EARLY}
@@ -812,7 +904,7 @@ ${SB_EDGE}
   <div class="appbar-actions">${subjectSwitch('physics', '../physics/')}</div>
 </div></header>
 <main>
-  ${band('Exams', '試験', 'One page of notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms.')}
+  ${band('Exams', '試験', 'One page of notes for each exam: key ideas, practice problems with worked solutions, formulas, quizzes, mock midterms and past exams.')}
   <div class="wrap content">
     <nav class="exams" aria-label="Exams">
     ${cards}

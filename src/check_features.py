@@ -183,9 +183,9 @@ with sync_playwright() as p:
         pg.goto(BASE + '/math/')
         pg.wait_for_selector('.exams')
         cards = pg.locator('.exam')
-        check(f'{label}: picker: three exams in course order, Calculus midterms 1 and 2 open', cards.count() == 3
-              and [cards.nth(i).get_attribute('id') for i in range(3)] == ['exam-derivatives', 'exam-integrals', 'exam-linear-algebra']
-              and pg.locator('a.exam').count() == 2 and pg.locator('a.exam .pill').count() == 2 and pg.locator('.exam.soon .e-soon').count() == 1)
+        check(f'{label}: picker: four exams in course order, each opening its page', cards.count() == 4
+              and [cards.nth(i).get_attribute('id') for i in range(4)] == ['exam-derivatives', 'exam-integrals', 'exam-linear-algebra', 'exam-calculus-final']
+              and pg.locator('a.exam').count() == 4 and pg.locator('a.exam .pill').count() == 4 and pg.locator('.exam.soon').count() == 0)
         # (their New labels are checked below, on a device that hasn't opened anything yet)
         check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
               and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
@@ -1220,9 +1220,27 @@ with sync_playwright() as p:
     pg.goto(BASE2 + '/math/')
     pg.wait_for_selector('.exams')
     lefts = pg.locator('.exam .e-left').all_inner_texts()
-    check('countdown: the picker counts down to each exam: in 3 days, Tomorrow, Done', lefts == ['in 3 days', 'Tomorrow', 'Done']
+    check('countdown: the picker counts down to each exam: in 3 days, Tomorrow, Done, and nothing for an undated one', lefts == ['in 3 days', 'Tomorrow', 'Done', '']
           and pg.locator('.e-when.soon').count() == 2 and pg.locator('.e-when.past').count() == 1, lefts)
     pg.screenshot(path=f'{SHOTS}/picker-countdowns.png', full_page=True)
+    # the next exam is one whose page holds only past exams so far (EXAMS_ONLY in index.html): its card opens that page's
+    # Exams, with no Practice progress and no night-before sheet (the home page reads site.json itself, so a changed
+    # copy of it is enough here)
+    ctx2 = b.new_context(viewport={'width': 390, 'height': 844}, service_workers='block')
+    ctx2.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    only = json.load(open(os.path.join(REPO, 'site.json')))
+    for x in only['exams']:
+        x.update(date=None, time=None)
+    next(x for x in only['exams'] if x['name'] == 'Linear Algebra midterm').update(date=str(today + datetime.timedelta(days=4)))
+    ctx2.route(re.compile(r'.*/site\.json(\?.*)?$'), lambda r: r.fulfill(status=200, body=json.dumps(only), content_type='application/json'))
+    pg2 = ctx2.new_page()
+    pg2.goto(BASE + '/')
+    pg2.wait_for_selector('#next-exam')
+    check('countdown: a next exam on a page with only past exams opens its Exams, with no Practice progress',
+          'Linear Algebra midterm' in pg2.locator('#next-exam').inner_text() and pg2.locator('#next-exam .nx-btns a').count() == 2
+          and pg2.locator('#next-exam a[href="math/linear-algebra/#exams"]').count() == 1 and pg2.locator('#next-exam .prog').count() == 0
+          and pg2.locator('#next-exam a[href$="#practice"], #next-exam a[href$="#night"]').count() == 0, pg2.locator('#next-exam').inner_html()[:300])
+    ctx2.close()
     pg.goto(BASE2 + '/physics/')
     pg.wait_for_selector('.exams')
     lefts = pg.locator('.exam .e-left').all_inner_texts()
@@ -1293,7 +1311,7 @@ with sync_playwright() as p:
           and pg.evaluate("document.fonts.check('16px KaTeX_Main')") and pg.locator('.calc-fab').count() == 1)
     pg.goto(BASE + '/math/')
     pg.wait_for_selector('.exams')
-    check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 3)
+    check('offline: the exam picker opens with no network', pg.locator('.exam').count() == 4)
     # Calculus midterm 2 was never opened online here either
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')

@@ -1,7 +1,9 @@
 """Draws the link-preview images (Open Graph, 1200 x 630) that LINE, Discord and other apps show when a page's link
 is shared, all in the repository root: og-home.png for the home page, og-math.png for the Math exam picker (math/),
 og-math-derivatives.png for the Calculus midterm 1 page (math/derivatives/), og-math-integrals.png for the Calculus
-midterm 2 page (math/integrals/, with a Riemann sum in place of the tangent), og-physics.png for the Physics exam picker
+midterm 2 page (math/integrals/, with a Riemann sum in place of the tangent), og-math-linear-algebra.png for the Linear
+Algebra page (math/linear-algebra/), og-math-calculus-final.png for the Calculus final page (math/calculus-final/, with
+the Riemann sum too), og-physics.png for the Physics exam picker
 (physics/), og-physics-midterm.png for the Physics midterm page (physics/midterm/) and og-physics-final.png for the
 Physics final page (physics/final/, with a standing wave in place of the projectile). Physics cards are drawn in the
 Physics blue, with its pendulum badge and a projectile in place of the curve and its tangent.
@@ -128,14 +130,22 @@ body.phys .pill.later { color: #525B69; box-shadow: none; border-color: #1F4B8F;
 CARDS = {
     'og-math.png': dict(
         title='CLA1 Review', kicker='Calculus &amp; Linear Algebra 1',
-        lede='Review notes for each exam, with worked solutions and mock midterms.',
+        lede='Review notes for each exam, with worked solutions, mock midterms and past exams.',
         pills='<span class="pill on">Midterm 1 · Derivatives</span><span class="pill on">Midterm 2 · Integrals</span>'
-              '<span class="pill later">Linear Algebra · soon</span>'),
+              '<span class="pill on">Linear Algebra</span><span class="pill on">Calculus final</span>'),
     'og-math-integrals.png': dict(
         graph='int', title='CLA1 Review', kicker='Calculus midterm 2 · Integrals',
-        lede='Key ideas, worked solutions and formulas, added after each class.',
+        lede='Key ideas, worked solutions and formulas, added after each class, and past midterms.',
         pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
-              '<span class="pill">Quizzes</span><span class="pill later">Mocks · soon</span>'),
+              '<span class="pill">Quizzes</span><span class="pill">Past midterms</span>'),
+    'og-math-linear-algebra.png': dict(
+        title='CLA1 Review', kicker='Linear Algebra',
+        lede='Past Linear Algebra exams with worked answers. Notes follow once the classes start.',
+        pills='<span class="pill on">Past exams</span><span class="pill later">Notes · later</span>'),
+    'og-math-calculus-final.png': dict(
+        graph='int', title='CLA1 Review', kicker='Calculus final',
+        lede='Past Calculus finals with worked answers, the MATLAB parts included.',
+        pills='<span class="pill on">Past finals</span><span class="pill later">Notes · later</span>'),
     'og-math-derivatives.png': dict(
         title='CLA1 Review', kicker='Calculus midterm 1 · Derivatives',
         lede='Key ideas, worked solutions, formulas, quizzes and mock midterms.',

@@ -443,6 +443,8 @@
     const todayJST = () => new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }) + 'T00:00:00+09:00').getTime();
     // an exam links to its own page (page in site.json), or else to its subject's page
     const COURSE_PAGE = { math: 'math/', physics: 'physics/' };
+    // pages that hold only past exams so far (no Practice or night-before sheet yet): the next-exam card opens their Exams
+    const EXAMS_ONLY = ['math/linear-algebra/', 'math/calculus-final/'];
     // each subject's badge and short name, as its card shows them (read before a New label is added to the card)
     const BADGE = { math: $('#card-math .s-icon').innerHTML, physics: $('#card-physics .s-icon').innerHTML };
     const SHORT = { math: $('#card-math .s-kicker').textContent, physics: $('#card-physics .s-kicker').textContent };
@@ -478,8 +480,8 @@
         $('#next').innerHTML = `<article class="next ${x.subject}${days <= 7 ? ' soon' : ''}" id="next-exam">
           <div class="nx-top">${BADGE[x.subject] || ''}<div class="nx-head"><span class="nx-kicker">${esc(x.course)}</span><h3 class="nx-title">${esc(x.name)}</h3></div><div class="nx-left">${left}</div></div>
           <p class="nx-when">${esc(when)}</p>
-          ${progress(x.page, true)}
-          <div class="nx-btns"><a class="go" href="${go}">Open</a>${x.page ? `<a class="alt" href="${x.page}#practice">Practice</a><a class="alt" href="${x.page}#night">Night-before sheet</a>` : ''}</div>
+          ${EXAMS_ONLY.includes(x.page) ? '' : progress(x.page, true)}
+          <div class="nx-btns"><a class="go" href="${go}">Open</a>${!x.page ? '' : EXAMS_ONLY.includes(x.page) ? `<a class="alt" href="${x.page}#exams">Past exams</a>` : `<a class="alt" href="${x.page}#practice">Practice</a><a class="alt" href="${x.page}#night">Night-before sheet</a>`}</div>
         </article>`;
       } else $('#next').innerHTML = '<p class="up-when">No exam dates yet.</p>';
 
@@ -567,7 +569,7 @@
       }
       // each exam page keeps its own key in study-seen (page.js); an entry belongs to the page it links to, and the
       // rest to its subject's key. A subject's card is New while any of its entries is new to that key.
-      const PAGE_KEYS = { math: [['math/integrals/', 'math-integrals']], physics: [['physics/final/', 'physics-final']] };
+      const PAGE_KEYS = { math: [['math/integrals/', 'math-integrals'], ['math/linear-algebra/', 'math-linear-algebra'], ['math/calculus-final/', 'math-calculus-final']], physics: [['physics/final/', 'physics-final']] };
       const keyOf = (n, subj) => { const p = PAGE_KEYS[subj].find(([pre]) => (n.link || '').startsWith(pre)); return p ? p[1] : subj; };
       for (const subj of ['math', 'physics']) {
         const mine = list.filter((n) => n.subject === subj || n.subject === 'all');
