@@ -525,6 +525,21 @@ with sync_playwright() as p:
     check(f'new ({upd}): the picker marks Calculus midterm 2 New, with every exam updated in the 14 days up to then', 'exam-integrals' in picker_new and picker_new == want, (picker_new, want))
     ctx.close()
 
+    # ---- What's new at noon on its newest day (so this moment moves with each new line): on a first visit the days of
+    # the last 14 days among the latest six entries are New, the newest first, and the older ones aren't ----
+    newest = max(n['date'] for n in json.load(open(os.path.join(SITE, 'site.json'), encoding='utf-8'))['news'])
+    ctx = b.new_context(viewport={'width': 390, 'height': 844})
+    ctx.clock.set_fixed_time(datetime.datetime(*map(int, newest.split('-')), 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.goto(BASE + '/')
+    pg.wait_for_selector('#news .n-day')
+    got = pg.evaluate("[...document.querySelectorAll('#news .n-day')].map((d) => [d.querySelector('time').getAttribute('datetime'), !!d.querySelector('.new-pill')])")
+    day = lambda d: datetime.date(*map(int, d.split('-')))
+    want = [[d, (day(newest) - day(d)).days <= 13] for d, _ in got]
+    check(f'new ({newest}): on a first visit, each day of the last 14 in What\'s new is New, from the newest', got == want and got[0] == [newest, True], got)
+    ctx.close()
+
     # ---- page not found: GitHub Pages serves 404.html at any missing address under /y1-s1/, so its links are absolute ----
     MOUNT = tempfile.mkdtemp(prefix='check-404-')
     os.symlink(REPO, os.path.join(MOUNT, 'y1-s1'))
@@ -1078,12 +1093,21 @@ with sync_playwright() as p:
     pg2.goto(BASE + '/')
     pg2.wait_for_selector('#news li')
     n_days = pg2.locator('#news .n-day').count()
-    hidden = sum(pg2.locator('#news .n-day').nth(i).locator('details').count() for i in range(2, n_days))
-    check('home: on a later visit What\'s new shows its two newest days, the older ones behind a button', pg2.locator('#news .new-pill').count() == 0
-          and pg2.locator('#news .n-day:visible').count() == 2 and n_days > 2 and pg2.locator('#news-more').is_visible()
-          and pg2.locator('#news-more').inner_text() == f'Show {hidden} older update' + ('' if hidden == 1 else 's'), pg2.locator('#news-more').inner_text())
-    pg2.locator('#news-more').click()
-    check('home: the button shows the older days and goes', pg2.locator('#news .n-day:visible').count() == n_days and pg2.locator('#news-more').is_hidden())
+    # What's new draws the latest six entries, so they may span only two days (five came on 17 Nov): then there is
+    # nothing older to wait behind the button
+    latest = sorted(json.load(open(os.path.join(SITE, 'site.json'), encoding='utf-8'))['news'], key=lambda n: n['date'], reverse=True)[:6]
+    want_days = len({n['date'] for n in latest})
+    if want_days > 2:
+        hidden = sum(pg2.locator('#news .n-day').nth(i).locator('details').count() for i in range(2, n_days))
+        check('home: on a later visit What\'s new shows its two newest days, the older ones behind a button', pg2.locator('#news .new-pill').count() == 0
+              and pg2.locator('#news .n-day:visible').count() == 2 and n_days == want_days and pg2.locator('#news-more').is_visible()
+              and pg2.locator('#news-more').inner_text() == f'Show {hidden} older update' + ('' if hidden == 1 else 's'), pg2.locator('#news-more').inner_text())
+        pg2.locator('#news-more').click()
+        check('home: the button shows the older days and goes', pg2.locator('#news .n-day:visible').count() == n_days and pg2.locator('#news-more').is_hidden())
+    else:
+        check('home: on a later visit What\'s new shows its days (the latest six entries are from two), with no button for older ones',
+              pg2.locator('#news .new-pill').count() == 0 and n_days == want_days and pg2.locator('#news .n-day:visible').count() == n_days
+              and pg2.locator('#news-more').is_hidden(), (n_days, want_days))
     ctx.close()
 
     # ---- the home page keeps a copy of site.json on the device (study-site): a later visit draws the next exam, the

@@ -105,7 +105,7 @@ export const practice = {
 
 **(c)** $2\pi\sqrt{\frac{L}{g}}=2\pi\sqrt{\frac{2R}{g}}$ when $L=2R=0.98$ m.` },
     { tier: 'a', topic: 'Measuring rotational inertia',
-      stem: R`An object with rotational inertia $0.010\ \text{kg}\cdot\text{m}^2$ swings on a torsion wire with a period of $1.0$ s. A second object on the same wire swings with a period of $3.0$ s. Module 15-3 (not on the class schedule).`,
+      stem: R`An object with rotational inertia $0.010\ \text{kg}\cdot\text{m}^2$ swings on a torsion wire with a period of $1.0$ s. A second object on the same wire swings with a period of $3.0$ s. Module 15-3 (not on the exam).`,
       parts: [R`Find the wire's torsion constant.`, R`Find the second object's rotational inertia.`],
       answer: [R`$0.04\pi^2\approx0.39\ \text{N}\cdot\text{m/rad}$`, R`$0.090\ \text{kg}\cdot\text{m}^2$`],
       sol: R`**(a)** $T=2\pi\sqrt{\frac{I}{\kappa}}$ gives $\kappa=\frac{4\pi^2I}{T^2}=4\pi^2(0.010)=0.04\pi^2\approx0.39\ \text{N}\cdot\text{m/rad}$.
@@ -490,7 +490,7 @@ export const practice = {
 
 **(b)** $\Delta E_\text{int}=Q-W=750-300=450$ J.` },
     { tier: 'a', topic: 'Heat through a wall',
-      stem: R`A brick wall has an area of $4.0\ \text{m}^2$, a thickness of $0.20$ m and $k=0.80\ \text{W/(m}\cdot\text{K)}$. It is $25$ K warmer inside than out. Module 18-6 (not on the class schedule).`,
+      stem: R`A brick wall has an area of $4.0\ \text{m}^2$, a thickness of $0.20$ m and $k=0.80\ \text{W/(m}\cdot\text{K)}$. It is $25$ K warmer inside than out. Module 18-6 (not on the exam).`,
       parts: [R`Find the rate of heat flow through it.`, R`A layer of insulation $0.050$ m thick with $k=0.040\ \text{W/(m}\cdot\text{K)}$ is added. Find the new rate.`, R`How much heat passes through the bare wall in a day?`],
       answer: [R`$400$ W`, R`About $67$ W`, R`About $3.5\times10^7$ J`],
       sol: R`**(a)** $P=kA\frac{\Delta T}{L}=(0.80)(4.0)\frac{25}{0.20}=400$ W.
@@ -499,7 +499,7 @@ export const practice = {
 
 **(c)** $400\times86\,400\approx3.5\times10^7$ J.` },
     { tier: 'x', topic: 'Radiation',
-      stem: R`Take $\sigma=5.67\times10^{-8}\ \text{W/(m}^2\cdot\text{K}^4\text{)}$ and treat each surface as a blackbody. Module 18-6 (not on the class schedule).`,
+      stem: R`Take $\sigma=5.67\times10^{-8}\ \text{W/(m}^2\cdot\text{K}^4\text{)}$ and treat each surface as a blackbody. Module 18-6 (not on the exam).`,
       parts: [R`How much power does $1.0\ \text{m}^2$ of surface radiate at $300$ K?`, R`What is its net loss in surroundings also at $300$ K?`, R`How much does it radiate at $600$ K?`],
       answer: [R`About $459$ W`, R`$0$`, R`About $7.3\times10^3$ W`],
       sol: R`**(a)** $P=\sigma AT^4=(5.67\times10^{-8})(1.0)(300)^4=(5.67\times10^{-8})(8.1\times10^9)\approx459$ W.
@@ -609,7 +609,7 @@ export const practice = {
 
 **(c)** $W=nR\Delta T=(2.0)(8.31)(20)\approx332$ J, the difference.` },
     { tier: 'a', topic: 'A diesel engine’s squeeze',
-      stem: R`Air ($\gamma=1.4$) at $300$ K and $1.0\times10^5$ Pa is squeezed quickly (adiabatically) to $\frac{1}{32}$ of its volume. Treat it as $1.0$ mol of a diatomic ideal gas; $R=8.31\ \text{J/(mol}\cdot\text{K)}$. Module 19-9 (not on the class schedule).`,
+      stem: R`Air ($\gamma=1.4$) at $300$ K and $1.0\times10^5$ Pa is squeezed quickly (adiabatically) to $\frac{1}{32}$ of its volume. Treat it as $1.0$ mol of a diatomic ideal gas; $R=8.31\ \text{J/(mol}\cdot\text{K)}$. Module 19-9 (not on the exam).`,
       parts: [R`Find its final temperature.`, R`Find its final pressure.`, R`How much work is done on it?`],
       answer: [R`$1200$ K`, R`$1.28\times10^7$ Pa`, R`About $1.9\times10^4$ J`],
       sol: R`**(a)** $TV^{\gamma-1}$ stays the same: $T_f=300\times32^{0.4}=300\times2^{2}=1200$ K, since $32^{0.4}=(2^5)^{0.4}=2^2$.
@@ -672,7 +672,7 @@ export const practice = {
 
 **(b)** In kelvins: $773$ K and $298$ K, so $\varepsilon_C=1-\frac{298}{773}\approx0.61$. With degrees Celsius it would wrongly come out $0.95$.` },
     { tier: 'f', topic: 'A refrigerator',
-      stem: R`Module 20-3 (not on the class schedule).`,
+      stem: R`Module 20-3 (not on the exam).`,
       parts: [R`A refrigerator with $K=3.0$ removes $600$ J from its inside. How much work does it need, and how much heat goes to the kitchen?`, R`Find the coefficient of performance of a Carnot refrigerator between $250$ K and $300$ K.`],
       answer: [R`$200$ J of work; $800$ J to the kitchen`, R`$5.0$`],
       sol: R`**(a)** $|W|=\frac{|Q_L|}{K}=\frac{600}{3.0}=200$ J, and $|Q_H|=600+200=800$ J.
@@ -749,7 +749,7 @@ export const practice = {
 
 **(c)** Each molecule has a chance of $\frac{1}{2}$, so all of them: $\left(\frac{1}{2}\right)^{N_A}$, a number with about $1.8\times10^{23}$ zeros after the decimal point.` },
     { tier: 'x', topic: 'A freezer',
-      stem: R`A Carnot freezer keeps its inside at $255$ K in a kitchen at $300$ K. Module 20-3 (not on the class schedule).`,
+      stem: R`A Carnot freezer keeps its inside at $255$ K in a kitchen at $300$ K. Module 20-3 (not on the exam).`,
       parts: [R`Find its coefficient of performance.`, R`How much work does it need to remove $1.7\times10^6$ J from its inside?`, R`How much heat goes into the kitchen?`],
       answer: [R`$\frac{17}{3}\approx5.7$`, R`$3.0\times10^5$ J`, R`$2.0\times10^6$ J`],
       sol: R`**(a)** $K_C=\frac{255}{300-255}=\frac{255}{45}=\frac{17}{3}\approx5.7$.

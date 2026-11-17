@@ -189,20 +189,21 @@ function exampleHTML(c, no, title, ex, index) {
 // a bold label at the start of a point, as plain text for search
 const pointLabel = (it) => (it.match(/^\*\*(.+?)\*\*/) || [, ''])[1].replace(/[:.]$/, '').replace(/\$[^$]*\$/g, (m) => plainP(m));
 // A module's class on the schedule (the final's chapters): [class number, date], or null when the schedule leaves the
-// module out; the midterm's modules have no third entry and show no line.
+// module out, which also leaves it off the exam (the professor, 17 Nov 2026); the midterm's modules have no third entry
+// and show no line.
 const classDay = ([n, d]) => `Class ${n} · ` + new Date(`${d}T12:00:00+09:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Tokyo' });
-const NOT_SCHEDULED = 'Not on the class schedule';
+const OFF_EXAM = 'Not on the exam';
 function moduleHTML(S, c, [no, title, when], index) {
   const m = S[c.id].mods.find((x) => x.no === no);
   if (!m) throw new Error(`summary.mjs has no module ${no}`);
-  const keys = when === null ? `${c.keys} not on the class schedule` : when ? `${c.keys} ${classDay(when)}` : c.keys;
+  const keys = when === null ? `${c.keys} not on the exam not on the class schedule` : when ? `${c.keys} ${classDay(when)}` : c.keys;
   const ideas = items(m.ideas).map((it, i) => {
     const id = `su-${c.id}-${no.replace('-', '')}-k${i + 1}`;
     index.push(entry('Summary', 'summary', id, `${pointLabel(it) || 'Key idea'} — ${no} ${title}`, plainP(it.replace(/^\*\*.+?\*\*\s*/, '')), keys));
     return `<li id="${id}">${inline(it, false)}</li>`;
   }).join('');
   const whenHTML = when === undefined ? '' : `
-    <p class="smod-when${when ? '' : ' off'}">${when ? `${UI_ICONS.calendar}<span>${esc(classDay(when))}</span>` : `<span class="xtag">${NOT_SCHEDULED}</span><span>The schedule doesn’t list it; it may come up in a class marked TBD.</span>`}</p>`;
+    <p class="smod-when${when ? '' : ' off'}">${when ? `${UI_ICONS.calendar}<span>${esc(classDay(when))}</span>` : `<span class="xtag">${OFF_EXAM}</span><span>The class schedule leaves it out, and it isn’t on the final.</span>`}</p>`;
   return `
   <div class="smod${when === null ? ' unlisted' : ''}" id="su-${c.id}-m${no.replace('-', '')}">
     <h3 class="smod-h"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3>${whenHTML}
@@ -423,10 +424,11 @@ ${practiceHTML}
     if (stray.length) throw new Error(`formulas.mjs: ${stray.map((m) => m.no).join(', ')} not among the modules of chapter ${c.no} (content.mjs)`);
     let n = 0;
     const row = (r, where) => { nFormulas++; return formulaRow(`f-${c.id}-${++n}`, r, where, c.keys, INDEX); };
-    const mods = c.modules.map(([no, title]) => {
+    const mods = c.modules.map(([no, title, when]) => {
       const m = g.mods.find((x) => x.no === no);
       if (!m) throw new Error(`formulas.mjs has no module ${no}`);
-      return `<h3 class="fmod"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3><div class="frows">${m.rows.map((r) => row(r, `${no} ${title}`)).join('')}</div>`;
+      const off = when === null ? ` <span class="xtag">${OFF_EXAM}</span>` : '';
+      return `<h3 class="fmod"><span class="mod-no">${esc(no)}</span>${esc(title)}${off}</h3><div class="frows">${m.rows.map((r) => row(r, `${no} ${title}`)).join('')}</div>`;
     }).join('');
     const extra = g.extra.length ? `<h3 class="fmod fmod-x"><span class="mod-no">Extra</span>Helpful results not printed in the book</h3><div class="frows">${g.extra.map(([name, t, note]) => row([name, t, 'x', note], `Chapter ${c.no}, extra`)).join('')}</div>` : '';
     return `
@@ -531,7 +533,8 @@ ${nightTools}
 <section class="nsec" id="nt-habits"><h2><span class="kicker">On the day</span>Exam-day habits</h2><ul class="nhabits">${nlist(habits)}</ul></section>
 ${chapters.map((c) => {
     const g = fgroups.find((x) => x.id === c.id);
-    const mods = c.modules.map(([no, title]) => [no, title, g.mods.find((m) => m.no === no).rows.filter((r) => r[2] === 3)]).filter(([, , rows]) => rows.length);
+    const mods = c.modules.filter(([, , when]) => when !== null) // what the schedule leaves out isn't on the exam
+      .map(([no, title]) => [no, title, g.mods.find((m) => m.no === no).rows.filter((r) => r[2] === 3)]).filter(([, , rows]) => rows.length);
     return `<section class="nsec" id="nt-${c.id}"><h2><span class="kicker">Chapter ${c.no}</span>${esc(c.title)}</h2>
   ${mods.map(([no, title, rows]) => `<h3 class="fmod"><span class="mod-no">${esc(no)}</span>${esc(title)}</h3><div class="nrows">${rows.map(nrow).join('')}</div>`).join('')}
   <div class="watch"><h3>Watch out</h3><ul>${nlist(summary[c.id].watch)}</ul></div></section>`;

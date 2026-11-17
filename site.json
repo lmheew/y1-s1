@@ -61,6 +61,13 @@
   "news": [
     {
       "date": "2026-11-17",
+      "subject": "physics",
+      "title": "Physics final: four modules are not on the exam",
+      "text": "Physics final: the four modules the class schedule leaves out are not on the exam, the professor says: 15-3 An angular simple harmonic oscillator, 18-6 Heat transfer mechanisms, 19-9 The adiabatic expansion of an ideal gas and 20-3 Refrigerators and real engines. They stay on the page, marked “Not on the exam” in Summary, Formulas and Practice, and the night-before sheet leaves them out.",
+      "link": "physics/final/"
+    },
+    {
+      "date": "2026-11-17",
       "subject": "math",
       "title": "Linear Algebra: a page with four past exams",
       "text": "Linear Algebra has its own page, with past exams for now: the AY2024 Christmas exam (the one before the winter break), and the Linear Algebra part of the AY2022 and AY2023 finals with the AY2023 retake. Each is retyped with step-by-step answers, locked with the same password as the in-class sheets, and works like a mock, with a timer, Print buttons and parts to tick. Notes follow once the Linear Algebra classes start.",

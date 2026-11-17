@@ -1,7 +1,7 @@
 // Engineering Physics 1, the final: the chapters after the midterm, with each module's class on the course schedule.
 // Chapters follow Fundamentals of Physics (Halliday, Resnick, Walker), the course textbook: the final page covers
 // Chapters 15–20, every module of the book, also the four the class schedule leaves out (15-3, 18-6, 19-9 and 20-3),
-// which the page marks "Not on the class schedule".
+// which the page marks "Not on the exam" (the professor, 17 Nov 2026: what the schedule leaves out is not on the final).
 //
 // `modules` are [number, title, class]: class is [the class number on the schedule, its date] or null when the
 // schedule doesn't list the module. Two modules taught in one class share it (16-2 and 16-3 on 27 Nov). The schedule
