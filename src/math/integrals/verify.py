@@ -1164,6 +1164,56 @@ primitive("M3[4](b): -(x^2 + 2x + 2) e^-x is a primitive of x^2 e^-x", lambda x:
 check("M3[4](b): int_0^inf x^2 e^-x = 2", imp(lambda x: x * x * exp(-x), 0, INF), 2, 1e-9)
 check("M3[4](b): int_0^w = 2 - (w^2 + 2w + 2) e^-w (w = 4)", integral(lambda x: x * x * exp(-x), 0, 4), 2 - 26 * exp(-4))
 
+# --- Mock 4 (quiz style) ---
+f41 = lambda x: 3 * x * x + 2 * x
+for n in NS:
+    check(f"M4 Q.1(1): S_N = 2 + 5/(2N) + 1/(2N^2) exactly (N={n})", riemann(f41, 0, 1, n), 2 + Fr(5, 2 * n) + Fr(1, 2 * n * n))
+check("M4 Q.1(1): (N+1)(2N+1)/(2N^2) + (N+1)/N at N = 6", Fr(7 * 13, 72) + Fr(7, 6), 2 + Fr(5, 12) + Fr(1, 72))
+check("M4 Q.1(1): the limit 2 = int_0^1 (3x^2 + 2x)", integral(f41, 0, 1), 2)
+check("M4 Q.1(2): int_0^ln2 e^(2x) = 3/2", integral(lambda x: exp(2 * x), 0, log(2)), 1.5)
+f43 = lambda x: x * x - 2 * x
+check("M4 Q.1(3): int_0^2 (x^2 - 2x) = -4/3", integral(f43, 0, 2), -4 / 3); check("M4 Q.1(3): int_2^3 = 4/3", integral(f43, 2, 3), 4 / 3)
+check("M4 Q.1(3): area 8/3", integral(lambda x: abs(f43(x)), 0, 2) + integral(lambda x: abs(f43(x)), 2, 3), 8 / 3)
+check("M4 Q.1(3): the integral over [0, 3] alone is 0", integral(f43, 0, 3), 0, 1e-12)
+check("M4 Q.2(1): int_0^1 x^2/(x^3+1) = ln 2 / 3", integral(lambda x: x * x / (x ** 3 + 1), 0, 1), log(2) / 3)
+check("M4 Q.2(2): int_0^(pi/4) sin x / cos^3 x = 1/2", integral(lambda x: sin(x) / cos(x) ** 3, 0, pi / 4), 0.5)
+primitive("M4 Q.2(2): 1/(2 cos^2 x) is a primitive of sin x / cos^3 x", lambda x: 1 / (2 * cos(x) ** 2), lambda x: sin(x) / cos(x) ** 3, (-0.9, 0.2, 0.7))
+check("M4 Q.2(3): int_2^3 dx/(x^2-1) = (1/2) ln(3/2)", integral(lambda x: 1 / (x * x - 1), 2, 3), 0.5 * log(1.5))
+for x in (2.3, 2.8):
+    check(f"M4 Q.2(3): 1/(x^2-1) = (1/2)(1/(x-1) - 1/(x+1)) at {x}", 1 / (x * x - 1), 0.5 * (1 / (x - 1) - 1 / (x + 1)))
+check("M4 Q.2(4): int_1^3 dx/(x^2-2x+5) = pi/8", integral(lambda x: 1 / (x * x - 2 * x + 5), 1, 3), pi / 8)
+check("M4 Q.2(4): (x-1)^2 + 4 = x^2 - 2x + 5 at 2.2", (2.2 - 1) ** 2 + 4, 2.2 ** 2 - 2 * 2.2 + 5); check_true("M4 Q.2(4): 4 - 20 < 0", 4 - 20 < 0)
+primitive("M4 Q.3(1): 2 sqrt x ln x - 4 sqrt x", lambda x: 2 * sqrt(x) * log(x) - 4 * sqrt(x), lambda x: log(x) / sqrt(x), XN)
+check("M4 Q.3(1): int_1^(e^2) ln x / sqrt x = 4", integral(lambda x: log(x) / sqrt(x), 1, math.e ** 2), 4)
+check("M4 Q.3(2): int_0^(pi/2) dx/(2 + cos x) = pi/(3 sqrt3)", integral(lambda x: 1 / (2 + cos(x)), 0, pi / 2), pi / (3 * sqrt(3)))
+check("M4 Q.3(2): with u = tan(x/2): int_0^1 2/(u^2+3) du", integral(lambda u: 2 / (u * u + 3), 0, 1), pi / (3 * sqrt(3)))
+for x in (0.4, 1.2):
+    u = tan(x / 2)
+    check(f"M4 Q.3(2): 2 + cos x = (3 + u^2)/(1 + u^2) at {x}", 2 + cos(x), (3 + u * u) / (1 + u * u))
+check("M4 Q.3(2): pi/(3 sqrt3) = sqrt3 pi/9", pi / (3 * sqrt(3)), sqrt(3) * pi / 9)
+check("M4 Q.4(1): volume pi int_0^1 (1 + sqrt x)^2 = 17 pi/6", pi * imp(lambda x: (1 + sqrt(x)) ** 2, 0, 1), 17 * pi / 6, 1e-9)
+check_true("M4 Q.4(1): without the middle term the volume is different (3 pi/2)", abs(pi * (1 + 0.5) - 17 * pi / 6) > 1)
+yq = lambda x: x * x / 8 - log(x)
+for x in (1.2, 1.7):
+    check(f"M4 Q.4(2): 1 + y'^2 = (x/4 + 1/x)^2 at {x}", 1 + d1(yq, x) ** 2, (x / 4 + 1 / x) ** 2, 1e-6)
+check("M4 Q.4(2): length on [1, 2] = 3/8 + ln 2", integral(lambda x: sqrt(1 + (x / 4 - 1 / x) ** 2), 1, 2), 3 / 8 + log(2))
+check("M4 Q.4(3): int_0^pi sin 4x sin x = 0", integral(lambda x: sin(4 * x) * sin(x), 0, pi), 0, 1e-10)
+check("M4 Q.4(3): sin 4x sin x = (cos 3x - cos 5x)/2 at 0.9", sin(3.6) * sin(0.9), (cos(2.7) - cos(4.5)) / 2)
+r45 = lambda th: exp(2 * th)
+check("M4 Q.5(1): x^2 + y^2 = r^2 at 0.6", (r45(0.6) * cos(0.6)) ** 2 + (r45(0.6) * sin(0.6)) ** 2, r45(0.6) ** 2)
+check("M4 Q.5(2): length of r = e^(2 theta) on [0, ln 2] = 3 sqrt5/2", polar_len(r45, 0, log(2)), 3 * sqrt(5) / 2)
+y45 = lambda t: 4 * t - t ** 3
+check_true("M4 Q.5(3): y >= 0 on [0, 2], < 0 after", all(y45(k / 100) >= -1e-12 for k in range(0, 201)) and y45(2.01) < 0)
+check("M4 Q.5(3): x = t^2 reaches 4 at t = 2", 2 ** 2, 4)
+check("M4 Q.5(4): area int_0^2 (4t - t^3) 2t dt = 128/15", integral(lambda t: y45(t) * 2 * t, 0, 2), 128 / 15)
+check("M4 Q.5(4): the same area in x: int_0^4 y dx", imp(lambda x: y45(sqrt(x)), 0, 4), 128 / 15, 1e-9)
+check("M4 Q.6(1): (e^(2x) - 1)/sin x -> 2 (x = 1e-7)", (exp(2e-7) - 1) / sin(1e-7), 2, 1e-6)
+check("M4 Q.6(2): int_0^4 dx/sqrt(4-x) = 4", imp(lambda x: 1 / sqrt(4 - x), 0, 4), 4, 1e-9)
+check("M4 Q.6(2): int_0^w = 4 - 2 sqrt(4-w) (w = 3)", integral(lambda x: 1 / sqrt(4 - x), 0, 3), 4 - 2)
+primitive("M4 Q.6(3): (ln x)^2/2 is a primitive of ln x / x", lambda x: log(x) ** 2 / 2, lambda x: log(x) / x, XN)
+grows("M4 Q.6(3): (ln w)^2/2", lambda w: log(w) ** 2 / 2, [10.0 ** k for k in (1, 10, 100, 300)], 1e5)
+check("M4 Q.6(3): ln x / x -> 0 (x = 1e12)", log(1e12) / 1e12, 0, 1e-9)
+
 # ================= GRAPH (riemann) =================
 check("graph: n = 4 right sum, as in P1.1", riemann(sq, 0, 2, 4, 'right'), Fr(15, 4))
 check("graph: area 8/3 shown as 2.6667", round(8 / 3, 4), 2.6667)

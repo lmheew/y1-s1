@@ -2,7 +2,8 @@
 // (AY2022–AY2024: [1] six integrals to calculate, then problems on motion and on area and volume), over the lessons
 // of 2–19 Nov: [1] covers primitives, substitution, partial fractions and arctan forms, parts, definite integrals and
 // an improper integral; [2] motion (or, in Mock 2, a Riemann sum); [3] area, volume, length or average; [4] a
-// parametric or polar curve, or an improper integral with L'Hôpital's rule. 60 minutes and 100 points each.
+// parametric or polar curve, or an improper integral with L'Hôpital's rule. 60 minutes and 100 points each. Mock 4
+// follows the in-class quizzes instead (six questions of 10 points, 60 in all), with its own note above it (`focus`).
 // Same markup as content.mjs; `pts` gives the points of each part, `labels` the paper-style labels ((a), (b) …).
 // No function of a past paper or an in-class sheet is reused (leakcheck.mjs). Every answer is checked in verify.py.
 const R = String.raw;
@@ -233,6 +234,125 @@ $$\begin{aligned}\int x^2e^{-x}\,dx&=-x^2e^{-x}+2\int xe^{-x}\,dx\\[4pt]&=-\left
 using $\int xe^{-x}\,dx=-(x+1)e^{-x}$.
 
 The upper limit is infinite, so integrate up to $w$: $\int_0^{w}x^2e^{-x}\,dx=2-\left(w^2+2w+2\right)e^{-w}$. By (a) and its steps, $w^2e^{-w}$, $we^{-w}$ and $e^{-w}$ all tend to $0$, so the integral converges to $2$.`,
+      },
+    ],
+  },
+  // Mock 4 follows the in-class quizzes instead, as this year's Calculus midterm 1 did: six questions of 10 points, one
+  // for each of Quizzes 06–09 (Quiz 07 gives two) and one for the improper integrals of 19 Nov, with new functions
+  {
+    id: 'im4', title: 'Mock Midterm 4 (quiz style)', minutes: 60, added: NOV19,
+    focus: 'Six questions in the style of the in-class quizzes, 10 points each, like this year’s Calculus midterm 1. Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.',
+    qs: [
+      {
+        topic: 'Riemann sums and definite integrals', label: 'Q.1', stem: R`Answer each part.`, pts: [4, 2, 4],
+        parts: [
+          R`For $f(x)=3x^2+2x$ on $[0,1]$, cut into $N$ strips with right endpoints, write the Riemann sum $S_N$ in general form, simplify it, and find $\displaystyle\lim_{N\to\infty}S_N$.`,
+          R`$\displaystyle\int_0^{\ln2}e^{2x}\,dx$`,
+          R`The area between $y=x^2-2x$ and the $x$-axis on $[0,3]$`,
+        ],
+        answer: [R`(1) $S_N=2+\frac{5}{2N}+\frac{1}{2N^2}\to2$`, R`(2) $\frac{3}{2}$`, R`(3) $\frac{8}{3}$`],
+        sol: R`**(1)** $\Delta x=\frac{1}{N}$ and $x_k=\frac{k}{N}$, so $f(x_k)=\frac{3k^2}{N^2}+\frac{2k}{N}$. Take the constants out of the sums:
+$$\begin{aligned}S_N&=\sum_{k=1}^{N}\left(\frac{3k^2}{N^2}+\frac{2k}{N}\right)\frac{1}{N}\\[4pt]&=\frac{3}{N^3}\sum_{k=1}^{N}k^2+\frac{2}{N^2}\sum_{k=1}^{N}k\end{aligned}$$
+
+With the partial sums:
+$$\begin{aligned}S_N&=\frac{(N+1)(2N+1)}{2N^2}+\frac{N+1}{N}\\[4pt]&=2+\frac{5}{2N}+\frac{1}{2N^2}\end{aligned}$$
+which tends to $2$. Check: $\int_0^1\left(3x^2+2x\right)dx=1+1=2$.
+
+**(2)** $\Big[\frac{1}{2}e^{2x}\Big]_0^{\ln2}=\frac{1}{2}(4-1)=\frac{3}{2}$, since $e^{2\ln2}=\left(e^{\ln2}\right)^2=4$.
+
+**(3)** $f=x(x-2)$ is negative on $(0,2)$ and positive on $(2,3]$, so split at $2$. With $F=\frac{x^3}{3}-x^2$: $F(0)=0$, $F(2)=-\frac{4}{3}$ and $F(3)=0$.
+
+So $\int_0^2f\,dx=-\frac{4}{3}$ and $\int_2^3f\,dx=\frac{4}{3}$, and the area is $\frac{4}{3}+\frac{4}{3}=\frac{8}{3}$. The integral over $[0,3]$ alone is $0$, which is not the area.`,
+      },
+      {
+        topic: 'Substitution and rational forms', label: 'Q.2', stem: R`Compute the definite integrals.`, pts: [2, 2, 3, 3],
+        parts: [
+          R`$\displaystyle\int_0^1\frac{x^2}{x^3+1}\,dx$`,
+          R`$\displaystyle\int_0^{\pi/4}\frac{\sin x}{\cos^3x}\,dx$`,
+          R`$\displaystyle\int_2^3\frac{dx}{x^2-1}$`,
+          R`$\displaystyle\int_1^3\frac{dx}{x^2-2x+5}$`,
+        ],
+        answer: [R`(1) $\frac{1}{3}\ln2$`, R`(2) $\frac{1}{2}$`, R`(3) $\frac{1}{2}\ln\frac{3}{2}$`, R`(4) $\frac{\pi}{8}$`],
+        sol: R`**(1)** $u=x^3+1$, $du=3x^2\,dx$, and the limits move to $u=1$ and $u=2$: $\frac{1}{3}\int_1^2\frac{du}{u}=\frac{1}{3}\ln2$.
+
+**(2)** $u=\cos x$, $du=-\sin x\,dx$, and the limits move to $u=1$ and $u=\frac{\sqrt2}{2}$:
+$$-\int_1^{\sqrt2/2}u^{-3}\,du=\Big[\frac{1}{2u^2}\Big]_1^{\sqrt2/2}=1-\frac{1}{2}=\frac{1}{2}$$
+
+**(3)** The bottom factors: $\frac{1}{(x-1)(x+1)}=\frac{1}{2}\left(\frac{1}{x-1}-\frac{1}{x+1}\right)$ (cover-up at $x=1$ and $x=-1$). So the integral is
+$$\begin{aligned}\frac{1}{2}\Big[\ln\frac{x-1}{x+1}\Big]_2^3&=\frac{1}{2}\left(\ln\frac{1}{2}-\ln\frac{1}{3}\right)\\[4pt]&=\frac{1}{2}\ln\frac{3}{2}\end{aligned}$$
+
+**(4)** The bottom doesn't factor, since $\Delta=4-20<0$. Make a square: $x^2-2x+5=(x-1)^2+4$. With $a=2$:
+$$\frac{1}{2}\Big[\arctan\frac{x-1}{2}\Big]_1^3=\frac{1}{2}\left(\frac{\pi}{4}-0\right)=\frac{\pi}{8}$$`,
+      },
+      {
+        topic: 'By parts and u = tan(x/2)', label: 'Q.3', stem: R`Compute the definite integrals.`, pts: [5, 5],
+        parts: [
+          R`$\displaystyle\int_1^{e^2}\frac{\ln x}{\sqrt x}\,dx$`,
+          R`$\displaystyle\int_0^{\pi/2}\frac{dx}{2+\cos x}$, with $u=\tan\frac{x}{2}$`,
+        ],
+        answer: [R`(1) $4$`, R`(2) $\frac{\pi}{3\sqrt3}=\frac{\sqrt3\,\pi}{9}$`],
+        sol: R`**(1)** By parts, differentiating $\ln x$: $f=\ln x$ and $g'=x^{-1/2}$, so $f'=\frac{1}{x}$ and $g=2\sqrt x$:
+$$\begin{aligned}\int\frac{\ln x}{\sqrt x}\,dx&=2\sqrt x\ln x-\int\frac{2}{\sqrt x}\,dx\\[4pt]&=2\sqrt x\ln x-4\sqrt x\end{aligned}$$
+
+At $x=e^2$: $\sqrt{e^2}=e$ and $\ln e^2=2$, so $4e-4e=0$. At $x=1$: $0-4=-4$. The integral is $0-(-4)=4$.
+
+**(2)** With $u=\tan\frac{x}{2}$: $\cos x=\frac{1-u^2}{1+u^2}$ and $dx=\frac{2\,du}{1+u^2}$, and the limits move to $u=0$ and $u=\tan\frac{\pi}{4}=1$. Then $2+\cos x=\frac{3+u^2}{1+u^2}$, so the integrand becomes $\frac{2\,du}{u^2+3}$.
+
+With $a=\sqrt3$:
+$$\begin{aligned}\int_0^1\frac{2\,du}{u^2+3}&=\frac{2}{\sqrt3}\Big[\arctan\frac{u}{\sqrt3}\Big]_0^1\\[4pt]&=\frac{2}{\sqrt3}\cdot\frac{\pi}{6}=\frac{\pi}{3\sqrt3}\end{aligned}$$
+using $\arctan\frac{1}{\sqrt3}=\frac{\pi}{6}$.`,
+      },
+      {
+        topic: 'Volume, length and products of sines', label: 'Q.4', stem: R`Answer each part.`, pts: [4, 4, 2],
+        parts: [
+          R`The volume of the solid generated when $y=1+\sqrt x$, $0\le x\le1$, is revolved about the $x$-axis`,
+          R`The length of the curve $y=\frac{x^2}{8}-\ln x$ on $[1,2]$`,
+          R`$\displaystyle\int_0^{\pi}\sin4x\sin x\,dx$`,
+        ],
+        answer: [R`(1) $\frac{17\pi}{6}$`, R`(2) $\frac{3}{8}+\ln2$`, R`(3) $0$`],
+        sol: R`**(1)** Expand the square completely, middle term included:
+$$\begin{aligned}V&=\pi\int_0^1\left(1+2\sqrt x+x\right)dx\\[4pt]&=\pi\left(1+\frac{4}{3}+\frac{1}{2}\right)=\frac{17\pi}{6}\end{aligned}$$
+
+**(2)** $y'=\frac{x}{4}-\frac{1}{x}$, so $1+y'^2=\frac{x^2}{16}+\frac{1}{2}+\frac{1}{x^2}=\left(\frac{x}{4}+\frac{1}{x}\right)^2$, a perfect square. Then
+$$\ell=\int_1^2\left(\frac{x}{4}+\frac{1}{x}\right)dx=\Big[\frac{x^2}{8}+\ln x\Big]_1^2=\frac{3}{8}+\ln2$$
+
+**(3)** Product to sum: $\sin4x\sin x=\frac{1}{2}(\cos3x-\cos5x)$, so the integral is $\frac{1}{2}\Big[\frac{\sin3x}{3}-\frac{\sin5x}{5}\Big]_0^{\pi}=0$, because $\sin k\pi=0$ for every whole $k$.`,
+      },
+      {
+        topic: 'Parametric and polar curves', label: 'Q.5',
+        stem: R`Two curves: $C_1$ is $r=e^{2\theta}$ in polar coordinates, and $C_2$ is $x=t^2$, $y=4t-t^3$ with $t\ge0$.`, pts: [2, 3, 2, 3],
+        parts: [
+          R`Write $x$ and $y$ of $C_1$ as functions of $\theta$.`,
+          R`Find the length of $C_1$ for $0\le\theta\le\ln2$.`,
+          R`Find the range of $t$ where $C_2$ lies on or above the $x$-axis, and the range of $x$ it covers there.`,
+          R`Find the area between $C_2$ and the $x$-axis.`,
+        ],
+        answer: [R`(1) $x=e^{2\theta}\cos\theta$, $y=e^{2\theta}\sin\theta$`, R`(2) $\frac{3\sqrt5}{2}$`, R`(3) $0\le t\le2$, so $0\le x\le4$`, R`(4) $\frac{128}{15}$`],
+        sol: R`**(1)** $x=r\cos\theta=e^{2\theta}\cos\theta$ and $y=r\sin\theta=e^{2\theta}\sin\theta$.
+
+**(2)** $r'=2e^{2\theta}$, so $r^2+r'^2=5e^{4\theta}$ and the root is $\sqrt5\,e^{2\theta}$:
+$$\ell=\sqrt5\int_0^{\ln2}e^{2\theta}\,d\theta=\frac{\sqrt5}{2}(4-1)=\frac{3\sqrt5}{2}$$
+
+**(3)** $y=t\left(4-t^2\right)=t(2-t)(2+t)$, which is $\ge0$ for $0\le t\le2$ (with $t\ge0$). There $x=t^2$ runs from $0$ to $4$.
+
+**(4)** $\frac{dx}{dt}=2t$, so
+$$\begin{aligned}A&=\int_0^2\left(4t-t^3\right)2t\,dt=\Big[\frac{8t^3}{3}-\frac{2t^5}{5}\Big]_0^2\\[4pt]&=\frac{64}{3}-\frac{64}{5}=\frac{128}{15}\end{aligned}$$`,
+      },
+      {
+        topic: "Improper integrals and L'Hôpital", label: 'Q.6', stem: R`Answer each part.`, pts: [3, 3, 4],
+        parts: [
+          R`$\displaystyle\lim_{x\to0}\frac{e^{2x}-1}{\sin x}$`,
+          R`$\displaystyle\int_0^4\frac{dx}{\sqrt{4-x}}$`,
+          R`Does $\displaystyle\int_1^{\infty}\frac{\ln x}{x}\,dx$ converge? If so, find its value.`,
+        ],
+        answer: [R`(1) $2$`, R`(2) $4$`, R`(3) it diverges`],
+        sol: R`**(1)** The form is $\frac{0}{0}$, so L'Hôpital's rule applies: $\lim_{x\to0}\frac{2e^{2x}}{\cos x}=\frac{2}{1}=2$.
+
+**(2)** The integrand diverges at $x=4$, an open boundary, so integrate up to $w<4$. A primitive is $-2\sqrt{4-x}$ (the inside brings the minus sign):
+$$\int_0^{w}\frac{dx}{\sqrt{4-x}}=4-2\sqrt{4-w}$$
+As $w\to4$ this tends to $4$: the integral converges.
+
+**(3)** With $u=\ln x$, $du=\frac{dx}{x}$: $\int\frac{\ln x}{x}\,dx=\frac{(\ln x)^2}{2}$. So $\int_1^{w}\frac{\ln x}{x}\,dx=\frac{(\ln w)^2}{2}$, which grows without bound: the integral diverges, even though $\frac{\ln x}{x}\to0$.`,
       },
     ],
   },

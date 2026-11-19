@@ -482,7 +482,8 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
     <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
   </article>`;
   }
-  const mockSheets = mocks.map((m, mi) => examSheet(m, mi, mi === 0, span, MOCK_FOCUS, 'mock midterm exam practice test', INDEX)).join('');
+  // a mock may carry its own note above it (`focus`), such as a mock in the in-class quizzes' style
+  const mockSheets = mocks.map((m, mi) => examSheet(m, mi, mi === 0, span, esc(m.focus || MOCK_FOCUS), 'mock midterm exam practice test', INDEX)).join('');
   // past papers: locked like the in-class sheets (the panel shows only the title until the password opens it)
   const pastMeta = (p) => ({ id: p.id, ...(p.group ? { group: p.group } : {}), seg: p.seg, title: p.title, sub: p.sub, minutes: p.minutes, points: totalPts(p), added: p.added || '' });
   const pastList = past ? past.map(pastMeta) : lockedPast;

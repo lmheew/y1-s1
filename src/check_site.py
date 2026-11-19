@@ -418,13 +418,18 @@ with sync_playwright() as p:
         page.click('#tab-exams')
         page.wait_for_selector('#view-exams .up-item')
         check(f'{label}: midterm 2 Exams lists the five Math exams', page.locator('#view-exams .up-item').count() == 5)
-        # three mock midterms in the past papers' format: [1] six integrals, then [2] to [4]; 60 min and 100 pt each
-        check(f'{label}: midterm 2 has three mock midterms of four questions, 100 pt each, open to everyone',
-              page.locator('#mocks .sheet.mock').count() == 3 and page.locator('#mocks .soon-box').count() == 0
+        # three mock midterms in the past papers' format: [1] six integrals, then [2] to [4]; 60 min and 100 pt each;
+        # and a fourth in the in-class quizzes' style: six questions of 10 pt, with its own note
+        check(f'{label}: midterm 2 has four mock midterms, the first three of four questions and 100 pt each, open to everyone',
+              page.locator('#mocks .sheet.mock').count() == 4 and page.locator('#mocks .soon-box').count() == 0
               and all(page.locator(f'#{m} .rq').count() == 4 and page.locator(f'#{m} #{m}-q1 .parts li').count() == 6
                       and '100 pt' in page.locator(f'#{m} .sheet-sub').inner_text() and '2–19 Nov' in page.locator(f'#{m} .sheet-sub').inner_text()
                       for m in ('im1', 'im2', 'im3'))
               and page.locator('#im1 .time').inner_text() == '60:00' and page.locator('#mocks .sheet.lock').count() == 0)
+        check(f'{label}: midterm 2 Mock 4 is in the quizzes\' style: six questions, 60 pt, 60 min, with its own note',
+              page.locator('#im4 .rq').count() == 6 and '60 pt' in page.locator('#im4 .sheet-sub').inner_text()
+              and page.locator('#im4 .time').inner_text() == '60:00' and 'in-class quizzes' in page.locator('#im4 .focus').inner_text()
+              and 'in-class quizzes' not in page.locator('#im1 .focus').inner_text(), page.locator('#im4 .sheet-sub').inner_text())
         page.locator('#im1-q2 details.sol > summary').click()
         check(f'{label}: a midterm 2 mock answer opens with its steps', page.locator('#im1-q2 .answer li').count() == 2
               and page.locator('#im1-q2 .steps > *').count() >= 3, page.locator('#im1-q2 .steps > *').count())
