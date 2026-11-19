@@ -3,7 +3,8 @@
 // numbers, so every unit carries `dates` ("2 & 3 Nov"); a lesson gets `days` and `quiz` once a quiz sheet shows them
 // (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15;
 // Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19; Quiz 08 is "Day20 & Day21", 12 & 13 Nov; Quiz 09
-// follows as "Day22 & Day23", 16 & 17 Nov). The 9 Nov
+// follows as "Day22 & Day23", 16 & 17 Nov; 19 & 20 Nov have notes from 19 Nov but no sheet yet, so they go by their
+// dates, and so does their formula groups' label, which the night-before sheet matches). The 9 Nov
 // class finished the primitive-functions lesson (inverse trigonometric functions) before substitution, so that part
 // sits in u2.
 // A lesson still to come has `upcoming: true` and shows as a greyed-out Summary tile; `starred` marks the lessons with
@@ -18,6 +19,7 @@ const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
 const NOV17 = '2026-11-17';
+const NOV19 = '2026-11-19';
 
 export const units = [
   {
@@ -291,7 +293,57 @@ Use it to check an answer; on a quiz, still show the by-parts steps.
 - **Halve a symmetric curve:** the cardioid $r=1+\cos\theta$ is symmetric about the $x$-axis, so its length is twice the top half, $2\cdot2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta=8$, with no absolute value to split.
 - **Speed:** with $t$ as time, $\sqrt{x'(t)^2+y'(t)^2}$ is the speed of the moving point, so the length is the distance travelled, as in physics.`,
   },
-  { id: 'u6', dates: '19 & 20 Nov', title: 'Improper integrals and orthogonal functions', starred: true, upcoming: true },
+  {
+    // 19 Nov: improper integrals (slides 10–26) and L'Hôpital's rule; the 20 Nov class (orthogonal functions) is not in yet
+    id: 'u6', dates: '19 & 20 Nov', starred: true, added: NOV19,
+    title: 'Improper integrals and orthogonal functions',
+    intro: R`These notes cover the 19 Nov class: improper integrals, with L'Hôpital's rule for the limits they lead to. The 20 Nov class (orthogonal functions) isn't covered here yet.`,
+    ideas: R`
+- **Improper integrals:** $F(b)-F(a)$ needs a finite interval and an $f$ that stays finite on it. An integral is improper when a limit is $\infty$ or $-\infty$, or when $f$ diverges (goes to $\pm\infty$) at a point of the interval. It is calculated as a limit of ordinary integrals: integrate up to a movable end $w$, then let $w$ go to the problem point:
+$$\int_a^{\infty}f(x)\,dx=\lim_{w\to\infty}\int_a^{w}f(x)\,dx$$
+In the same way, $\int_{-\infty}^{b}f\,dx=\lim_{w\to-\infty}\int_w^{b}f\,dx$.
+- **Converge or diverge:** if the limit is a finite number, the improper integral converges, and that number is its value. If the limit is $\pm\infty$, or there is none, it diverges and has no value.
+- **Power functions:** the primitive functions for $f(x)=x^n$ are
+$$F(x)=\begin{cases}\dfrac{1}{n+1}x^{n+1}&(n\ne-1)\\[8pt]\ln x&(n=-1)\end{cases}$$
+so the improper integral on $[1,\infty)$ is characterized by the power $n$:
+$$\begin{aligned}&\text{converge: }\lim_{x\to\infty}x^{n+1}=0\ \ (n<-1)\\[4pt]&\text{diverge: }\lim_{x\to\infty}\ln x=\infty\ \ (n=-1)\\[4pt]&\text{diverge: }\lim_{x\to\infty}x^{n+1}=\infty\ \ (-1<n)\end{aligned}$$
+For $n<-1$ the value is $-\frac{1}{n+1}$, so $\int_1^{\infty}\frac{dx}{x^2}=1$. The borderline is $\frac{1}{x}$: it tends to $0$, yet $\int_1^{\infty}\frac{dx}{x}=\lim_{w\to\infty}\ln w=\infty$.
+- **Class exercise (1):** with $\int\frac{dx}{1+x^2}=\arctan x$ and $\arctan w\to\frac{\pi}{2}$ as $w\to\infty$,
+$$\int_0^{\infty}\frac{dx}{1+x^2}=\lim_{w\to\infty}\arctan w=\frac{\pi}{2}$$
+and since $e^{w}\to0$ as $w\to-\infty$,
+$$\int_{-\infty}^{0}e^x\,dx=\lim_{w\to-\infty}\left(1-e^{w}\right)=1$$
+- **Divergence of $f(x)$ at an open boundary:** $f(x)=\frac{1}{\sqrt{1-x}}$ diverges at $x=1$ and cannot be defined there, so the integral from $x=0$ to $1$ is improper: $x$ runs over $[0,1)$, open at $1$. Integrate up to $w<1$ and let $w\to1$:
+$$\begin{aligned}\int_0^1\frac{dx}{\sqrt{1-x}}&=\lim_{w\to1}\Big[-2\sqrt{1-x}\Big]_0^{w}\\[4pt]&=\lim_{w\to1}\left(2-2\sqrt{1-w}\right)=2\end{aligned}$$
+The graph shoots up at $x=1$, yet the area under it is finite. The primitive has a minus sign because the inside, $1-x$, has the derivative $-1$.
+- **Class exercise (2):** $\tan x$ diverges at $x=\frac{\pi}{2}$, so the integral is calculated as
+$$\int_0^{\pi/2}\tan x\,dx=\lim_{w\to\pi/2}\int_0^{w}\tan x\,dx$$
+The integral from $0$ to $w$, with the substitution $u=\cos x$:
+$$\begin{aligned}\int_0^{w}\tan x\,dx&=\int_0^{w}\left\{-\frac{(\cos x)'}{\cos x}\right\}dx\\[4pt]&=\Big[-\ln|\cos x|\Big]_0^{w}\\[4pt]&=-\ln|\cos w|\end{aligned}$$
+since $\ln|\cos0|=0$. As $w\to\frac{\pi}{2}$, $\cos w\to0$, so $-\ln|\cos w|\to\infty$: the integral diverges.
+- **Class exercise (3):** with $\int xe^{-x^2}dx=-\frac{1}{2}e^{-x^2}+C$ (substitute $u=-x^2$),
+$$\begin{aligned}\int_{-\infty}^{1}xe^{-x^2}dx&=\lim_{w\to-\infty}\Big[-\tfrac{1}{2}e^{-x^2}\Big]_w^{1}\\[4pt]&=-\frac{1}{2e}\end{aligned}$$
+and $\ln x$ diverges (to $-\infty$) at $x=0$. With $\int\ln x\,dx=x\ln x-x$ (by parts) and $w\ln w\to0$,
+$$\int_0^1\ln x\,dx=\lim_{w\to+0}\Big[x\ln x-x\Big]_w^{1}=-1$$
+- **A domain containing discontinuous points:** in $I=\int_{-1}^{1}\frac{dx}{\sqrt{|x|}}$, the integrand $\frac{1}{\sqrt{|x|}}$ is discontinuous at $x=0$, inside the interval. Separate the domain into $[-1,0)$ and $(0,1]$; each part is improper at its open end, $0$:
+$$\begin{aligned}I&=\int_{-1}^{0}\frac{dx}{\sqrt{-x}}+\int_0^{1}\frac{dx}{\sqrt x}\\[4pt]&=2+2=4\end{aligned}$$
+The integral converges only if every part does: if one part diverges, so does $I$.
+- **L'Hôpital's rule:** for a limit of the form $\frac{0}{0}$ or $\frac{\infty}{\infty}$,
+$$\lim\frac{f(x)}{g(x)}=\lim\frac{f'(x)}{g'(x)}$$
+with the top and the bottom differentiated separately, not by the quotient rule. If the new limit has the same form, use the rule again. The limits at the end of an improper integral often need it: $\frac{w}{e^w}$ is $\frac{\infty}{\infty}$, and $\lim_{w\to\infty}\frac{w}{e^w}=\lim_{w\to\infty}\frac{1}{e^w}=0$. A product $0\cdot\infty$ is first written as a fraction, as in Exercise (3):
+$$\begin{aligned}\lim_{w\to+0}w\ln w&=\lim_{w\to+0}\frac{\ln w}{1/w}\\[4pt]&=\lim_{w\to+0}\frac{1/w}{-1/w^2}\\[4pt]&=\lim_{w\to+0}(-w)=0\end{aligned}$$`,
+    watch: R`
+- Don't put $\infty$, or the point where $f$ diverges, into the primitive. Replace it with $w$, and take the limit as the last step.
+- Look inside the interval before you use $F(b)-F(a)$. $\int_{-1}^{1}\frac{dx}{x^2}$ is not $\Big[-\frac{1}{x}\Big]_{-1}^{1}=-2$ (a positive function can't give a negative integral): $\frac{1}{x^2}$ diverges at $0$, and $\int_0^{1}\frac{dx}{x^2}=\infty$, so the integral diverges.
+- $f(x)\to0$ is not enough: $\frac{1}{x}\to0$, yet $\int_1^{\infty}\frac{dx}{x}=\infty$.
+- In $\int\frac{dx}{\sqrt{1-x}}=-2\sqrt{1-x}+C$, the power rule divides by the new exponent $\frac{1}{2}$ (so it multiplies by $2$), and the inside, $1-x$, brings the minus sign. Check a primitive by differentiating it.
+- Every part of a split integral must converge on its own. One part that diverges makes the whole integral diverge, even if the other part is finite.
+- L'Hôpital's rule is only for $\frac{0}{0}$ and $\frac{\infty}{\infty}$: $\lim_{x\to0}\frac{x+1}{x+2}=\frac{1}{2}$, not $\frac{1}{1}$. Check the form again before each use.`,
+    tricksAdded: NOV19,
+    tricks: R`
+- **The power test:** near the problem point, compare $f$ with a power. At $\infty$, $\int_1^{\infty}\frac{dx}{x^p}$ converges only for $p>1$. Near a finite point $c$ where $f$ diverges, $\frac{1}{|x-c|^p}$ gives a finite integral only for $p<1$. And $p=1$ diverges both ways. $\frac{1}{\sqrt{1-x}}$ has $p=\frac{1}{2}<1$ at $x=1$, so it converges, while $\tan x$ behaves like $\frac{1}{\pi/2-x}$ near $\frac{\pi}{2}$, with $p=1$, so it diverges.
+- **Limits worth knowing:** $e^{w}$ grows faster than every power, and every power faster than $\ln w$: for $p>0$, $\lim_{w\to\infty}w^pe^{-w}=0$, $\lim_{w\to\infty}\frac{\ln w}{w^p}=0$ and $\lim_{w\to+0}w^p\ln w=0$. Each one is L'Hôpital's rule, used once or a few times; on a quiz, still show the steps.
+- **Symmetry:** an even integrand on $[-a,a]$ gives twice one half, $\int_{-1}^{1}\frac{dx}{\sqrt{|x|}}=2\int_0^1\frac{dx}{\sqrt x}=4$. Both halves must still converge: $\int_{-1}^{1}\frac{dx}{x^2}$ diverges, symmetric or not.`,
+  },
 ];
 
 export const habits = R`
@@ -306,6 +358,7 @@ export const habits = R`
 - For a volume, write $V=\pi\int_a^b f(x)^2\,dx$ first, then expand $f(x)^2$ completely before you integrate.
 - For a length, simplify $1+f'(x)^2$ (look for a perfect square) before you take the root.
 - For a parametric or polar length, write the two derivatives first, square and add them, then look for a perfect square, $\sin^2+\cos^2=1$ or a half-angle formula.
+- Before any definite integral, check both ends and the inside of the interval for $\infty$ or a point where $f$ diverges. If there is one, replace it with $w$, integrate, and take the limit last; end with "converges" and the value, or "diverges".
 - Keep answers exact: $\frac{16}{3}$, $\frac{\pi}{4}$ or $\frac{e^2-1}{2}$, not decimals.`;
 
 // ---------------- Practice ----------------
@@ -1043,5 +1096,163 @@ $$\ell=\frac{1}{2}\int_4^9\sqrt u\,du=\frac{1}{3}\Big[u^{3/2}\Big]_4^9=\frac{27-
 **(2)** $y'=\frac{x}{2}$, so $\sqrt{1+\frac{x^2}{4}}=\frac{1}{2}\sqrt{x^2+4}$, and the length is half of (1): $\sqrt2+\ln\left(1+\sqrt2\right)$, the same as Exercise (2).
 
 **(3)** The cardioid is symmetric about the $x$-axis, so take twice the top half: $2\cdot2\int_0^{\pi}\cos\frac{\theta}{2}\,d\theta=2\cdot4=8$.` },
+  ],
+  u6: [
+    { src: 'Class exercise (1)', added: NOV19,
+      stem: R`Evaluate the following improper integrals.`,
+      parts: [R`$\displaystyle\int_0^{\infty}\frac{dx}{1+x^2}$`, R`$\displaystyle\int_{-\infty}^{0}e^x\,dx$`],
+      hint: R`Replace the infinite limit with $w$, integrate as usual, then let $w\to\infty$ in (1) and $w\to-\infty$ in (2). $\arctan w\to\frac{\pi}{2}$ as $w\to\infty$, and $e^{w}\to0$ as $w\to-\infty$.`,
+      answer: [R`(1) $\frac{\pi}{2}$`, R`(2) $1$`],
+      sol: R`
+**(1)** The upper limit is infinite, so integrate from $0$ to $w$ first:
+$$\int_0^{w}\frac{dx}{1+x^2}=\Big[\arctan x\Big]_0^{w}=\arctan w$$
+
+As $w\to\infty$, $\arctan w\to\frac{\pi}{2}$: the angle whose tangent grows without bound tends to a right angle. So the integral converges to $\frac{\pi}{2}$.
+
+**(2)** The lower limit is $-\infty$, so integrate from $w$ to $0$:
+$$\int_w^{0}e^x\,dx=\Big[e^x\Big]_w^{0}=1-e^{w}$$
+
+As $w\to-\infty$, $e^{w}=\frac{1}{e^{|w|}}\to0$, so the integral converges to $1$.` },
+    { src: 'Power functions on [1, ∞)', added: NOV19,
+      stem: R`Decide whether each improper integral converges, and give its value when it does.`,
+      parts: [R`$\displaystyle\int_1^{\infty}\frac{dx}{x^3}$`, R`$\displaystyle\int_1^{\infty}\frac{dx}{\sqrt x}$`, R`$\displaystyle\int_1^{\infty}\frac{dx}{x}$`, R`$\displaystyle\int_1^{\infty}\frac{dx}{x\sqrt x}$`],
+      hint: R`Write each integrand as $x^n$ and look at $\lim_{w\to\infty}w^{n+1}$: it is $0$ only for $n<-1$. For $n=-1$ the primitive is $\ln x$.`,
+      answer: [R`(1) converges to $\frac{1}{2}$`, R`(2) diverges`, R`(3) diverges`, R`(4) converges to $2$`],
+      sol: R`
+**(1)** $n=-3<-1$: $\int_1^{w}x^{-3}\,dx=\Big[-\frac{1}{2x^2}\Big]_1^{w}=\frac{1}{2}-\frac{1}{2w^2}$, which tends to $\frac{1}{2}$.
+
+**(2)** $n=-\frac{1}{2}>-1$: $\int_1^{w}x^{-1/2}\,dx=\Big[2\sqrt x\Big]_1^{w}=2\sqrt w-2$, which grows without bound, so the integral diverges.
+
+**(3)** $n=-1$: $\int_1^{w}\frac{dx}{x}=\ln w\to\infty$, so it diverges, although $\frac{1}{x}\to0$.
+
+**(4)** $\frac{1}{x\sqrt x}=x^{-3/2}$, and $n=-\frac{3}{2}<-1$: $\int_1^{w}x^{-3/2}\,dx=\Big[-\frac{2}{\sqrt x}\Big]_1^{w}=2-\frac{2}{\sqrt w}$, which tends to $2$.` },
+    { src: 'Class example: f diverges at an open boundary', added: NOV19,
+      stem: R`$f(x)=\frac{1}{\sqrt{1-x}}$ diverges at $x=1$ and cannot be defined there.`,
+      parts: [R`Find a primitive function of $f$.`, R`Evaluate $\displaystyle I=\int_0^1\frac{dx}{\sqrt{1-x}}$, with $x\in[0,1)$.`],
+      hint: R`Write $f=(1-x)^{-1/2}$ and substitute $u=1-x$, $du=-dx$. The power rule divides by the new exponent $\frac{1}{2}$. Then integrate up to $w<1$ and let $w\to1$.`,
+      answer: [R`(1) $-2\sqrt{1-x}+C$`, R`(2) $2$`],
+      sol: R`
+**(1)** With $u=1-x$, $dx=-du$:
+$$\begin{aligned}\int(1-x)^{-1/2}\,dx&=-\int u^{-1/2}\,du\\[4pt]&=-2u^{1/2}+C\end{aligned}$$
+so a primitive is $-2\sqrt{1-x}$. Check: $\left(-2\sqrt{1-x}\right)'=-2\cdot\frac{1}{2\sqrt{1-x}}\cdot(-1)=\frac{1}{\sqrt{1-x}}$.
+
+**(2)** $f$ cannot be defined at $x=1$, so integrate up to $w<1$:
+$$\begin{aligned}\int_0^{w}\frac{dx}{\sqrt{1-x}}&=\Big[-2\sqrt{1-x}\Big]_0^{w}\\[4pt]&=2-2\sqrt{1-w}\end{aligned}$$
+
+As $w\to1$, $\sqrt{1-w}\to0$, so $I=2$: the integral converges.` },
+    { src: 'Class exercise (2): tan x on [0, π/2)', added: NOV19,
+      stem: R`Evaluate the improper integral $\displaystyle\int_0^{\pi/2}\tan x\,dx$.`,
+      parts: [R`Find $\displaystyle\int_0^{w}\tan x\,dx$ for $0<w<\frac{\pi}{2}$, with the substitution $u=\cos x$.`, R`Let $w\to\frac{\pi}{2}$: does the integral converge?`],
+      hint: R`$\tan x=\frac{\sin x}{\cos x}=-\frac{(\cos x)'}{\cos x}$, and $\int\frac{f'}{f}\,dx=\ln|f|+C$. What does $\cos w$ tend to?`,
+      answer: [R`(1) $-\ln|\cos w|$`, R`(2) it diverges: $-\ln|\cos w|\to\infty$`],
+      sol: R`
+**(1)** $\tan x=\frac{\sin x}{\cos x}=-\frac{(\cos x)'}{\cos x}$, so with $u=\cos x$ a primitive is $-\ln|\cos x|$:
+$$\begin{aligned}\int_0^{w}\tan x\,dx&=\Big[-\ln|\cos x|\Big]_0^{w}\\[4pt]&=-\ln|\cos w|+\ln1\end{aligned}$$
+and $\ln1=0$.
+
+**(2)** As $w\to\frac{\pi}{2}$, $\cos w\to0$ (from above), so $\ln|\cos w|\to-\infty$ and $-\ln|\cos w|\to\infty$. The integral diverges: the area under $\tan x$ from $0$ to $\frac{\pi}{2}$ is infinite.` },
+    { src: 'Class exercise (3)', added: NOV19,
+      stem: R`Evaluate the following improper integrals.`,
+      parts: [R`$\displaystyle\int_{-\infty}^{1}xe^{-x^2}\,dx$`, R`$\displaystyle\int_0^{1}\ln x\,dx$`],
+      hint: R`(1) Substitute $u=-x^2$, so $x\,dx=-\frac{1}{2}\,du$. (2) $\ln x\to-\infty$ at $x=0$. Integrate by parts with $\ln x=1\cdot\ln x$, and use $w\ln w\to0$ (L'Hôpital's rule).`,
+      answer: [R`(1) $-\frac{1}{2e}$`, R`(2) $-1$`],
+      sol: R`
+**(1)** With $u=-x^2$, $du=-2x\,dx$: $\int xe^{-x^2}\,dx=-\frac{1}{2}\int e^u\,du=-\frac{1}{2}e^{-x^2}+C$.
+
+The lower limit is $-\infty$, so integrate from $w$:
+$$\int_w^{1}xe^{-x^2}\,dx=-\frac{1}{2e}+\frac{1}{2}e^{-w^2}$$
+As $w\to-\infty$, $w^2\to\infty$ and $e^{-w^2}\to0$, so the integral is $-\frac{1}{2e}$. It is negative because $xe^{-x^2}<0$ for $x<0$, and that part outweighs the part from $0$ to $1$.
+
+**(2)** By parts with $f=\ln x$ and $g'=1$: $\int\ln x\,dx=x\ln x-\int x\cdot\frac{1}{x}\,dx=x\ln x-x+C$.
+
+$\ln x$ diverges at $x=0$, so integrate from $w>0$:
+$$\int_w^{1}\ln x\,dx=(0-1)-(w\ln w-w)$$
+
+$w\ln w=\frac{\ln w}{1/w}$ is $\frac{-\infty}{\infty}$, and by L'Hôpital's rule it has the same limit as $\frac{1/w}{-1/w^2}=-w$, which is $0$. So the integral is $-1-0=-1$: negative, since $\ln x<0$ on $(0,1)$.` },
+    { src: 'Class example: a discontinuous point inside', added: NOV19,
+      stem: R`Consider the improper integral $\displaystyle I=\int_{-1}^{1}\frac{dx}{\sqrt{|x|}}$.`,
+      parts: [R`Where is the integrand discontinuous, and how is the domain separated?`, R`Evaluate $I$.`],
+      hint: R`On $(0,1]$, $|x|=x$; on $[-1,0)$, $|x|=-x$. Each part is improper at its open end, $0$.`,
+      answer: [R`(1) at $x=0$: separate into $[-1,0)$ and $(0,1]$`, R`(2) $4$`],
+      sol: R`
+**(1)** $\frac{1}{\sqrt{|x|}}\to\infty$ as $x\to0$, so it is discontinuous at $x=0$, inside the interval. Separate the domain into $[-1,0)$ and $(0,1]$:
+$$I=\int_{-1}^{0}\frac{dx}{\sqrt{-x}}+\int_0^{1}\frac{dx}{\sqrt x}$$
+
+**(2)** The right part, from $w>0$:
+$$\int_w^{1}x^{-1/2}\,dx=\Big[2\sqrt x\Big]_w^{1}=2-2\sqrt w\to2$$
+
+The left part, up to $w<0$, with the primitive $-2\sqrt{-x}$ (the inside, $-x$, brings a minus sign):
+$$\int_{-1}^{w}\frac{dx}{\sqrt{-x}}=\Big[-2\sqrt{-x}\Big]_{-1}^{w}=2-2\sqrt{-w}\to2$$
+
+Both parts converge, so $I=2+2=4$. The graph is symmetric about the $y$-axis, so the two parts are equal.` },
+    { src: 'Splitting at a point inside', added: NOV19,
+      stem: R`Each integrand diverges at $x=0$, inside the interval. Separate the domain there and decide whether the integral converges.`,
+      parts: [R`$\displaystyle\int_{-1}^{1}\frac{dx}{x^2}$`, R`$\displaystyle\int_{-1}^{8}\frac{dx}{\sqrt[3]{x}}$`],
+      hint: R`(1) Look at $\int_w^{1}\frac{dx}{x^2}$ as $w\to+0$ before anything else. (2) $\frac{1}{\sqrt[3]{x}}=x^{-1/3}$ has the primitive $\frac{3}{2}x^{2/3}$, and $\sqrt[3]{x}$ is defined for negative $x$ too: $\sqrt[3]{-1}=-1$.`,
+      answer: [R`(1) diverges (it is not $-2$)`, R`(2) converges to $\frac{9}{2}$`],
+      sol: R`
+**(1)** The right part: $\int_w^{1}\frac{dx}{x^2}=\Big[-\frac{1}{x}\Big]_w^{1}=\frac{1}{w}-1$, which grows without bound as $w\to+0$. One part diverges, so the whole integral diverges.
+
+Putting in the ends instead gives $\Big[-\frac{1}{x}\Big]_{-1}^{1}=-1-1=-2$, a negative number for a positive function: the sign that a point inside was skipped.
+
+**(2)** The right part: $\int_w^{8}x^{-1/3}\,dx=\Big[\frac{3}{2}x^{2/3}\Big]_w^{8}=6-\frac{3}{2}w^{2/3}$, which tends to $6$ as $w\to+0$.
+
+The left part, up to $w<0$: $\int_{-1}^{w}x^{-1/3}\,dx=\Big[\frac{3}{2}x^{2/3}\Big]_{-1}^{w}=\frac{3}{2}w^{2/3}-\frac{3}{2}$, which tends to $-\frac{3}{2}$ as $w\to0$, since $(-1)^{2/3}=\left(\sqrt[3]{-1}\right)^2=1$.
+
+Both parts converge, so the integral is $6-\frac{3}{2}=\frac{9}{2}$.` },
+    { src: "L'Hôpital's rule", added: NOV19,
+      stem: R`Compute the limits with L'Hôpital's rule. Check the form first.`,
+      parts: [R`$\displaystyle\lim_{x\to0}\frac{e^x-1}{x}$`, R`$\displaystyle\lim_{x\to0}\frac{1-\cos x}{x^2}$`, R`$\displaystyle\lim_{x\to\infty}\frac{x^2}{e^x}$`, R`$\displaystyle\lim_{x\to+0}x^2\ln x$`],
+      hint: R`(2) and (3) need the rule twice. (4) is $0\cdot(-\infty)$: write it as $\frac{\ln x}{x^{-2}}$ first.`,
+      answer: [R`(1) $1$`, R`(2) $\frac{1}{2}$`, R`(3) $0$`, R`(4) $0$`],
+      sol: R`
+**(1)** The form is $\frac{0}{0}$: $\lim_{x\to0}\frac{e^x}{1}=1$.
+
+**(2)** The form is $\frac{0}{0}$: $\lim_{x\to0}\frac{\sin x}{2x}$, again $\frac{0}{0}$, so once more: $\lim_{x\to0}\frac{\cos x}{2}=\frac{1}{2}$.
+
+**(3)** The form is $\frac{\infty}{\infty}$: $\lim_{x\to\infty}\frac{2x}{e^x}$, again $\frac{\infty}{\infty}$, so once more: $\lim_{x\to\infty}\frac{2}{e^x}=0$.
+
+**(4)** $x^2\ln x=\frac{\ln x}{x^{-2}}$, which is $\frac{-\infty}{\infty}$: $\lim_{x\to+0}\frac{1/x}{-2x^{-3}}=\lim_{x\to+0}\left(-\frac{x^2}{2}\right)=0$.` },
+    { src: 'By parts, then a limit', added: NOV19,
+      stem: R`Evaluate the improper integrals. Each needs integration by parts, then L'Hôpital's rule for the limit.`,
+      parts: [R`$\displaystyle\int_0^{\infty}xe^{-x}\,dx$`, R`$\displaystyle\int_1^{\infty}\frac{\ln x}{x^2}\,dx$`],
+      hint: R`(1) Differentiate $x$: a primitive is $-(x+1)e^{-x}$. (2) Differentiate $\ln x$ and integrate $x^{-2}$: a primitive is $-\frac{\ln x+1}{x}$. Then use $\frac{w}{e^w}\to0$ and $\frac{\ln w}{w}\to0$.`,
+      answer: [R`(1) $1$`, R`(2) $1$`],
+      sol: R`
+**(1)** By parts with $f=x$ and $g'=e^{-x}$: $\int xe^{-x}\,dx=-xe^{-x}+\int e^{-x}\,dx=-(x+1)e^{-x}+C$. So
+$$\int_0^{w}xe^{-x}\,dx=1-\frac{w+1}{e^{w}}$$
+
+$\frac{w+1}{e^w}$ is $\frac{\infty}{\infty}$, and L'Hôpital's rule gives $\frac{1}{e^w}\to0$. So the integral is $1$.
+
+**(2)** By parts with $f=\ln x$ and $g'=x^{-2}$, so $g=-\frac{1}{x}$: $\int\frac{\ln x}{x^2}\,dx=-\frac{\ln x}{x}+\int\frac{dx}{x^2}=-\frac{\ln x+1}{x}+C$. So
+$$\int_1^{w}\frac{\ln x}{x^2}\,dx=1-\frac{\ln w+1}{w}$$
+
+$\frac{\ln w+1}{w}$ is $\frac{\infty}{\infty}$, and L'Hôpital's rule gives $\frac{1/w}{1}\to0$. So the integral is $1$.` },
+    { src: 'Converge or diverge?', added: NOV19,
+      stem: R`Evaluate each improper integral, or show that it diverges.`,
+      parts: [R`$\displaystyle\int_0^{\infty}e^{-2x}\,dx$`, R`$\displaystyle\int_2^{\infty}\frac{dx}{x\ln x}$`, R`$\displaystyle\int_0^{2}\frac{dx}{\sqrt{4-x^2}}$`, R`$\displaystyle\int_1^{\infty}\frac{dx}{x(x+1)}$`],
+      hint: R`(2) Substitute $u=\ln x$. (3) The integrand diverges at $x=2$; a primitive is $\arcsin\frac{x}{2}$. (4) Partial fractions: $\frac{1}{x(x+1)}=\frac{1}{x}-\frac{1}{x+1}$.`,
+      answer: [R`(1) $\frac{1}{2}$`, R`(2) diverges`, R`(3) $\frac{\pi}{2}$`, R`(4) $\ln2$`],
+      sol: R`
+**(1)** $\int_0^{w}e^{-2x}\,dx=\Big[-\frac{1}{2}e^{-2x}\Big]_0^{w}=\frac{1}{2}-\frac{1}{2}e^{-2w}$, which tends to $\frac{1}{2}$.
+
+**(2)** With $u=\ln x$, $du=\frac{dx}{x}$: $\int\frac{dx}{x\ln x}=\ln|\ln x|+C$. So $\int_2^{w}\frac{dx}{x\ln x}=\ln(\ln w)-\ln(\ln2)$, which grows without bound: the integral diverges, very slowly.
+
+**(3)** $\int_0^{w}\frac{dx}{\sqrt{4-x^2}}=\Big[\arcsin\frac{x}{2}\Big]_0^{w}=\arcsin\frac{w}{2}$, and as $w\to2$ this tends to $\arcsin1=\frac{\pi}{2}$. The integrand shoots up at $x=2$, but the integral converges.
+
+**(4)** $\int_1^{w}\left(\frac{1}{x}-\frac{1}{x+1}\right)dx=\Big[\ln\frac{x}{x+1}\Big]_1^{w}=\ln\frac{w}{w+1}-\ln\frac{1}{2}$. As $w\to\infty$, $\frac{w}{w+1}\to1$ and $\ln1=0$, so the integral is $\ln2$. Each fraction alone would give a divergent integral; their difference doesn't.` },
+    { src: 'Shortcut: the power test', added: NOV19,
+      stem: R`Without integrating, decide whether each improper integral converges: compare the integrand with a power near the problem point.`,
+      parts: [R`$\displaystyle\int_1^{\infty}\frac{dx}{x^2+1}$`, R`$\displaystyle\int_0^{1}\frac{dx}{\sqrt{x+x^2}}$`, R`$\displaystyle\int_0^{\pi/2}\frac{dx}{\cos x}$`, R`$\displaystyle\int_0^{1}\frac{dx}{(1-x)^{3/2}}$`],
+      hint: R`At $\infty$, a power $\frac{1}{x^p}$ needs $p>1$; near a finite point $c$, $\frac{1}{|x-c|^p}$ needs $p<1$. Near $\frac{\pi}{2}$, $\cos x=\sin\left(\frac{\pi}{2}-x\right)$ is about $\frac{\pi}{2}-x$.`,
+      answer: [R`(1) converges`, R`(2) converges`, R`(3) diverges`, R`(4) diverges`],
+      sol: R`
+**(1)** For large $x$, $\frac{1}{x^2+1}$ is about $\frac{1}{x^2}$, and $p=2>1$: it converges. (Its value is $\lim_{w\to\infty}\arctan w-\arctan1=\frac{\pi}{4}$.)
+
+**(2)** The problem point is $x=0$, where $x+x^2$ is about $x$, so the integrand is about $\frac{1}{\sqrt x}$, with $p=\frac{1}{2}<1$: it converges.
+
+**(3)** The problem point is $\frac{\pi}{2}$, where $\cos x$ is about $\frac{\pi}{2}-x$, so the integrand is about $\frac{1}{\pi/2-x}$, with $p=1$: it diverges. Indeed $\int_0^{w}\frac{dx}{\cos x}=\ln\left(\frac{1}{\cos w}+\tan w\right)$, which grows without bound as $w\to\frac{\pi}{2}$.
+
+**(4)** At $x=1$, $p=\frac{3}{2}\ge1$: it diverges. Indeed $\int_0^{w}(1-x)^{-3/2}\,dx=\frac{2}{\sqrt{1-w}}-2$, which grows without bound as $w\to1$.` },
   ],
 };

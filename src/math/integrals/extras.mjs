@@ -6,6 +6,7 @@ const NOV9 = '2026-11-09';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
 const NOV17 = '2026-11-17';
+const NOV19 = '2026-11-19';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -64,6 +65,17 @@ export const tags = {
   '5.8': 'parametric curve slope dy/dx area under the curve length of the arch perfect square',
   '5.9': 'polar length e^theta theta^2 1 - cos theta cardioid substitution half-angle',
   '5.10': 'shortcut trick ready-made primitive sqrt(x^2 + a^2) symmetry half of the cardioid',
+  '6.1': 'class exercise improper integral infinite limit 1/(1+x^2) arctan pi/2 e^x minus infinity converge',
+  '6.2': 'improper integral power functions x^n converge diverge 1/x^3 1/sqrt(x) 1/x borderline x^(-3/2)',
+  '6.3': 'class example divergence at an open boundary 1/sqrt(1-x) primitive -2 sqrt(1-x) minus sign [0,1) improper',
+  '6.4': 'class exercise improper tan x 0 to pi/2 substitution u = cos x -ln|cos x| diverges',
+  '6.5': "class exercise improper x e^(-x^2) minus infinity ln x 0 to 1 by parts w ln w L'Hopital -1/(2e)",
+  '6.6': 'class example domain containing discontinuous points 1/sqrt(|x|) separate the domain [-1,0) (0,1] improper',
+  '6.7': 'improper split at a point inside 1/x^2 trap -2 diverges cube root x^(-1/3) 9/2',
+  '6.8': "L'Hopital L'Hôpital rule 0/0 infinity/infinity limits e^x - 1 1 - cos x x^2/e^x x^2 ln x",
+  '6.9': "improper integral integration by parts x e^(-x) ln x / x^2 L'Hopital limit",
+  '6.10': 'improper converge or diverge e^(-2x) 1/(x ln x) arcsin 1/sqrt(4-x^2) partial fractions 1/(x(x+1)) ln 2',
+  '6.11': 'shortcut trick power test comparison p > 1 p < 1 improper 1/cos x converges diverges without integrating',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -199,10 +211,30 @@ export const formulas = [
     ['Half-angle', R`1+\cos\theta=2\cos^2\frac{\theta}{2},\quad1-\cos\theta=2\sin^2\frac{\theta}{2}`],
     ['The relation from class', R`\int\frac{dx}{\sqrt{x^2+a^2}}=\ln\left|x+\sqrt{x^2+a^2}\right|+C`],
   ]},
+  // 19 Nov: labelled with the lesson's dates until a quiz sheet gives its day numbers (the night-before sheet matches
+  // the label to the lesson's days, or to its dates while it has none)
+  { id: 'g6', title: 'Improper integrals', quiz: '19 & 20 Nov', added: NOV19, rows: [
+    ['Infinite upper limit', R`\int_a^{\infty}f(x)\,dx=\lim_{w\to\infty}\int_a^{w}f(x)\,dx`],
+    ['Infinite lower limit', R`\int_{-\infty}^{b}f(x)\,dx=\lim_{w\to-\infty}\int_w^{b}f(x)\,dx`],
+    ['f diverges at b (w < b)', R`\int_a^{b}f(x)\,dx=\lim_{w\to b}\int_a^{w}f(x)\,dx`],
+    ['f diverges at a (w > a)', R`\int_a^{b}f(x)\,dx=\lim_{w\to a}\int_w^{b}f(x)\,dx`],
+    ['A discontinuous point c inside', R`\int_a^{b}f\,dx=\int_a^{c}f\,dx+\int_c^{b}f\,dx`],
+    ['Powers on [1, ∞): converge', R`\int_1^{\infty}x^n\,dx=-\frac{1}{n+1}\quad(n<-1)`],
+    ['Powers on [1, ∞): diverge', R`\int_1^{\infty}x^n\,dx=\infty\quad(n\ge-1)`],
+    ['1/√(1 − x)', R`\int\frac{dx}{\sqrt{1-x}}=-2\sqrt{1-x}+C`],
+    ['tan x', R`\int\tan x\,dx=-\ln|\cos x|+C`],
+    ['x e^(−x²)', R`\int xe^{-x^2}\,dx=-\frac{1}{2}e^{-x^2}+C`],
+  ]},
+  { id: 'g6b', title: "L'Hôpital's rule and limits", quiz: '19 & 20 Nov', added: NOV19, rows: [
+    ["L'Hôpital's rule (0/0 or ∞/∞)", R`\lim\frac{f(x)}{g(x)}=\lim\frac{f'(x)}{g'(x)}`],
+    ['0 · ∞ as a fraction', R`w\ln w=\frac{\ln w}{1/w}`],
+    ['Limits at ∞', R`\lim_{w\to\infty}\frac{w}{e^{w}}=0,\quad\lim_{w\to\infty}\frac{\ln w}{w}=0`],
+    ['The class limits', R`\lim_{w\to+0}w\ln w=0,\quad\lim_{w\to\infty}\arctan w=\frac{\pi}{2}`],
+  ]},
   // extras from outside the lectures, added at the user's request; its label matches no lesson, so the night-before
   // sheet lists it with the values to know
-  // added moved to 17 Nov with the Day 22 & 23 rows (a ready-made primitive for √(x² + a²), a sum of squares)
-  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV17, rows: [
+  // added moved to 19 Nov with the improper-integral rows (the power test)
+  { id: 'gs', title: 'Shortcuts', quiz: 'Extra · not from the lectures', added: NOV19, rows: [
     ['Odd function on [−a, a]', R`f(-x)=-f(x)\ \Rightarrow\ \int_{-a}^{a}f(x)\,dx=0`],
     ['Even function on [−a, a]', R`f(-x)=f(x)\ \Rightarrow\ \int_{-a}^{a}f\,dx=2\int_0^{a}f\,dx`],
     ['Half a circle', R`\int_{-r}^{r}\sqrt{r^2-x^2}\,dx=\frac{\pi r^2}{2}`],
@@ -216,6 +248,8 @@ export const formulas = [
     ['A perfect square in a length', R`f'=A-B,\ AB=\tfrac{1}{4}\ \Rightarrow\ \sqrt{1+f'^2}=A+B`],
     ['√(x² + a²), ready-made', R`\begin{aligned}&\int\sqrt{x^2+a^2}\,dx=\tfrac{1}{2}x\sqrt{x^2+a^2}\\&\quad+\tfrac{a^2}{2}\ln\left|x+\sqrt{x^2+a^2}\right|+C\end{aligned}`],
     ['A sum of squares', R`(A-B)^2+4AB=(A+B)^2`],
+    ['Power test at ∞', R`\int_1^{\infty}\frac{dx}{x^p}\ \text{converges}\iff p>1`],
+    ['Power test at a finite point', R`\int_0^{1}\frac{dx}{x^p}\ \text{converges}\iff p<1`],
   ]},
 ];
 

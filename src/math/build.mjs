@@ -549,7 +549,8 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   // day label) and its "Watch out" list, then the values to know (the exact trig values, and the formula groups of no
   // single lesson). A view without a tab (#night); it prints as it is. No search entries: it repeats Summary and Formulas.
   const onExam = ready.filter((u) => !u.note);
-  const lessonOf = (g) => onExam.find((u) => u.days && g.quiz.split(' · ')[0] === u.days);
+  // a group's label starts with its lesson's days, or with its dates while no quiz sheet has given it day numbers
+  const lessonOf = (g) => onExam.find((u) => g.quiz.split(' · ')[0] === dayOf(u));
   const nrow = ([name, t]) => `<div class="nrow"><span class="nname">${esc(name)}</span><div class="nmath">${tex('\\displaystyle ' + t, false)}</div></div>`;
   const nlist = (src) => items(src).map((it) => `<li>${inline(it, false)}</li>`).join('');
   const loose = formulas.filter((g) => !lessonOf(g) && !/not on the midterm/i.test(g.quiz));
@@ -844,7 +845,9 @@ function statsOf(P, r) {
     return n ? `${n} ${n === 1 ? G.one || G.noun : G.noun}` : '';
   });
   const ready = P.units.filter((u) => !u.upcoming).length, all = P.units.length;
-  if (ready === all) return [`${all} lessons`, `${r.total} practice problems`, `${r.nos.length} quizzes`, `${P.mocks.length} mocks`, `${r.pastList.length} past midterms`];
+  // every lesson has notes: say so, and still list only the parts it has (no "0 mocks")
+  if (ready === all) return [`${all} lessons`, `${r.total} practice problems`, r.nos.length ? `${r.nos.length} quizzes` : '',
+    P.mocks.length ? `${P.mocks.length} mocks` : '', r.pastList.length ? `${r.pastList.length} past midterms` : ''];
   // an exam still being taught: the lessons so far, and only the parts it already has
   return [`${ready} of ${all} lessons`, `${r.total} practice problems`, r.nos.length ? `${r.nos.length} quizzes` : '',
     P.mocks.length ? `${P.mocks.length} mocks` : '', r.pastList.length ? `${r.pastList.length} past midterms` : ''];

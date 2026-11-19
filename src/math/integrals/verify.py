@@ -921,6 +921,156 @@ check("09B Q2(2) area int_1^2 y/t dt = 5/3", integral(lambda t: y9b(t) / t, 1, 2
 check("09B Q2(2) the same area in x: int_0^ln2 y dx", integral(lambda x: y9b(exp(x)), 0, log(2)), 5 / 3)
 check("09B Q2(2) without the 1/t: 9/4", integral(y9b, 1, 2), 9 / 4)
 
+# ================= 19 Nov: improper integrals and L'Hôpital's rule (u6, g6, g6b, P6.1–P6.11) =================
+# Convergent improper integrals are checked with scipy's quad (adaptive, made for infinite ranges and integrable
+# singularities at an end); each closed form "integral up to w" is checked against Simpson's rule on an ordinary
+# interval; divergence is shown by the closed form passing every bound as w moves to the problem point.
+import warnings
+from scipy.integrate import quad, IntegrationWarning
+warnings.simplefilter('error', IntegrationWarning)   # a quad that struggles must fail, not pass quietly
+INF = float('inf')
+def imp(f, a, b):
+    v, err = quad(f, a, b, limit=400, epsabs=1e-12, epsrel=1e-12)
+    return v
+def grows(name, F, ws, bound=1e3):
+    """F(w) increases along ws and passes the bound: the integral up to w has no finite limit"""
+    vals = [F(w) for w in ws]
+    check_true(f"{name}: grows without bound", all(b > a for a, b in zip(vals, vals[1:])) and vals[-1] > bound, [round(v, 3) for v in vals])
+XN = (0.3, 0.9, 1.6, 2.8)      # x > 0
+# --- the definition and converge or diverge ---
+check("summary/g6: int_0^inf e^-x = lim of int_0^w (w = 40)", integral(lambda x: exp(-x), 0, 40), imp(lambda x: exp(-x), 0, INF), 1e-9)
+# power functions: the primitives, and the improper integral on [1, inf) characterized by n
+for n in (-3, -2, -1.5, -0.5, 2):
+    primitive(f"summary: x^(n+1)/(n+1) is a primitive of x^n (n={n})", lambda x, n=n: x ** (n + 1) / (n + 1), lambda x, n=n: x ** n, XN)
+primitive("summary: ln x is a primitive of x^-1", log, lambda x: 1 / x, XN)
+for n in (-3, -2, -1.5, -1.2):
+    check(f"summary/g6: int_1^inf x^n = -1/(n+1) (n={n})", imp(lambda x, n=n: x ** n, 1, INF), -1 / (n + 1), 1e-8)
+    check(f"summary: lim x^(n+1) = 0 for n < -1 (n={n}, x = 1e12)", (1e12) ** (n + 1), 0, 1e-2)
+grows("summary/g6: n = -1: int_1^w dx/x = ln w", log, [10.0 ** k for k in (1, 10, 100, 300)], 600)
+grows("summary/g6: n = -1/2: int_1^w = 2 sqrt w - 2", lambda w: 2 * sqrt(w) - 2, [10.0 ** k for k in (1, 4, 8, 12)])
+grows("g6: n = 0: int_1^w 1 dx = w - 1", lambda w: w - 1, [10.0 ** k for k in (1, 4, 8)])
+check("summary/g6: int_1^w dx/x = ln w (w = 7.5)", integral(lambda x: 1 / x, 1, 7.5), log(7.5))
+check("summary: int_1^inf dx/x^2 = 1", imp(lambda x: x ** -2, 1, INF), 1, 1e-9)
+# --- class exercise (1) (P6.1) ---
+check("summary/P6.1a: int_0^inf dx/(1+x^2) = pi/2", imp(lambda x: 1 / (1 + x * x), 0, INF), pi / 2, 1e-9)
+check("summary/P6.1a/g6b: arctan w -> pi/2 (w = 1e9)", atan(1e9), pi / 2, 1e-8)
+check("P6.1a: int_0^w = arctan w (w = 3)", integral(lambda x: 1 / (1 + x * x), 0, 3), atan(3))
+check("summary/P6.1b: int_-inf^0 e^x = 1", imp(exp, -INF, 0), 1, 1e-9)
+check("P6.1b: int_w^0 e^x = 1 - e^w (w = -4)", integral(exp, -4, 0), 1 - exp(-4))
+check("summary/P6.1b: e^w -> 0 as w -> -inf (w = -60)", exp(-60), 0, 1e-20)
+# --- divergence at an open boundary: 1/sqrt(1-x) on [0, 1) (P6.3) ---
+primitive("summary/P6.3a/g6: -2 sqrt(1-x) is a primitive of 1/sqrt(1-x)", lambda x: -2 * sqrt(1 - x), lambda x: 1 / sqrt(1 - x), (-1.5, 0.1, 0.5, 0.9))
+check("summary/P6.3b: int_0^1 dx/sqrt(1-x) = 2", imp(lambda x: 1 / sqrt(1 - x), 0, 1), 2, 1e-9)
+check("summary/P6.3b: int_0^w = 2 - 2 sqrt(1-w) (w = 0.96)", integral(lambda x: 1 / sqrt(1 - x), 0, 0.96), 2 - 2 * sqrt(0.04))
+check_true("summary: 1/sqrt(1-x) shoots up near x = 1", 1 / sqrt(1 - (1 - 1e-12)) > 1e5)
+check_true("watch: 2 sqrt(1-x) (the sign dropped) is not a primitive", abs(d1(lambda x: 2 * sqrt(1 - x), 0.4) - 1 / sqrt(0.6)) > 1)
+check_true("watch: -(1/2) sqrt(1-x) (multiplied by the new exponent) is not a primitive", abs(d1(lambda x: -0.5 * sqrt(1 - x), 0.4) - 1 / sqrt(0.6)) > 0.5)
+# --- class exercise (2): tan x on [0, pi/2) (P6.4) ---
+primitive("summary/P6.4/g6: -ln|cos x| is a primitive of tan x", lambda x: -log(abs(cos(x))), tan, (-1.2, 0.3, 1.1, 2.5))
+for w in (0.7, 1.2, 1.55):
+    check(f"summary/P6.4a: int_0^w tan x = -ln|cos w| (w={w})", integral(tan, 0, w, 20000), -log(cos(w)), 1e-8)
+check("summary/P6.4a: tan x = -(cos x)'/cos x at 0.8", tan(0.8), -d1(cos, 0.8) / cos(0.8), 1e-8)
+grows("summary/P6.4b: -ln|cos w| as w -> pi/2", lambda w: -log(cos(w)), [pi / 2 - 10.0 ** -k for k in (1, 3, 6, 9)], 20)
+# --- class exercise (3) (P6.5) ---
+primitive("summary/P6.5a/g6: -(1/2)e^(-x^2) is a primitive of x e^(-x^2)", lambda x: -0.5 * exp(-x * x), lambda x: x * exp(-x * x), XS)
+check("summary/P6.5a: int_-inf^1 x e^(-x^2) = -1/(2e)", imp(lambda x: x * exp(-x * x), -INF, 1), -1 / (2 * math.e), 1e-9)
+check("P6.5a: int_w^1 = -1/(2e) + e^(-w^2)/2 (w = -1.3)", integral(lambda x: x * exp(-x * x), -1.3, 1), -1 / (2 * math.e) + 0.5 * exp(-1.69))
+check("P6.5a: the part from -inf to 0 is -1/2, from 0 to 1 is (1 - 1/e)/2", imp(lambda x: x * exp(-x * x), -INF, 0) + integral(lambda x: x * exp(-x * x), 0, 1), -1 / (2 * math.e))
+check_true("P6.5a: the negative part outweighs the positive one", 0.5 > 0.5 * (1 - 1 / math.e))
+primitive("summary/P6.5b/g3b: x ln x - x is a primitive of ln x", lambda x: x * log(x) - x, log, XN)
+check("summary/P6.5b: int_0^1 ln x = -1", imp(log, 0, 1), -1, 1e-9)
+check("P6.5b: int_w^1 ln x = (0 - 1) - (w ln w - w) (w = 0.2)", integral(log, 0.2, 1), -1 - (0.2 * log(0.2) - 0.2))
+# --- a discontinuous point inside: 1/sqrt|x| on [-1, 1] (P6.6) ---
+g = lambda x: 1 / sqrt(abs(x))
+check("summary/P6.6: the right part int_0^1 = 2", imp(g, 0, 1), 2, 1e-9)
+check("summary/P6.6: the left part int_-1^0 = 2", imp(g, -1, 0), 2, 1e-9)
+check("summary/P6.6b: I = 2 + 2 = 4", imp(g, -1, 0) + imp(g, 0, 1), 4, 1e-9)
+primitive("P6.6b: -2 sqrt(-x) is a primitive of 1/sqrt(-x) (x < 0)", lambda x: -2 * sqrt(-x), lambda x: 1 / sqrt(-x), (-0.9, -0.5, -0.1))
+check("P6.6b: int_w^1 x^(-1/2) = 2 - 2 sqrt w (w = 0.25)", integral(g, 0.25, 1), 2 - 2 * sqrt(0.25))
+check("P6.6b: int_-1^w (-x)^(-1/2) = 2 - 2 sqrt(-w) (w = -0.25)", integral(g, -1, -0.25), 2 - 2 * sqrt(0.25))
+check("tricks: 1/sqrt|x| is even, so I = 2 int_0^1", g(-0.37), g(0.37)); check("tricks: 2 int_0^1 dx/sqrt x = 4", 2 * imp(g, 0, 1), 4, 1e-9)
+# --- L'Hôpital's rule (summary, g6b) ---
+check("summary/g6b: w/e^w -> 0 (w = 60)", 60 / exp(60), 0, 1e-20)
+check("summary: the derivatives of w and e^w give 1/e^w", d1(lambda w: w, 2.0), 1, 1e-8)
+for w in (0.3, 0.07):
+    check(f"summary/g6b: w ln w = ln w / (1/w) at {w}", w * log(w), log(w) / (1 / w))
+    check(f"summary: (1/w)/(-1/w^2) = -w at {w}", (1 / w) / (-1 / w ** 2), -w)
+check_true("summary/g6b: w ln w -> 0 as w -> +0", all(abs(w * log(w)) < b for w, b in ((1e-4, 1e-2), (1e-8, 1e-6), (1e-15, 1e-13))))
+check("g6b: ln w / w -> 0 (w = 1e12)", log(1e12) / 1e12, 0, 1e-9)
+check("watch: lim (x+1)/(x+2) at 0 is 1/2", (0 + 1) / (0 + 2), 0.5); check_true("watch: L'Hôpital would wrongly give 1/1", 1 / 1 != 0.5)
+# --- watch out ---
+check("watch/P6.7a: plugging in the ends: [-1/x] from -1 to 1 = -2", (-1 / 1) - (-1 / -1), -2)
+check("watch/P6.7a: int_w^1 dx/x^2 = 1/w - 1 (w = 0.1)", integral(lambda x: x ** -2, 0.1, 1), 9)
+grows("watch/P6.7a: 1/w - 1 as w -> +0", lambda w: 1 / w - 1, [10.0 ** -k for k in (1, 3, 6)])
+check_true("watch: 1/x -> 0, yet int_1^w dx/x = ln w passes every bound", 1 / 1e9 < 1e-8 and log(1e300) > 690)
+# --- the power test (tricks, gs, P6.11) ---
+for p in (1.5, 2, 3):
+    check(f"tricks/gs: int_1^inf dx/x^p converges for p > 1 (p={p})", imp(lambda x, p=p: x ** -p, 1, INF), 1 / (p - 1), 1e-8)
+for p in (0.5, 0.25):
+    check(f"tricks/gs: int_0^1 dx/x^p converges for p < 1 (p={p})", imp(lambda x, p=p: x ** -p, 0, 1), 1 / (1 - p), 1e-8)
+grows("tricks/gs: int_w^1 dx/x^p = (w^(1-p) - 1)/(p - 1) for p = 3/2", lambda w: (w ** -0.5 - 1) / 0.5, [10.0 ** -k for k in (1, 4, 8)])
+grows("tricks/gs: int_w^1 dx/x = -ln w", lambda w: -log(w), [10.0 ** -k for k in (1, 10, 300)], 600)
+check("tricks/P6.11c: tan x behaves like 1/(pi/2 - x): tan x (pi/2 - x) -> 1", tan(pi / 2 - 1e-6) * 1e-6, 1, 1e-9)
+check("tricks: w^3 e^-w -> 0 (w = 200)", 200 ** 3 * exp(-200), 0, 1e-70)
+check("tricks: ln w / w^(1/2) -> 0 (w = 1e30)", log(1e30) / 1e15, 0, 1e-12)
+check("tricks: w^(1/2) ln w -> 0 (w = 1e-30)", 1e-15 * log(1e-30), 0, 1e-12)
+# --- practice ---
+# P6.2 powers on [1, inf)
+check("P6.2a: int_1^inf x^-3 = 1/2", imp(lambda x: x ** -3, 1, INF), 0.5, 1e-9)
+check("P6.2a: int_1^w = 1/2 - 1/(2w^2) (w = 4)", integral(lambda x: x ** -3, 1, 4), 0.5 - 1 / 32)
+check("P6.2b: int_1^w x^(-1/2) = 2 sqrt w - 2 (w = 9)", integral(lambda x: x ** -0.5, 1, 9), 4)
+check("P6.2c: int_1^w dx/x = ln w (w = 20)", integral(lambda x: 1 / x, 1, 20, 8000), log(20))
+check("P6.2d: 1/(x sqrt x) = x^(-3/2) at 2.3", 1 / (2.3 * sqrt(2.3)), 2.3 ** -1.5)
+check("P6.2d: int_1^inf x^(-3/2) = 2", imp(lambda x: x ** -1.5, 1, INF), 2, 1e-9)
+check("P6.2d: int_1^w = 2 - 2/sqrt w (w = 16)", integral(lambda x: x ** -1.5, 1, 16), 2 - 2 / 4)
+# P6.7b: the cube root, defined for negative x
+cr = lambda x: math.copysign(abs(x) ** (1 / 3), x)
+h = lambda x: 1 / cr(x)
+check("P6.7b: cube root of -1 is -1", cr(-1), -1)
+primitive("P6.7b: (3/2) x^(2/3) is a primitive of x^(-1/3) on both sides", lambda x: 1.5 * cr(x) ** 2, h, (-0.8, -0.2, 0.5, 3.0))
+check("P6.7b: the right part int_0^8 = 6", imp(h, 0, 8), 6, 1e-9)
+check("P6.7b: int_w^8 = 6 - (3/2) w^(2/3) (w = 0.5)", integral(h, 0.5, 8), 6 - 1.5 * 0.5 ** (2 / 3))
+check("P6.7b: the left part int_-1^0 = -3/2", imp(h, -1, 0), -1.5, 1e-9)
+check("P6.7b: (-1)^(2/3) = (cube root of -1)^2 = 1", cr(-1) ** 2, 1)
+check("P6.7b: the whole integral 9/2", imp(h, -1, 0) + imp(h, 0, 8), 4.5, 1e-9)
+# P6.8 L'Hôpital's rule
+check("P6.8a: (e^x - 1)/x -> 1 (x = 1e-7)", (exp(1e-7) - 1) / 1e-7, 1, 1e-6)
+check("P6.8b: (1 - cos x)/x^2 -> 1/2 (x = 1e-4)", (1 - cos(1e-4)) / 1e-8, 0.5, 1e-6)
+check("P6.8b: the middle step sin x/(2x) -> 1/2 (x = 1e-6)", sin(1e-6) / 2e-6, 0.5, 1e-9)
+check("P6.8c: x^2/e^x -> 0 (x = 80)", 80 ** 2 / exp(80), 0, 1e-25)
+check("P6.8c: the middle step 2x/e^x -> 0 (x = 80)", 160 / exp(80), 0, 1e-25)
+check("P6.8d: x^2 ln x -> 0 (x = 1e-6)", 1e-12 * log(1e-6), 0, 1e-10)
+check("P6.8d: (1/x)/(-2x^-3) = -x^2/2 at 0.7", (1 / 0.7) / (-2 * 0.7 ** -3), -0.49 / 2)
+# P6.9 by parts, then a limit
+primitive("P6.9a: -(x+1)e^(-x) is a primitive of x e^(-x)", lambda x: -(x + 1) * exp(-x), lambda x: x * exp(-x), XS)
+check("P6.9a: int_0^inf x e^-x = 1", imp(lambda x: x * exp(-x), 0, INF), 1, 1e-9)
+check("P6.9a: int_0^w = 1 - (w+1)/e^w (w = 3)", integral(lambda x: x * exp(-x), 0, 3), 1 - 4 / exp(3))
+primitive("P6.9b: -(ln x + 1)/x is a primitive of ln x/x^2", lambda x: -(log(x) + 1) / x, lambda x: log(x) / x ** 2, XN)
+check("P6.9b: int_1^inf ln x/x^2 = 1", imp(lambda x: log(x) / x ** 2, 1, INF), 1, 1e-9)
+check("P6.9b: int_1^w = 1 - (ln w + 1)/w (w = 5)", integral(lambda x: log(x) / x ** 2, 1, 5), 1 - (log(5) + 1) / 5)
+check("P6.9b: (ln w + 1)/w -> 0 (w = 1e15)", (log(1e15) + 1) / 1e15, 0, 1e-12)
+# P6.10 converge or diverge
+check("P6.10a: int_0^inf e^(-2x) = 1/2", imp(lambda x: exp(-2 * x), 0, INF), 0.5, 1e-9)
+primitive("P6.10b: ln(ln x) is a primitive of 1/(x ln x)", lambda x: log(log(x)), lambda x: 1 / (x * log(x)), (1.5, 2.5, 7.0))
+grows("P6.10b: ln(ln w) - ln(ln 2)", lambda w: log(log(w)) - log(log(2)), [10.0 ** k for k in (1, 10, 100, 300)], 6)
+primitive("P6.10c: arcsin(x/2) is a primitive of 1/sqrt(4 - x^2)", lambda x: asin(x / 2), lambda x: 1 / sqrt(4 - x * x), (-1.5, 0.3, 1.2, 1.9))
+check("P6.10c: int_0^2 dx/sqrt(4 - x^2) = pi/2", imp(lambda x: 1 / sqrt(4 - x * x), 0, 2), pi / 2, 1e-9)
+for x in (1.3, 4.0):
+    check(f"P6.10d: 1/(x(x+1)) = 1/x - 1/(x+1) at {x}", 1 / (x * (x + 1)), 1 / x - 1 / (x + 1))
+primitive("P6.10d: ln(x/(x+1)) is a primitive of 1/(x(x+1))", lambda x: log(x / (x + 1)), lambda x: 1 / (x * (x + 1)), XN)
+check("P6.10d: int_1^inf dx/(x(x+1)) = ln 2", imp(lambda x: 1 / (x * (x + 1)), 1, INF), log(2), 1e-9)
+# P6.11 the power test
+check("P6.11a: int_1^inf dx/(x^2+1) = pi/4", imp(lambda x: 1 / (x * x + 1), 1, INF), pi / 4, 1e-9)
+check("P6.11a: 1/(x^2+1) is about 1/x^2 for large x", (1 / (1e6 ** 2 + 1)) * 1e12, 1, 1e-9)
+check("P6.11b: converges: int_0^1 dx/sqrt(x + x^2) = ln(3 + 2 sqrt2)", imp(lambda x: 1 / sqrt(x + x * x), 0, 1), log(3 + 2 * sqrt(2)), 1e-9)
+check("P6.11b: near 0 the integrand is about 1/sqrt x", sqrt(1e-10) / sqrt(1e-10 + 1e-20), 1, 1e-9)
+primitive("P6.11c: ln(1/cos x + tan x) is a primitive of 1/cos x", lambda x: log(1 / cos(x) + tan(x)), lambda x: 1 / cos(x), (-1.2, 0.2, 0.9, 1.4))
+check("P6.11c: cos x is about pi/2 - x near pi/2", cos(pi / 2 - 1e-6) / 1e-6, 1, 1e-9)
+grows("P6.11c: ln(1/cos w + tan w) as w -> pi/2", lambda w: log(1 / cos(w) + tan(w)), [pi / 2 - 10.0 ** -k for k in (1, 4, 8, 12)], 25)
+primitive("P6.11d: 2/sqrt(1-x) is a primitive of (1-x)^(-3/2)", lambda x: 2 / sqrt(1 - x), lambda x: (1 - x) ** -1.5, (-0.5, 0.2, 0.8))
+check("P6.11d: int_0^w = 2/sqrt(1-w) - 2 (w = 0.9)", integral(lambda x: (1 - x) ** -1.5, 0, 0.9, 20000), 2 / sqrt(0.1) - 2, 1e-8)
+grows("P6.11d: 2/sqrt(1-w) - 2 as w -> 1", lambda w: 2 / sqrt(1 - w) - 2, [1 - 10.0 ** -k for k in (1, 4, 8, 12)], 1e5)
+
 # ================= GRAPH (riemann) =================
 check("graph: n = 4 right sum, as in P1.1", riemann(sq, 0, 2, 4, 'right'), Fr(15, 4))
 check("graph: area 8/3 shown as 2.6667", round(8 / 3, 4), 2.6667)

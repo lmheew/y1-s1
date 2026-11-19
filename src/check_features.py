@@ -189,8 +189,10 @@ with sync_playwright() as p:
         # (their New labels are checked below, on a device that hasn't opened anything yet)
         check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
               and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
+        # all six lessons have notes now (19 & 20 Nov from its first day): the card counts them, with no "0 mocks"
         check(f'{label}: picker: Calculus midterm 2 has its date, its lesson span and the lessons so far', 'Mon 23 Nov' in cards.nth(1).inner_text()
-              and '2–20 nov' in cards.nth(1).locator('.kicker').inner_text().lower() and 'of 6 lessons' in cards.nth(1).locator('.e-stats').inner_text())
+              and '2–20 nov' in cards.nth(1).locator('.kicker').inner_text().lower() and '6 lessons' in cards.nth(1).locator('.e-stats').inner_text()
+              and 'mocks' not in cards.nth(1).locator('.e-stats').inner_text(), cards.nth(1).locator('.e-stats').inner_text())
         check(f'{label}: picker: an undated exam says so', 'Date to be announced' in cards.nth(2).inner_text())
         check(f'{label}: picker: no sideways scroll', overflow(pg) <= 0, overflow(pg))
         shot('picker', True)
@@ -439,7 +441,7 @@ with sync_playwright() as p:
     check('new: next visit: no New labels in the tabs already opened', pg2.locator('#m1 .new-pill').count() == 0
           and pg2.locator('#view-summary .new-pill').count() == 0, (pg2.locator('#m1 .new-pill').count(), pg2.locator('#view-summary .new-pill').count()))
     # Calculus midterm 2 keeps its own keys in study-seen ("math-integrals:<tab>"): its dots and Calculus midterm 1's don't
-    # mix (its own dots and labels are checked at noon on 13 Nov, below, when all of its content is New)
+    # mix (its own dots and labels are checked at noon on 19 Nov, below)
     pg2.goto(BASE + '/math/integrals/')
     pg2.wait_for_selector('#view-summary .unit')
     pg2.click('#tab-practice')
@@ -475,36 +477,41 @@ with sync_playwright() as p:
           and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
     ctx.close()
 
-    # ---- the same at noon on 17 Nov, when Day 22 & 23 and Quiz 09 arrived: the lessons of the last 14 days (9 Nov on)
-    # and the day in What's new are New; 2 & 3 Nov (the first lesson and its Riemann-sum graph) are past their 14 days,
-    # as are Calculus midterm 1's lessons from 29 Oct ----
+    # ---- the same at noon on 19 Nov, when the first day of 19 & 20 Nov arrived (two days after Day 22 & 23, Quiz 09
+    # and the past midterms of 17 Nov): the lessons of the last 14 days (9 Nov on) and both days in What's new are New;
+    # 2 & 3 Nov (the first lesson and its Riemann-sum graph) are past their 14 days, as are Calculus midterm 1's lessons
+    # from 29 Oct ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
-    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 17, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 19, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new (17 Nov): the day Quiz 09 arrived is New on the home page',
-          pg.locator('#news .n-day:has(time[datetime="2026-11-17"]) .new-pill').count() == 1)
+    check('new (19 Nov): the days Quiz 09 and the improper integrals arrived are New on the home page',
+          pg.locator('#news .n-day:has(time[datetime="2026-11-17"]) .new-pill').count() == 1
+          and pg.locator('#news .n-day:has(time[datetime="2026-11-19"]) .new-pill').count() == 1)
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')
-    check('new (17 Nov): Calculus midterm 2 has its own tab dots, Exams with its past midterms', dots(pg) == ['practice', 'formulas', 'quizzes', 'exams'], dots(pg))
-    pills = [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4', 'u5')]
-    check('new (17 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
-          pills == [0, 1, 1, 1, 1] and pg.locator('#gx-riemann .new-pill').count() == 0, pills)
+    check('new (19 Nov): Calculus midterm 2 has its own tab dots, Exams with its past midterms', dots(pg) == ['practice', 'formulas', 'quizzes', 'exams'], dots(pg))
+    pills = [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4', 'u5', 'u6')]
+    check('new (19 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
+          pills == [0, 1, 1, 1, 1, 1] and pg.locator('#gx-riemann .new-pill').count() == 0, pills)
+    pg.click('#tab-practice')
+    pg.wait_for_selector('#pu6 .prob')
+    check('new (19 Nov): the improper-integral problems are New', pg.locator('#pu6 .prob .new-pill').count() == 11, pg.locator('#pu6 .prob .new-pill').count())
     pg.click('#tab-quizzes')
     pg.wait_for_selector('#qg09')
-    check('new (17 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
+    check('new (19 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (17 Nov): the past midterms of the integral part are New, even locked', pg.locator('#past .sheet-title .new-pill').count() == 3 and 'exams' not in dots(pg))
+    check('new (19 Nov): the past midterms of the integral part are New, even locked', pg.locator('#past .sheet-title .new-pill').count() == 3 and 'exams' not in dots(pg))
     # Calculus midterm 1's lessons are past their 14 days; only its AY2024 past midterm (17 Nov) is New
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
-    check('new (17 Nov): Calculus midterm 1 has a dot on Exams only', dots(pg) == ['exams'], dots(pg))
+    check('new (19 Nov): Calculus midterm 1 has a dot on Exams only', dots(pg) == ['exams'], dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (17 Nov): its AY2024 past midterm is New, the older ones not', pg.locator('#p2024 .sheet-title .new-pill').count() == 1
+    check('new (19 Nov): its AY2024 past midterm is New, the older ones not', pg.locator('#p2024 .sheet-title .new-pill').count() == 1
           and pg.locator('#past .sheet-title .new-pill').count() == 1, pg.locator('#past .sheet-title .new-pill').count())
     ctx.close()
 
@@ -792,13 +799,17 @@ with sync_playwright() as p:
     pg.goto(BASE + '/physics/midterm/')
     pg.wait_for_selector('#view-exams .up-item')
     check('night: it is never the tab a page opens on next time: the last tab (Exams) opens', pg.locator('#view-night').is_hidden() and pg.locator('#view-exams').is_visible())
-    for page, n in [('math/derivatives', 8), ('math/integrals', 7)]:
+    for page, n in [('math/derivatives', 8), ('math/integrals', 8)]:
         pg.goto(BASE + f'/{page}/#formulas')
         pg.wait_for_selector('#view-formulas .night-link')
         pg.click('#view-formulas .night-link')
         pg.wait_for_selector('#view-night .nsec')
         check(f'night: {page}: the habits, each lesson on the midterm and the values to know', pg.locator('#view-night .nsec').count() == n
               and pg.locator('#view-night .nrow').count() > 20 and overflow(pg) <= 0, (pg.locator('#view-night .nsec').count(), pg.locator('#view-night .nrow').count()))
+    # a lesson that has no day numbers yet (19 & 20 Nov) finds its formula groups by its dates, not with the values to know
+    check('night: math/integrals: the 19 & 20 Nov lesson lists its own formulas (both groups)',
+          pg.locator('#nt-u6 .nrow').count() == 14 and pg.locator('#nt-values .fmod', has_text='Improper integrals').count() == 0,
+          pg.locator('#nt-u6 .nrow').count())
     ctx.close()
 
     # ---- phones: a slimmer band, its intro one line until tapped; the calculator a slim tab on its edge at rest ----

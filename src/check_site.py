@@ -317,9 +317,9 @@ with sync_playwright() as p:
         check(f'{label}: Calculus midterm 2 opens on Summary', page.locator('#view-summary').is_visible()
               and page.locator('.brand small').inner_text() == 'Midterm 2 · Integrals')
         tiles = page.locator('#view-summary .tile')
-        check(f'{label}: midterm 2 tiles follow the schedule: six lessons, one still to come, then the habits',
-              tiles.count() == 7 and page.locator('#view-summary .tile.upcoming').count() == 1
-              and page.locator('#view-summary .tile.upcoming .tile-soon').count() == 1 and page.locator('#view-summary .unit').count() == 5,
+        check(f'{label}: midterm 2 tiles follow the schedule: six lessons, none still to come, then the habits',
+              tiles.count() == 7 and page.locator('#view-summary .tile.upcoming').count() == 0
+              and page.locator('#view-summary .tile-soon').count() == 0 and page.locator('#view-summary .unit').count() == 6,
               tiles.all_inner_texts()[:2])
         check(f'{label}: midterm 2 lessons show their days and dates', '2 & 3 nov' in page.locator('#su-u1 .unit-head .kicker').inner_text().lower()
               and 'day 14 & 15' in page.locator('#su-u1 .unit-head .kicker').inner_text().lower()
@@ -333,14 +333,19 @@ with sync_playwright() as p:
               and 'application of integration' in page.locator('#su-u4 h2').inner_text().lower()
               and 'day 22 & 23' in page.locator('#su-u5 .unit-head .kicker').inner_text().lower()
               and 'quiz 09' in page.locator('#su-u5 .unit-head .kicker').inner_text().lower()
-              and 'parametric and polar curves' in page.locator('#su-u5 h2').inner_text().lower())
+              and 'parametric and polar curves' in page.locator('#su-u5 h2').inner_text().lower()
+              and 'improper integrals' in page.locator('#su-u6 h2').inner_text().lower()
+              and 'covered here yet' in page.locator('#su-u6 .unit-note').inner_text())
         check(f'{label}: midterm 2 has its Shortcuts boxes after Watch out, marked as not from the lectures',
               page.locator('#su-u2 .tricks li').count() == 3 and page.locator('#su-u3 .tricks li').count() == 6 and page.locator('#su-u4 .tricks li').count() == 4
-              and page.locator('#su-u5 .tricks li').count() == 4 and page.locator('#su-u1 .tricks').count() == 0
+              and page.locator('#su-u5 .tricks li').count() == 4 and page.locator('#su-u6 .tricks li').count() == 3 and page.locator('#su-u1 .tricks').count() == 0
               and 'not from the lectures' in page.locator('#su-u3 .tricks-note').inner_text()
               and page.evaluate("document.querySelector('#su-u3 .watch').compareDocumentPosition(document.querySelector('#su-u3 .tricks')) & 4") > 0)
-        check(f'{label}: midterm 2 lessons still to come go by their dates', page.locator('#view-summary .tile.upcoming .tile-k').first.inner_text().lower() == '19 & 20 nov',
-              page.locator('#view-summary .tile.upcoming .tile-k').first.inner_text())
+        # 19 & 20 Nov have notes but no quiz sheet with day numbers yet, so the lesson goes by its dates
+        check(f'{label}: a midterm 2 lesson without day numbers goes by its dates',
+              page.locator('#view-summary .tile[data-target="su-u6"] .tile-k').inner_text().lower() == '19 & 20 nov'
+              and page.locator('#su-u6 .unit-head .kicker').inner_text().lower().startswith('19 & 20 nov'),
+              page.locator('#view-summary .tile[data-target="su-u6"] .tile-k').inner_text())
         check(f'{label}: midterm 2 Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.locator('#gx-riemann').scroll_into_view_if_needed()
         page.wait_for_selector('#gx-riemann rect.gx-rect')
@@ -358,10 +363,11 @@ with sync_playwright() as p:
         shot(page, f'{label}-integrals-summary')
         page.click('#tab-practice')
         page.wait_for_selector('#view-practice .prob')
-        check(f'{label}: midterm 2 Practice has 8 + 11 + 15 + 11 + 10 problems, the 2 & 3 Nov ones keeping their ids',
+        check(f'{label}: midterm 2 Practice has 8 + 11 + 15 + 11 + 10 + 11 problems, the 2 & 3 Nov ones keeping their ids',
               page.locator('#pu1 .prob').count() == 8 and page.locator('#pu2 .prob').count() == 11 and page.locator('#pu3 .prob').count() == 15
               and page.locator('#pu4 .prob').count() == 11 and page.locator('#prob-4-11').count() == 1
               and page.locator('#pu5 .prob').count() == 10 and page.locator('#prob-5-10').count() == 1
+              and page.locator('#pu6 .prob').count() == 11 and page.locator('#prob-6-1').count() == 1 and page.locator('#prob-6-11').count() == 1
               and page.locator('#prob-1-12').count() == 1 and page.locator('#prob-1-4').count() == 0 and page.locator('#prob-2-10').count() == 1
               and page.locator('#prob-3-13').count() == 1)
         card = page.locator('#prob-1-1')
@@ -378,7 +384,8 @@ with sync_playwright() as p:
               and page.locator('#fg-g2c .frow').count() == 6 and page.locator('#fg-g3 .frow').count() == 13 and page.locator('#fg-g3b .frow').count() == 5
               and page.locator('#fg-g4 .frow').count() == 7 and page.locator('#fg-g4b .frow').count() == 7 and page.locator('#fg-g4c .frow').count() == 4
               and page.locator('#fg-g4d .frow').count() == 11 and page.locator('#fg-g5 .frow').count() == 8 and page.locator('#fg-g5b .frow').count() == 8
-              and page.locator('#fg-gs .frow').count() == 13
+              and page.locator('#fg-g6 .frow').count() == 10 and page.locator('#fg-g6b .frow').count() == 4
+              and page.locator('#fg-gs .frow').count() == 15
               and page.locator('#fg-exact').count() == 1)
         check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-quizzes')
