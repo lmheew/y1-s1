@@ -135,9 +135,9 @@ CARDS = {
               '<span class="pill on">Linear Algebra</span><span class="pill on">Calculus final</span>'),
     'og-math-integrals.png': dict(
         graph='int', title='CLA1 Review', kicker='Calculus midterm 2 · Integrals',
-        lede='Key ideas, worked solutions and formulas, added after each class, and past midterms.',
+        lede='Key ideas, worked solutions and formulas, added after each class, with mock and past midterms.',
         pills='<span class="pill on">Summary</span><span class="pill">Practice</span><span class="pill">Formulas</span>'
-              '<span class="pill">Quizzes</span><span class="pill">Past midterms</span>'),
+              '<span class="pill">Quizzes</span><span class="pill">Exams</span>'),
     'og-math-linear-algebra.png': dict(
         title='CLA1 Review', kicker='Linear Algebra',
         lede='Past Linear Algebra exams with worked answers. Notes follow once the classes start.',

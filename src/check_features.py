@@ -189,10 +189,12 @@ with sync_playwright() as p:
         # (their New labels are checked below, on a device that hasn't opened anything yet)
         check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
               and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
-        # all six lessons have notes now (19 & 20 Nov from its first day): the card counts them, with no "0 mocks"
+        # all six lessons have notes now (19 & 20 Nov from its first day), and the three mocks of 19 Nov: the card counts
+        # both (a count of 0 is left out)
         check(f'{label}: picker: Calculus midterm 2 has its date, its lesson span and the lessons so far', 'Mon 23 Nov' in cards.nth(1).inner_text()
               and '2–20 nov' in cards.nth(1).locator('.kicker').inner_text().lower() and '6 lessons' in cards.nth(1).locator('.e-stats').inner_text()
-              and 'mocks' not in cards.nth(1).locator('.e-stats').inner_text(), cards.nth(1).locator('.e-stats').inner_text())
+              and '3 mocks' in cards.nth(1).locator('.e-stats').inner_text() and ' 0 ' not in f" {cards.nth(1).locator('.e-stats').inner_text()} ",
+              cards.nth(1).locator('.e-stats').inner_text())
         check(f'{label}: picker: an undated exam says so', 'Date to be announced' in cards.nth(2).inner_text())
         check(f'{label}: picker: no sideways scroll', overflow(pg) <= 0, overflow(pg))
         shot('picker', True)
@@ -504,7 +506,8 @@ with sync_playwright() as p:
     check('new (19 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (19 Nov): the past midterms of the integral part are New, even locked', pg.locator('#past .sheet-title .new-pill').count() == 3 and 'exams' not in dots(pg))
+    check('new (19 Nov): the past midterms of the integral part are New, even locked, and so are the mocks of 19 Nov',
+          pg.locator('#past .sheet-title .new-pill').count() == 3 and pg.locator('#mocks .sheet-title .new-pill').count() == 3 and 'exams' not in dots(pg))
     # Calculus midterm 1's lessons are past their 14 days; only its AY2024 past midterm (17 Nov) is New
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')

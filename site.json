@@ -62,6 +62,13 @@
     {
       "date": "2026-11-19",
       "subject": "math",
+      "title": "Calculus midterm 2: three mock midterms",
+      "text": "Calculus midterm 2's Exams tab has three mock midterms in the format of the past midterms of the integral part: [1] six integrals to calculate (one of them improper), then problems on motion or a Riemann sum, on area, volume, length or an average, and on a parametric or polar curve or an improper integral with L'Hôpital's rule. They cover the lessons of 2–19 Nov, take 60 minutes and 100 points each, and work like the past papers: a timer, Print buttons, step-by-step answers and parts to tick for a score.",
+      "link": "math/integrals/#exams"
+    },
+    {
+      "date": "2026-11-19",
+      "subject": "math",
       "title": "Calculus midterm 2: improper integrals and L'Hôpital's rule",
       "text": "Calculus midterm 2: the 19 Nov class is added: improper integrals (an infinite limit, a function that diverges at an open boundary, a discontinuous point inside the domain), power functions that converge or diverge, and L'Hôpital's rule for the limits they lead to. Practice has eleven new problems, including all three class exercises and both class examples; Formulas has two new groups, and the Shortcuts box has the power test. The 20 Nov class (orthogonal functions) isn't in yet.",
       "link": "math/integrals/"

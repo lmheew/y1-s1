@@ -417,8 +417,18 @@ with sync_playwright() as p:
             shot(page, f'{label}-integrals-quiz06')
         page.click('#tab-exams')
         page.wait_for_selector('#view-exams .up-item')
-        check(f'{label}: midterm 2 Exams lists the five Math exams, mocks to come', page.locator('#view-exams .up-item').count() == 5
-              and page.locator('#mocks .soon-box').count() == 1)
+        check(f'{label}: midterm 2 Exams lists the five Math exams', page.locator('#view-exams .up-item').count() == 5)
+        # three mock midterms in the past papers' format: [1] six integrals, then [2] to [4]; 60 min and 100 pt each
+        check(f'{label}: midterm 2 has three mock midterms of four questions, 100 pt each, open to everyone',
+              page.locator('#mocks .sheet.mock').count() == 3 and page.locator('#mocks .soon-box').count() == 0
+              and all(page.locator(f'#{m} .rq').count() == 4 and page.locator(f'#{m} #{m}-q1 .parts li').count() == 6
+                      and '100 pt' in page.locator(f'#{m} .sheet-sub').inner_text() and '2–19 Nov' in page.locator(f'#{m} .sheet-sub').inner_text()
+                      for m in ('im1', 'im2', 'im3'))
+              and page.locator('#im1 .time').inner_text() == '60:00' and page.locator('#mocks .sheet.lock').count() == 0)
+        page.locator('#im1-q2 details.sol > summary').click()
+        check(f'{label}: a midterm 2 mock answer opens with its steps', page.locator('#im1-q2 .answer li').count() == 2
+              and page.locator('#im1-q2 .steps > *').count() >= 3, page.locator('#im1-q2 .steps > *').count())
+        check(f'{label}: midterm 2 Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
         check(f'{label}: midterm 2 Exams has the past midterms of the integral part, AY2022 to AY2024',
               [x.inner_text().strip() for x in page.locator('#past .seg-btn').all()] == ['AY2022', 'AY2023', 'AY2024'] and page.locator('#past h2').inner_text() == 'Past midterms')
         if PASSWORD:

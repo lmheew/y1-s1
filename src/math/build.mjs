@@ -31,6 +31,7 @@ import { mocks } from './exams.mjs';
 import * as INT from './integrals/content.mjs';
 import * as INTX from './integrals/extras.mjs';
 import * as INTF from './integrals/followups.mjs';
+import { mocks as INT_MOCKS } from './integrals/exams.mjs';
 import { SITE_URL, fmtDate, esc, tex, inline, items, blocks, withPts, texPlain, plain, entry, toggle, solToggle, lazyTab, sessionSetup, practiceButtons, nightTools, nightLink, partsList, answerBox, MARU,
   band, ring, addedAttr, meta, timerHTML, unlockForm, katexCSS, FONT_LINKS, indexScript, readAll, KATEX_TWEAK, hash, writeIfChanged,
   THEME_EARLY, HEAD_COMMON, ogTags, ITER, b64, unb64, normalize, readJSON, deriveKey, sealBox, openBox, PICKER_CSS, PICKER_JS, SB_EDGE, SB_FOOT, KATEX_DIR } from '../shared/build-lib.mjs';
@@ -138,7 +139,9 @@ const DERIVATIVES = {
 };
 const INTEGRALS = {
   id: 'integrals', name: 'Calculus midterm 2', short: 'Midterm 2 · Integrals',
-  units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: INTF.followups, mocks: [],
+  units: INT.units, habits: INT.habits, practice: INT.practice, tags: INTX.tags, formulas: INTX.formulas, followups: INTF.followups, mocks: INT_MOCKS,
+  // what the mocks cover, for their sheets and the band (Calculus midterm 1's say which quizzes): the lessons so far
+  mockSpan: '2–19 Nov',
   icons: INTX.UNIT_ICONS, graphs: INTX.GRAPHS, graphsAdded: INTX.GRAPHS_ADDED, testbarAdded: '', seen: 'math-integrals',
   quizFile: 'inclass-integrals.mjs', pastFile: 'past-integrals.mjs',
   pastText: { kicker: 'Real midterm papers', title: 'Past midterms', noun: 'past midterms', focus: PAST_FOCUS,
@@ -146,12 +149,12 @@ const INTEGRALS = {
   conf: { store: 'cla1-integrals-review', seen: 'math-integrals', home: 'summary', scores: 'cla1-integrals-mock-scores',
     suggest: ['substitution', 'by parts', 'partial fractions', 'arctan', 'primitive', 'Riemann sum'], tryWords: '"substitution" or "by parts"' },
   title: 'CLA1 Midterm 2 Review',
-  description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas and quizzes, added after each class.',
+  description: 'Review for Calculus midterm 2 (integrals) in Calculus &amp; Linear Algebra 1: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms, added after each class.',
   og: {
     title: 'CLA1 Review · Calculus midterm 2 (integrals)',
-    description: 'Unofficial review notes for Calculus midterm 2: key ideas, practice problems with worked solutions, formulas and quizzes, added after each class.',
+    description: 'Unofficial review notes for Calculus midterm 2: key ideas, practice problems with worked solutions, formulas, quizzes and mock midterms, added after each class.',
     url: 'math/integrals/', image: 'og-math-integrals.png',
-    alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice, formulas and quizzes, with mock midterms to come',
+    alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice, formulas, quizzes, and mock and past midterms',
   },
   lede: {
     summary: 'One section per lesson in the course schedule, added after each class: the key ideas, and the common mistakes to avoid. Lessons still to come are greyed out.',
@@ -429,7 +432,7 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const quizJump = nos.map((no) => `<button type="button" class="chip" data-goto="quizzes" data-target="qg${no}">Quiz ${no}</button>`).join('');
   const quizUnits = units.filter((u) => u.quiz);
   const qnum = (u) => u.quiz.replace(/^Quiz /, '');
-  const span = quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits.length ? quizUnits[0].quiz : '';
+  const span = P.mockSpan || (quizUnits.length > 1 ? `Quizzes ${qnum(quizUnits[0])}–${qnum(quizUnits[quizUnits.length - 1])}` : quizUnits.length ? quizUnits[0].quiz : '');
   const daySpan = units.length ? spanOf(units) : '';
   const hasLocks = locked && nos.some((no) => (quizzes ? quizzes.some((q) => q.no === no) : lockedNos.includes(no)));
 
