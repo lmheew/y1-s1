@@ -422,33 +422,38 @@ with sync_playwright() as p:
         page.click('#tab-exams')
         page.wait_for_selector('#view-exams .up-item')
         check(f'{label}: midterm 2 Exams lists the five Math exams', page.locator('#view-exams .up-item').count() == 5)
-        # three mock midterms in the past papers' format: [1] six integrals, then [2] to [4]; 60 min and 100 pt each;
-        # and a fourth in the in-class quizzes' style: six questions of 10 pt, with its own note
-        check(f'{label}: midterm 2 has four mock midterms, the first three of four questions and 100 pt each, open to everyone',
+        # Mocks 1–3 (im5–im7, 20 Nov) in the layout of the AY2025 paper: Q.1 four integrals on an interval, then Q.2 to
+        # Q.6 (Q.4 one question, without a part label); 60 min and 100 pt each, with their own note; and Mock 4 (im4) in
+        # the in-class quizzes' style: six questions of 10 pt
+        check(f'{label}: midterm 2 has four mock midterms, the first three in the AY2025 layout, 100 pt each, open to everyone',
               page.locator('#mocks .sheet.mock').count() == 4 and page.locator('#mocks .soon-box').count() == 0
-              and all(page.locator(f'#{m} .rq').count() == 4 and page.locator(f'#{m} #{m}-q1 .parts li').count() == 6
+              and [x.get_attribute('aria-controls') for x in page.locator('#mocks .seg-btn').all()] == ['im5', 'im6', 'im7', 'im4']
+              and all(page.locator(f'#{m} .rq').count() == 6 and page.locator(f'#{m} #{m}-q1 .parts li').count() == 4
+                      and page.locator(f'#{m} #{m}-q4 .parts li.solo').count() == 1 and page.locator(f'#{m} #{m}-q6 .parts li').count() == 3
                       and '100 pt' in page.locator(f'#{m} .sheet-sub').inner_text() and '2–19 Nov' in page.locator(f'#{m} .sheet-sub').inner_text()
-                      for m in ('im1', 'im2', 'im3'))
-              and page.locator('#im1 .time').inner_text() == '60:00' and page.locator('#mocks .sheet.lock').count() == 0)
+                      and 'AY2025' in page.locator(f'#{m} .focus').inner_text()
+                      for m in ('im5', 'im6', 'im7'))
+              and page.locator('#im5 .time').inner_text() == '60:00' and page.locator('#mocks .sheet.lock').count() == 0)
         check(f'{label}: midterm 2 Mock 4 is in the quizzes\' style: six questions, 60 pt, 60 min, with its own note',
               page.locator('#im4 .rq').count() == 6 and '60 pt' in page.locator('#im4 .sheet-sub').inner_text()
               and page.locator('#im4 .time').inner_text() == '60:00' and 'in-class quizzes' in page.locator('#im4 .focus').inner_text()
-              and 'in-class quizzes' not in page.locator('#im1 .focus').inner_text(), page.locator('#im4 .sheet-sub').inner_text())
-        page.locator('#im1-q2 details.sol > summary').click()
-        check(f'{label}: a midterm 2 mock answer opens with its steps', page.locator('#im1-q2 .answer li').count() == 2
-              and page.locator('#im1-q2 .steps > *').count() >= 3, page.locator('#im1-q2 .steps > *').count())
+              and 'in-class quizzes' not in page.locator('#im5 .focus').inner_text(), page.locator('#im4 .sheet-sub').inner_text())
+        page.locator('#im5-q6 details.sol > summary').click()
+        check(f'{label}: a midterm 2 mock answer opens with its steps', page.locator('#im5-q6 .answer li').count() == 3
+              and page.locator('#im5-q6 .steps > *').count() >= 4, page.locator('#im5-q6 .steps > *').count())
         check(f'{label}: midterm 2 Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
-        check(f'{label}: midterm 2 Exams has the past midterms of the integral part, AY2022 to AY2024',
-              [x.inner_text().strip() for x in page.locator('#past .seg-btn').all()] == ['AY2022', 'AY2023', 'AY2024'] and page.locator('#past h2').inner_text() == 'Past midterms')
+        check(f'{label}: midterm 2 Exams has the past midterms of the integral part, AY2022 to AY2025',
+              [x.inner_text().strip() for x in page.locator('#past .seg-btn').all()] == ['AY2022', 'AY2023', 'AY2024', 'AY2025'] and page.locator('#past h2').inner_text() == 'Past midterms')
         if PASSWORD:
             check(f'{label}: the one unlock opens them too, as mock-like sheets with their questions',
-                  page.locator('#past .sheet.lock').count() == 0 and page.locator('#past .sheet.mock').count() == 3 and page.locator('#p2022 .rq').count() == 3
+                  page.locator('#past .sheet.lock').count() == 0 and page.locator('#past .sheet.mock').count() == 4 and page.locator('#p2022 .rq').count() == 3
+                  and page.locator('#p2025 .rq').count() == 6 and page.locator('#p2025 .parts li.solo').count() == 1 and '100 pt' in page.locator('#p2025 .sheet-sub').inner_text()
                   and page.locator('#p2023 .rq').count() == 3 and page.locator('#p2024 .rq').count() == 4 and page.locator('#p2024 .parts li.solo').count() == 3
                   and page.locator('#p2024 .time').inner_text() == '60:00' and '100 pt' in page.locator('#p2024 .sheet-sub').inner_text())
             hits = search(page, 'container')
             check(f'{label}: midterm 2 search finds the past midterms after unlocking', any(t.startswith('Midterm AY2023 · [3]') for t in hits), hits[:4])
         else:
-            check(f'{label}: midterm 2 past midterms are locked', page.locator('#past .sheet.lock').count() == 3 and page.locator('#past .rq').count() == 0)
+            check(f'{label}: midterm 2 past midterms are locked', page.locator('#past .sheet.lock').count() == 4 and page.locator('#past .rq').count() == 0)
         check(f'{label}: midterm 2 Exams has no sideways scroll', overflow(page) <= 0, overflow(page))
         hits = search(page, 'riemann')
         check(f'{label}: midterm 2 search finds the lesson and its practice', any(t.startswith('Practice · Day 14 & 15') for t in hits)

@@ -135,7 +135,7 @@ With $u=\frac{x+1}{2}$ and $dx=2\,du$, $\int\frac{dx}{x^2+2x+5}=\frac{1}{2}\arct
 $$\int\frac{dx}{(x+p)^2+a^2}=\frac{1}{a}\arctan\frac{x+p}{a}+C$$
 - **Which case:** for $x^2+bx+c$, the sign of $\Delta=b^2-4c$ decides. $\Delta>0$: it factors, so partial fractions and logs. $\Delta<0$: make a square, so arctan. $\Delta=0$: it is already a square $\left(x+\frac{b}{2}\right)^2$, and $\int\frac{dx}{(x+p)^2}=-\frac{1}{x+p}+C$. A numerator with $x$ is first written as a multiple of the denominator's derivative plus a constant: $\frac{2x}{x^2+2x+2}=\frac{2x+2}{x^2+2x+2}-\frac{2}{(x+1)^2+1}$, a log plus an arctan.
 - **Rational forms of $x$ and $\sqrt{ax+b}$:** put $t=\sqrt{ax+b}$, so $x=\frac{t^2-b}{a}$ and $dx=\frac{2t}{a}\,dt$, and the integrand becomes a rational function of $t$. In the class example $t=\sqrt{x-1}$ gives $x=t^2+1$, $dx=2t\,dt$ and $x+2\sqrt{x-1}=(t+1)^2$:
-$$\begin{aligned}\int\frac{dx}{x+2\sqrt{x-1}}&=\int\frac{2t}{(t+1)^2}\,dt\\[4pt]&=2\ln(t+1)+\frac{2}{t+1}+C\end{aligned}$$
+$$\begin{aligned}&\int\frac{dx}{x+2\sqrt{x-1}}\\[4pt]&=\int\frac{2t}{(t+1)^2}\,dt\\[4pt]&=2\ln(t+1)+\frac{2}{t+1}+C\end{aligned}$$
 - **Rational forms of trigonometric functions:** $u=\tan\frac{x}{2}$ works in general. From $u^2=\frac{\sin^2(x/2)}{\cos^2(x/2)}=\frac{1-\cos x}{1+\cos x}$,
 $$\begin{gathered}\cos x=\frac{1-u^2}{1+u^2},\qquad\sin x=\frac{2u}{1+u^2}\\[4pt]dx=\frac{2}{1+u^2}\,du\end{gathered}$$
 since $\left(\frac{du}{dx}\right)^{-1}=2\cos^2\frac{x}{2}=1+\cos x=\frac{2}{1+u^2}$. The class example:
@@ -160,7 +160,7 @@ A square of $x$ needs two rounds: the class exercise $\int_0^2x^2e^{2x}\,dx=\fra
     tricks: R`
 - **Guess and adjust:** guess the answer from the outer function, differentiate it, then fix the constant. For the class example, guess $(1+e^{2x})^{3/2}$: its derivative is $\frac{3}{2}(1+e^{2x})^{1/2}\cdot2e^{2x}=3e^{2x}\sqrt{1+e^{2x}}$, three times too big, so $\int e^{2x}\sqrt{1+e^{2x}}\,dx=\frac{1}{3}(1+e^{2x})^{3/2}+C$. It is also a quick check after any substitution.
 - **Make the derivative appear:** write the numerator as $k\cdot(\text{denominator})'+r$. The first part gives a log and the rest an arctan. With $x+3=\frac{1}{2}(2x+2)+2$:
-$$\begin{aligned}\int\frac{x+3}{x^2+2x+5}\,dx&=\frac{1}{2}\ln(x^2+2x+5)\\[4pt]&\quad+\arctan\frac{x+1}{2}+C\end{aligned}$$
+$$\begin{aligned}&\int\frac{x+3}{x^2+2x+5}\,dx\\[4pt]&=\frac{1}{2}\ln(x^2+2x+5)\\[4pt]&\quad+\arctan\frac{x+1}{2}+C\end{aligned}$$
 - **The cover-up method:** to find $A$ over $x-\alpha$, cover the factor $x-\alpha$ in the original fraction and put $x=\alpha$ into what is left. For $\frac{x+5}{(x-1)(x+2)}$: $x=1$ gives $A=\frac{6}{3}=2$, and $x=-2$ gives $\mathord{B=\frac{3}{-3}=-1}$, so it is $\frac{2}{x-1}-\frac{1}{x+2}$. It works for separate linear factors only. On a quiz, also write the line $x+5=A(x+2)+B(x-1)$.
 - **Which factor to differentiate:** in integration by parts, differentiate whichever comes first in this list and integrate the other: logarithm, inverse trig, polynomial, trig, exponential.
 - **The DI table:** integration by parts several times over, set out as a table. Differentiate the polynomial down to $0$ in column D, integrate the other factor once per row in column I, give the rows the signs $+,-,+,\dots$, then multiply each D by the I one row below and add:
@@ -703,7 +703,7 @@ The second part is $\Big[\arctan x\Big]_0^1=\frac{\pi}{4}$, so the integral is $
 $$f(x)=\frac{1}{4}\cdot\frac{1}{\left(\frac{x+1}{2}\right)^2+1}$$
 
 With $u=\frac{x+1}{2}$, $\frac{du}{dx}=\frac{1}{2}$, so $dx=2\,du$:
-$$\begin{aligned}\int f(x)\,dx&=\frac{1}{4}\int\frac{2\,du}{u^2+1}=\frac{1}{2}\arctan u+C\\[4pt]&=\frac{1}{2}\arctan\frac{x+1}{2}+C\end{aligned}$$
+$$\begin{aligned}\int f(x)\,dx&=\frac{1}{4}\int\frac{2\,du}{u^2+1}\\[4pt]&=\frac{1}{2}\arctan u+C\\[4pt]&=\frac{1}{2}\arctan\frac{x+1}{2}+C\end{aligned}$$
 
 **(2)** $x=-1$ gives $u=0$ and $x=1$ gives $u=1$: $\frac{1}{2}\left(\arctan1-\arctan0\right)=\frac{1}{2}\cdot\frac{\pi}{4}=\frac{\pi}{8}$.` },
     { src: 'Class example: x and √(x − 1)', added: NOV9,
@@ -728,7 +728,7 @@ Put $t=\sqrt{x-1}$ back: $2\ln\left(\sqrt{x-1}+1\right)+\frac{2}{\sqrt{x-1}+1}+C
 $1+\sin x=\frac{1+2u+u^2}{1+u^2}$ and $1+\cos x=\frac{2}{1+u^2}$, so $\frac{1+\sin x}{1+\cos x}=\frac{1+2u+u^2}{2}$.
 
 With $dx=\frac{2\,du}{1+u^2}$:
-$$\int\frac{1+2u+u^2}{2}\cdot\frac{2\,du}{1+u^2}=\int\left(1+\frac{2u}{1+u^2}\right)du$$
+$$\begin{aligned}&\int\frac{1+2u+u^2}{2}\cdot\frac{2\,du}{1+u^2}\\[4pt]&=\int\left(1+\frac{2u}{1+u^2}\right)du\end{aligned}$$
 
 $2u$ is the derivative of $1+u^2$, so the primitive is $u+\ln(1+u^2)+C$.
 
@@ -776,7 +776,7 @@ Since $\frac{\sqrt2+1}{\sqrt2-1}=(\sqrt2+1)^2=3+2\sqrt2$, the integral is $\ln\f
       answer: [R`(1) $-x\cos x+\sin x+C$`, R`(2) $x\ln x-x+C$`],
       sol: R`
 **(1)** $f=x$ and $g'=\sin x$, so $f'=1$ and $g=-\cos x$:
-$$\begin{aligned}\int x\sin x\,dx&=-x\cos x-\int(-\cos x)\,dx\\[4pt]&=-x\cos x+\sin x+C\end{aligned}$$
+$$\begin{aligned}&\int x\sin x\,dx\\[4pt]&=-x\cos x-\int(-\cos x)\,dx\\[4pt]&=-x\cos x+\sin x+C\end{aligned}$$
 
 **(2)** $f=\ln x$ and $g'=1$, so $f'=\frac{1}{x}$ and $g=x$:
 $$\begin{aligned}\int\ln x\,dx&=x\ln x-\int x\cdot\frac{1}{x}\,dx\\[4pt]&=x\ln x-x+C\end{aligned}$$
@@ -804,7 +804,7 @@ Divide: $\frac{2x^2}{x^2+1}=2-\frac{2}{x^2+1}$, whose primitive is $2x-2\arctan 
 $$\int x^2e^{2x}\,dx=\frac{x^2}{2}e^{2x}-\int xe^{2x}\,dx$$
 
 Second round, with $f=x$ and $g'=e^{2x}$:
-$$\int xe^{2x}\,dx=\frac{x}{2}e^{2x}-\int\frac{e^{2x}}{2}\,dx=\frac{x}{2}e^{2x}-\frac{e^{2x}}{4}$$
+$$\begin{aligned}\int xe^{2x}\,dx&=\frac{x}{2}e^{2x}-\int\frac{e^{2x}}{2}\,dx\\[4pt]&=\frac{x}{2}e^{2x}-\frac{e^{2x}}{4}\end{aligned}$$
 
 So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{4}(2x^2-2x+1)+C$.
 
@@ -841,13 +841,14 @@ So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{
 **(3)** Cover $x+1$ and put $x=-1$: $\frac{-3+1}{-1-3}=\frac{1}{2}$. Cover $x-3$ and put $x=3$: $\frac{9+1}{3+1}=\frac{5}{2}$. So the integrand is $\frac{1/2}{x+1}+\frac{5/2}{x-3}$, and the answer is $\frac{1}{2}\ln|x+1|+\frac{5}{2}\ln|x-3|+C$.` },
     { src: 'Shortcuts: the DI table and the King’s rule', added: NOV10,
       stem: R`Use the DI table for (1) and (2), and the King's rule for (3).`,
-      parts: [R`$\displaystyle\int x^3e^x\,dx$`, R`$\displaystyle\int x^2\sin x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\frac{\sqrt{\sin x}}{\sqrt{\sin x}+\sqrt{\cos x}}\,dx$`],
-      hint: R`(1) and (2): differentiate the polynomial down to $0$, and mind the signs of the I column for $\sin x$. (3) Replace $x$ by $\frac{\pi}{2}-x$ and add the two integrals.`,
-      answer: [R`(1) $e^x(x^3-3x^2+6x-6)+C$`, R`(2) $-x^2\cos x+2x\sin x+2\cos x+C$`, R`(3) $\frac{\pi}{4}$`],
+      parts: [R`$\displaystyle\int x^3e^x\,dx$`, R`$\displaystyle\int x^2\sin2x\,dx$`, R`$\displaystyle\int_0^{\pi/2}\frac{\sqrt{\sin x}}{\sqrt{\sin x}+\sqrt{\cos x}}\,dx$`],
+      hint: R`(1) and (2): differentiate the polynomial down to $0$, and mind the signs and the factors $\frac{1}{2}$ in the I column for $\sin2x$. (3) Replace $x$ by $\frac{\pi}{2}-x$ and add the two integrals.`,
+      answer: [R`(1) $e^x(x^3-3x^2+6x-6)+C$`, R`(2) $-\frac{x^2}{2}\cos2x+\frac{x}{2}\sin2x+\frac{1}{4}\cos2x+C$`, R`(3) $\frac{\pi}{4}$`],
       sol: R`
 **(1)** D: $x^3$, $3x^2$, $6x$, $6$, $0$. I: $e^x$ on every row. With the signs $+,-,+,-$: $x^3e^x-3x^2e^x+6xe^x-6e^x+C=e^x(x^3-3x^2+6x-6)+C$.
 
-**(2)** D: $x^2$, $2x$, $2$, $0$. I: $\sin x$, $-\cos x$, $-\sin x$, $\cos x$. With the signs $+,-,+$: $x^2(-\cos x)-2x(-\sin x)+2\cos x+C=-x^2\cos x+2x\sin x+2\cos x+C$.
+**(2)** D: $x^2$, $2x$, $2$, $0$. I: $\sin2x$, $-\frac{\cos2x}{2}$, $-\frac{\sin2x}{4}$, $\frac{\cos2x}{8}$. With the signs $+,-,+$:
+$$\begin{aligned}&x^2\left(-\frac{\cos2x}{2}\right)-2x\left(-\frac{\sin2x}{4}\right)\\[4pt]&\quad+2\cdot\frac{\cos2x}{8}\\[4pt]&=-\frac{x^2}{2}\cos2x+\frac{x}{2}\sin2x\\[4pt]&\quad+\frac{1}{4}\cos2x+C\end{aligned}$$
 
 **(3)** With $x\to\frac{\pi}{2}-x$, $\sin x$ and $\cos x$ swap, so the same integral $I$ has $\sqrt{\cos x}$ on top. Adding the two, the tops make the bottom: $2I=\int_0^{\pi/2}dx=\frac{\pi}{2}$, so $I=\frac{\pi}{4}$.` },
   ],
@@ -862,7 +863,7 @@ So $F(x)=\frac{x^2}{2}e^{2x}-\frac{x}{2}e^{2x}+\frac{e^{2x}}{4}+C=\frac{e^{2x}}{
 $$\begin{aligned}A&=\int_0^2(2x-x^2)\,dx=\left[x^2-\frac{x^3}{3}\right]_0^2\\[4pt]&=4-\frac{8}{3}=\frac{4}{3}\end{aligned}$$
 
 **(2)** On $\left[0,\frac{\pi}{4}\right]$, $\cos x\ge\sin x$; they meet at $x=\frac{\pi}{4}$. So
-$$A=\int_0^{\pi/4}(\cos x-\sin x)\,dx=\Big[\sin x+\cos x\Big]_0^{\pi/4}$$
+$$\begin{aligned}A&=\int_0^{\pi/4}(\cos x-\sin x)\,dx\\[4pt]&=\Big[\sin x+\cos x\Big]_0^{\pi/4}\end{aligned}$$
 which is $\left(\frac{\sqrt2}{2}+\frac{\sqrt2}{2}\right)-(0+1)=\sqrt2-1$.` },
     { src: 'Volumes from slices', added: NOV13,
       stem: R`Find each volume as $\displaystyle\int S(x)\,dx$, where $S(x)$ is the area of the slice at $x$.`,
@@ -875,7 +876,7 @@ $$V=\int_0^4\pi\frac{9x^2}{16}\,dx=\frac{9\pi}{16}\cdot\frac{64}{3}=12\pi$$
 the same as $\frac{1}{3}\pi r^2h=\frac{1}{3}\pi\cdot9\cdot4$.
 
 **(2)** The slice at $x$, for $-2\le x\le2$, is a circle of radius $\sqrt{4-x^2}$:
-$$V=\pi\int_{-2}^{2}(4-x^2)\,dx=\pi\left(16-\frac{16}{3}\right)=\frac{32\pi}{3}$$
+$$\begin{aligned}V&=\pi\int_{-2}^{2}(4-x^2)\,dx\\[4pt]&=\pi\left(16-\frac{16}{3}\right)=\frac{32\pi}{3}\end{aligned}$$
 Check: $\frac{4}{3}\pi\cdot2^3=\frac{32\pi}{3}$.
 
 **(3)** $S(x)=x^2$, so $V=\int_0^2x^2\,dx=\frac{8}{3}$. The solid is a pyramid with a $2\times2$ base and height $2$, and $\frac{1}{3}\cdot4\cdot2=\frac{8}{3}$ as well.` },
@@ -890,7 +891,7 @@ $$\begin{aligned}V&=\pi\Big[\tan x\Big]_{\pi/6}^{\pi/3}\\[4pt]&=\pi\left(\sqrt3-
 Upper limit minus lower limit: the other order gives a negative number, which can't be a volume.
 
 **(2)** $f(x)^2=xe^{-x^2}$. With $u=-x^2$: $du=-2x\,dx$, so $x\,dx=-\frac{du}{2}$. The limits: $x=0$ gives $u=0$, and $x=\frac{1}{2}$ gives $u=-\frac{1}{4}$.
-$$\begin{aligned}V&=\pi\int_0^{-1/4}e^u\left(-\frac{du}{2}\right)=\frac{\pi}{2}\int_{-1/4}^{0}e^u\,du\\[4pt]&=\frac{\pi}{2}\left(1-e^{-1/4}\right)\end{aligned}$$
+$$\begin{aligned}V&=\pi\int_0^{-1/4}e^u\left(-\frac{du}{2}\right)\\[4pt]&=\frac{\pi}{2}\int_{-1/4}^{0}e^u\,du=\frac{\pi}{2}\left(1-e^{-1/4}\right)\end{aligned}$$
 Once everything is in $u$, $\int e^u\,du=e^u$, with nothing to divide by.` },
     { src: 'Solids of revolution with a hole', added: NOV13,
       stem: R`Turn each region around the $x$-axis and find the volume of the solid.`,
@@ -932,10 +933,10 @@ Then $\bar x=\frac{1-2e^{-1}}{1-e^{-1}}=\frac{e-2}{e-1}$ (multiply the top and t
 $$\begin{aligned}\ell&=\int_0^3\sqrt{1+x}\,dx=\frac{2}{3}\Big[(1+x)^{3/2}\Big]_0^3\\[4pt]&=\frac{2}{3}(8-1)=\frac{14}{3}\end{aligned}$$
 
 **(2)** $f'=\frac{3}{2}\sqrt x$, so $1+f'^2=1+\frac{9x}{4}$. Divide by the number inside, $\frac{9}{4}$:
-$$\begin{aligned}\ell&=\int_0^{4/3}\sqrt{1+\tfrac{9x}{4}}\,dx=\frac{8}{27}\Big[\left(1+\tfrac{9x}{4}\right)^{3/2}\Big]_0^{4/3}\\[4pt]&=\frac{8}{27}(8-1)=\frac{56}{27}\end{aligned}$$
+$$\begin{aligned}\ell&=\int_0^{4/3}\sqrt{1+\tfrac{9x}{4}}\,dx\\[4pt]&=\frac{8}{27}\Big[\left(1+\tfrac{9x}{4}\right)^{3/2}\Big]_0^{4/3}\\[4pt]&=\frac{8}{27}(8-1)=\frac{56}{27}\end{aligned}$$
 
 **(3)** $f'=\frac{e^x-e^{-x}}{2}$, and
-$$1+f'^2=\frac{e^{2x}+2+e^{-2x}}{4}=\left(\frac{e^x+e^{-x}}{2}\right)^2$$
+$$\begin{aligned}1+f'^2&=\frac{e^{2x}+2+e^{-2x}}{4}\\[4pt]&=\left(\frac{e^x+e^{-x}}{2}\right)^2\end{aligned}$$
 so $\ell=\int_0^1\frac{e^x+e^{-x}}{2}\,dx=\Big[\frac{e^x-e^{-x}}{2}\Big]_0^1=\frac{e-e^{-1}}{2}$.` },
     { src: 'Length: a perfect square under the root', added: NOV13,
       stem: R`Find the length of each curve. In both, $1+f'(x)^2$ is a perfect square.`,
@@ -961,7 +962,7 @@ which is $\left(\frac{4}{3}-\frac{1}{4}\right)-\left(\frac{1}{6}-\frac{1}{2}\rig
 **(1)** $f'(x)=\frac{-2x}{2\sqrt{r^2-x^2}}=-\frac{x}{\sqrt{r^2-x^2}}$, so $1+f'(x)^2=\frac{r^2-x^2+x^2}{r^2-x^2}=\frac{r^2}{r^2-x^2}$, whose root is $\frac{r}{\sqrt{r^2-x^2}}$.
 
 **(2)** Here $r=2$. With $u=\frac{x}{2}$ and $dx=2\,du$, the limits become $0$ and $\frac{1}{2}$:
-$$\int_0^1\frac{2\,dx}{\sqrt{4-x^2}}=2\int_0^{1/2}\frac{du}{\sqrt{1-u^2}}=2\arcsin\frac{1}{2}=\frac{\pi}{3}$$
+$$\begin{aligned}\int_0^1\frac{2\,dx}{\sqrt{4-x^2}}&=2\int_0^{1/2}\frac{du}{\sqrt{1-u^2}}\\[4pt]&=2\arcsin\frac{1}{2}=\frac{\pi}{3}\end{aligned}$$
 It is $r\theta$ with $r=2$ and $\theta=\frac{\pi}{6}$, the angle between the radii to $(0,2)$ and $(1,\sqrt3)$.
 
 **(3)** $r\Big[\arcsin\frac{x}{r}\Big]_0^r=r\cdot\frac{\pi}{2}=\frac{\pi r}{2}$, a quarter of $2\pi r$.` },
@@ -1038,7 +1039,7 @@ $$\ell=\Big[x\sqrt{1+x^2}\Big]_0^1-\int_0^1\frac{x^2}{\sqrt{1+x^2}}\,dx$$
 and the first part is the number $\sqrt2$.
 
 Write $x^2=(1+x^2)-1$, so $\frac{x^2}{\sqrt{1+x^2}}=\sqrt{1+x^2}-\frac{1}{\sqrt{1+x^2}}$. The first piece integrates to $\ell$ again, and the relation with $a=1$ gives the second:
-$$\int_0^1\frac{dx}{\sqrt{1+x^2}}=\Big[\ln\left(x+\sqrt{x^2+1}\right)\Big]_0^1=\ln\left(1+\sqrt2\right)$$
+$$\begin{aligned}&\int_0^1\frac{dx}{\sqrt{1+x^2}}\\[4pt]&=\Big[\ln\left(x+\sqrt{x^2+1}\right)\Big]_0^1\\[4pt]&=\ln\left(1+\sqrt2\right)\end{aligned}$$
 
 So $\ell=\sqrt2-\ell+\ln\left(1+\sqrt2\right)$. Move $\ell$ to the left: $2\ell=\sqrt2+\ln\left(1+\sqrt2\right)$, and $\ell=\frac{\sqrt2}{2}+\frac{1}{2}\ln\left(1+\sqrt2\right)$, about $1.15$.` },
     { src: 'Class example: an arc with x = cos θ', added: NOV17,
@@ -1083,7 +1084,7 @@ Without the absolute value, $2\int_0^{2\pi}\cos\frac{\theta}{2}\,d\theta=4\Big[\
 **(1)** $y=t(3-t^2)=0$ at $t=0$ and $t=\sqrt3$ (with $t\ge0$), where $x=0$ and $x=9$.
 
 **(2)** $\frac{dx}{dt}=6t$, so
-$$\begin{aligned}A&=\int_0^{\sqrt3}(3t-t^3)\cdot6t\,dt=\int_0^{\sqrt3}(18t^2-6t^4)\,dt\\[4pt]&=\Big[6t^3-\frac{6}{5}t^5\Big]_0^{\sqrt3}=18\sqrt3-\frac{54\sqrt3}{5}=\frac{36\sqrt3}{5}\end{aligned}$$
+$$\begin{aligned}A&=\int_0^{\sqrt3}(3t-t^3)\cdot6t\,dt\\[4pt]&=\int_0^{\sqrt3}(18t^2-6t^4)\,dt\\[4pt]&=\Big[6t^3-\frac{6}{5}t^5\Big]_0^{\sqrt3}\\[4pt]&=18\sqrt3-\frac{54\sqrt3}{5}=\frac{36\sqrt3}{5}\end{aligned}$$
 
 **(3)** $\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2=36t^2+9(1-t^2)^2=9(1+t^2)^2$, so the root is $3(1+t^2)$. $x=3t^2=12$ gives $t=2$:
 $$\ell=\int_0^2(3+3t^2)\,dt=\Big[3t+t^3\Big]_0^2=14$$
@@ -1111,7 +1112,7 @@ $$\ell=\int_0^2(3+3t^2)\,dt=\Big[3t+t^3\Big]_0^2=14$$
 **(1)** $r'=e^{\theta}$, so $r^2+r'^2=2e^{2\theta}$ and the root is $\sqrt2\,e^{\theta}$: $\ell=\sqrt2\Big[e^{\theta}\Big]_0^1=\sqrt2\,(e-1)$.
 
 **(2)** $r'=2\theta$, so $r^2+r'^2=\theta^4+4\theta^2=\theta^2(\theta^2+4)$, and the root is $\theta\sqrt{\theta^2+4}$ (here $\theta\ge0$). With $u=\theta^2+4$, $du=2\theta\,d\theta$, the limits become $4$ and $9$:
-$$\ell=\frac{1}{2}\int_4^9\sqrt u\,du=\frac{1}{3}\Big[u^{3/2}\Big]_4^9=\frac{27-8}{3}=\frac{19}{3}$$
+$$\begin{aligned}\ell&=\frac{1}{2}\int_4^9\sqrt u\,du=\frac{1}{3}\Big[u^{3/2}\Big]_4^9\\[4pt]&=\frac{27-8}{3}=\frac{19}{3}\end{aligned}$$
 
 **(3)** $r'=\sin\theta$, so $r^2+r'^2=1-2\cos\theta+\cos^2\theta+\sin^2\theta=2-2\cos\theta=4\sin^2\frac{\theta}{2}$. On $[0,2\pi]$, $\frac{\theta}{2}$ stays in $[0,\pi]$, where $\sin\frac{\theta}{2}\ge0$, so no split is needed: $\ell=\int_0^{2\pi}2\sin\frac{\theta}{2}\,d\theta=\Big[-4\cos\frac{\theta}{2}\Big]_0^{2\pi}=8$.` },
     { src: 'Shortcut: a ready-made primitive and symmetry', added: NOV17,

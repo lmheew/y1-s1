@@ -350,7 +350,8 @@ check("06B Q1 limit 14/3", integral(f, 0, 2), 14 / 3)
 F = lambda x: Fr(x) ** 4 / 2 - Fr(x) ** 3 / 3 + 3 * Fr(x)
 check("06B Q2(1) F(-2) = 14/3", F(-2), Fr(14, 3)); check("06B Q2(1) F(1) = 19/6", F(1), Fr(19, 6))
 check("06B Q2(1) -3/2", integral(lambda x: 2 * x ** 3 - x * x + 3, -2, 1), -1.5)
-check("06B Q2(2) 2/3", integral(lambda x: sin(3 * x), 0, pi / 3), 2 / 3)
+check("06B Q2(2) int_0^(pi/4) sin 4x = 1/2", integral(lambda x: sin(4 * x), 0, pi / 4), 0.5)
+check("06B Q2(2) F(pi/4) - F(0) with F = -cos 4x/4", -cos(pi) / 4 + cos(0) / 4, 0.5)
 check("06B Q2(3) e - 1", integral(lambda x: exp(-x), -1, 0), math.e - 1)
 check("06B Q2(4) 7pi/12", integral(lambda x: 1 / (1 + x * x), -sqrt(3), 1), 7 * pi / 12)
 check("06B Q2(4) pi/4 + pi/3", atan(1) - atan(-sqrt(3)), 7 * pi / 12)
@@ -549,7 +550,7 @@ check("P3.14c cover-up at x = -1: 1/2", (3 * -1 + 1) / (-1 - 3), 0.5); check("P3
 primitive("P3.14c (1/2)ln|x+1| + (5/2)ln|x-3|", lambda x: 0.5 * log(abs(x + 1)) + 2.5 * log(abs(x - 3)), lambda x: (3 * x + 1) / ((x + 1) * (x - 3)), (-2.5, -0.5, 1.0, 4.2))
 # P3.15
 primitive("P3.15a e^x(x^3-3x^2+6x-6)", lambda x: exp(x) * (x ** 3 - 3 * x * x + 6 * x - 6), lambda x: x ** 3 * exp(x), XS)
-primitive("P3.15b -x^2 cos x + 2x sin x + 2 cos x", lambda x: -x * x * cos(x) + 2 * x * sin(x) + 2 * cos(x), lambda x: x * x * sin(x), XS)
+primitive("P3.15b -(x^2/2) cos 2x + (x/2) sin 2x + (1/4) cos 2x", lambda x: -x * x / 2 * cos(2 * x) + x / 2 * sin(2 * x) + cos(2 * x) / 4, lambda x: x * x * sin(2 * x), XS)
 g315 = lambda x: sqrt(sin(x)) / (sqrt(sin(x)) + sqrt(cos(x)))
 check("P3.15c int_0^(pi/2) sqrt(sin)/(sqrt(sin)+sqrt(cos)) = pi/4", integral(g315, 1e-12, pi / 2 - 1e-12, 20000), pi / 4, 1e-6)
 check("P3.15c King's rule swaps sin and cos: g(pi/2 - x) + g(x) = 1", g315(0.4) + g315(pi / 2 - 0.4), 1)
@@ -562,7 +563,8 @@ F = lambda x: exp(3 * x - 1) / 9 * (3 * x - 1)
 primitive("07A Q1(3) e^(3x-1)(3x-1)/9", F, lambda x: x * exp(3 * x - 1), XS)
 check("07A Q1(3) int_(1/3)^1 = 2e^2/9", integral(lambda x: x * exp(3 * x - 1), 1 / 3, 1), 2 * exp(2) / 9)
 check("07A Q1(3) F(1/3) = 0", F(1 / 3), 0)
-check("07A Q1(4) int_1^3 1/(x^2-4x+5) = pi/2", integral(lambda x: 1 / (x * x - 4 * x + 5), 1, 3), pi / 2)
+check("07A Q1(4) int_2^4 1/(x^2-6x+10) = pi/2", integral(lambda x: 1 / (x * x - 6 * x + 10), 2, 4), pi / 2)
+check("07A Q1(4) (x-3)^2 + 1 = x^2 - 6x + 10 at 2.6", (2.6 - 3) ** 2 + 1, 2.6 ** 2 - 6 * 2.6 + 10)
 check("07A Q2 int_(pi/3)^(pi/2) 1/(1+cos x) = 1 - sqrt3/3", integral(lambda x: 1 / (1 + cos(x)), pi / 3, pi / 2), 1 - sqrt(3) / 3)
 check("07A Q2 = (3 - sqrt3)/3", 1 - sqrt(3) / 3, (3 - sqrt(3)) / 3)
 # 07-B
@@ -1191,98 +1193,125 @@ check("10B Q2 b_2 = 0", bm(fB, 2), 0, 1e-9)
 for x in (0.8, -2.2):
     check(f"10B Q2 sin(x - pi/3) = (1/2) sin x - (sqrt3/2) cos x at {x}", fB(x), 0.5 * sin(x) - sqrt(3) / 2 * cos(x))
 
-# ================= MOCK MIDTERMS (exams.mjs: im1, im2, im3) =================
-# --- Mock 1 ---
-primitive("M1[1](1): x^4 - 6 sqrt x + 2 ln|x|", lambda x: x ** 4 - 6 * sqrt(x) + 2 * log(abs(x)), lambda x: 4 * x ** 3 - 3 / sqrt(x) + 2 / x, XN)
-primitive("M1[1](2): ln(e^x + 3)", lambda x: log(exp(x) + 3), lambda x: exp(x) / (exp(x) + 3), XS)
-f13 = lambda x: (x + 5) / (x * x + x - 2)
-primitive("M1[1](3): 2 ln|x-1| - ln|x+2|", lambda x: 2 * log(abs(x - 1)) - log(abs(x + 2)), f13, (-3.5, -0.5, 0.4, 2.7))
-check("M1[1](3): A = 6/3 = 2 at x = 1", Fr(1 + 5, 1 + 2), 2); check("M1[1](3): B = 3/(-3) = -1 at x = -2", Fr(-2 + 5, -2 - 1), -1)
-primitive("M1[1](4): (x/2) sin 2x + (1/4) cos 2x", lambda x: x / 2 * sin(2 * x) + cos(2 * x) / 4, lambda x: x * cos(2 * x), XS)
-check("M1[1](5): int_0^(pi/4) tan x / cos^2 x = 1/2", integral(lambda x: tan(x) / cos(x) ** 2, 0, pi / 4), 0.5)
-check("M1[1](5): with u = tan x: int_0^1 u du", integral(lambda u: u, 0, 1), 0.5)
-check("M1[1](6): int_0^inf dx/(x^2+4) = pi/4", imp(lambda x: 1 / (x * x + 4), 0, INF), pi / 4, 1e-9)
-check("M1[1](6): int_0^w = (1/2) arctan(w/2) (w = 5)", integral(lambda x: 1 / (x * x + 4), 0, 5), 0.5 * atan(2.5))
-v1 = lambda t: 6 * t - 3 * t * t
-s1 = lambda t: 3 * t * t - t ** 3 + 2
-primitive("M1[2](a): s(t) = 3t^2 - t^3 + 2 has s' = v", s1, v1, (0.4, 1.3, 2.6)); check("M1[2](a): s(0) = 2", s1(0), 2)
-check("M1[2](b): displacement int_0^3 v = 0", integral(v1, 0, 3), 0, 1e-12)
-check("M1[2](b): distance int_0^3 |v| = 8", integral(lambda t: abs(v1(t)), 0, 2) + integral(lambda t: abs(v1(t)), 2, 3), 8)
-check_true("M1[2](b): v > 0 on (0, 2), v < 0 on (2, 3]", all(v1(k / 100) > 0 for k in range(1, 200)) and all(v1(2 + k / 100) < 0 for k in range(1, 101)))
-check("M1[3](a): the curves meet at x = 4", sqrt(4), 4 / 2)
-check_true("M1[3](a): sqrt x >= x/2 on [0, 4]", all(sqrt(k / 100) >= k / 200 - 1e-15 for k in range(0, 401)))
-check("M1[3](a): area 4/3", imp(lambda x: sqrt(x) - x / 2, 0, 4), 4 / 3, 1e-9)
-check("M1[3](b): volume pi int (x - x^2/4) = 8 pi/3", pi * integral(lambda x: x - x * x / 4, 0, 4), 8 * pi / 3)
-check("M1[3](b): the same as pi int (sqrt(x)^2 - (x/2)^2)", pi * integral(lambda x: sqrt(x) ** 2 - (x / 2) ** 2, 0, 4), 8 * pi / 3)
-check_true("M1[3](b): squaring the difference gives another number (8 pi/15)",
-           abs(pi * integral(lambda x: (sqrt(x) - x / 2) ** 2, 0, 4, 20000) - 8 * pi / 15) < 1e-6 and abs(8 * pi / 15 - 8 * pi / 3) > 1)
-X41, Y41 = (lambda t: t * t), (lambda t: 2 * t ** 3 / 3)
-check("M1[4](a): dy/dx at t = 1 is 1", d1(Y41, 1.0) / d1(X41, 1.0), 1, 1e-6)
-check("M1[4](b): length on [0, sqrt3] = 14/3", plen(X41, Y41, 0, sqrt(3)), 14 / 3)
-check("M1[4](b): 2t sqrt(1+t^2) is the root of 4t^2 + 4t^4 (t = 1.2)", 2 * 1.2 * sqrt(1 + 1.44), sqrt(4 * 1.44 + 4 * 1.2 ** 4))
-check("M1[4](c): area int y dx/dt = 12 sqrt3/5", integral(lambda t: Y41(t) * 2 * t, 0, sqrt(3)), 12 * sqrt(3) / 5)
-check("M1[4](c): the same area in x: int_0^3 (2/3) x^(3/2)", integral(lambda x: 2 / 3 * x ** 1.5, 0, 3), 12 * sqrt(3) / 5)
-check("M1[4](c): sqrt3^5 = 9 sqrt3", sqrt(3) ** 5, 9 * sqrt(3))
-# --- Mock 2 ---
-primitive("M2[1](1): 2^x/ln 2 + arctan x", lambda x: 2 ** x / log(2) + atan(x), lambda x: 2 ** x + 1 / (1 + x * x), XS)
-primitive("M2[1](2): (2/3)(1 + sin x)^(3/2)", lambda x: 2 / 3 * (1 + sin(x)) ** 1.5, lambda x: cos(x) * sqrt(1 + sin(x)), XS)
-primitive("M2[1](3): (1/2) arctan((x+3)/2)", lambda x: 0.5 * atan((x + 3) / 2), lambda x: 1 / (x * x + 6 * x + 13), XS)
-check("M2[1](3): (x+3)^2 + 4 = x^2 + 6x + 13 at 1.7", (1.7 + 3) ** 2 + 4, 1.7 ** 2 + 6 * 1.7 + 13); check_true("M2[1](3): 36 - 52 < 0", 36 - 52 < 0)
-primitive("M2[1](4): (x^3/3) ln x - x^3/9", lambda x: x ** 3 / 3 * log(x) - x ** 3 / 9, lambda x: x * x * log(x), XN)
-check("M2[1](5): int_0^sqrt3 x^3/sqrt(x^2+1) = 4/3", integral(lambda x: x ** 3 / sqrt(x * x + 1), 0, sqrt(3)), 4 / 3)
-check("M2[1](5): (1/2) int_1^4 (u - 1)/sqrt u du = 4/3", 0.5 * integral(lambda u: (u - 1) / sqrt(u), 1, 4), 4 / 3)
-check("M2[1](5): [u^(3/2)/3 - u^(1/2)] from 1 to 4", (8 / 3 - 2) - (1 / 3 - 1), 4 / 3)
-check("M2[1](6): int_1^w dx/(2x+1) = (1/2) ln(2w+1) - (1/2) ln 3 (w = 10)", integral(lambda x: 1 / (2 * x + 1), 1, 10), 0.5 * log(21) - 0.5 * log(3))
-grows("M2[1](6): (1/2) ln(2w+1) - (1/2) ln 3", lambda w: 0.5 * log(2 * w + 1) - 0.5 * log(3), [10.0 ** k for k in (1, 10, 100, 300)], 300)
-f2 = lambda x: 3 * x * x + 2
-for n in NS:
-    check(f"M2[2](a): S_n = 12 + 12/n + 4/n^2 exactly (n={n})", riemann(f2, 0, 2, n), 12 + Fr(12, n) + Fr(4, n * n))
-check("M2[2](a): one strip: 2 f(2) = 28", 2 * f2(2), 28)
-check("M2[2](a): 4(n+1)(2n+1)/n^2 + 4 at n = 7", Fr(4 * 8 * 15, 49) + 4, 12 + Fr(12, 7) + Fr(4, 49))
-check("M2[2](b): the limit 12 = int_0^2 (3x^2 + 2)", integral(f2, 0, 2), 12)
-check("M2[2](b): n = 10^6 is near 12", 12 + 12 / 1e6 + 4 / 1e12, 12, 1e-5)
-yp = lambda x: x * sqrt(x * x + 2)
-for x in (0.4, 1.3, 2.7):
-    check(f"M2[3](a): y' = x sqrt(x^2+2) at {x}", d1(lambda t: (t * t + 2) ** 1.5 / 3, x), yp(x), 1e-6)
-    check(f"M2[3](a): 1 + y'^2 = (x^2+1)^2 at {x}", 1 + yp(x) ** 2, (x * x + 1) ** 2)
-check("M2[3](a): length on [0, 3] = 12", integral(lambda x: sqrt(1 + yp(x) ** 2), 0, 3), 12)
-primitive("M2[3](b): x sin x + cos x", lambda x: x * sin(x) + cos(x), lambda x: x * cos(x), XS)
-check("M2[3](b): int_0^(pi/2) x cos x = pi/2 - 1", integral(lambda x: x * cos(x), 0, pi / 2), pi / 2 - 1)
-check("M2[3](b): average 1 - 2/pi", integral(lambda x: x * cos(x), 0, pi / 2) / (pi / 2), 1 - 2 / pi)
-r42 = lambda th: sin(th / 3) ** 3
-for th in (0.5, 2.0, 7.4):
-    check(f"M2[4](a): x^2 + y^2 = r^2 at {th}", (r42(th) * cos(th)) ** 2 + (r42(th) * sin(th)) ** 2, r42(th) ** 2)
-    check(f"M2[4](b): r' = sin^2(th/3) cos(th/3) at {th}", d1(r42, th), sin(th / 3) ** 2 * cos(th / 3), 1e-6)
-    check(f"M2[4](b): r^2 + r'^2 = sin^4(th/3) at {th}", r42(th) ** 2 + d1(r42, th) ** 2, sin(th / 3) ** 4, 1e-6)
-check("M2[4](c): length on [0, 3 pi] = 3 pi/2", polar_len(r42, 0, 3 * pi, 8000), 3 * pi / 2, 1e-7)
-primitive("M2[4](c): theta/2 - (3/4) sin(2 theta/3) is a primitive of sin^2(theta/3)", lambda th: th / 2 - 0.75 * sin(2 * th / 3), lambda th: sin(th / 3) ** 2, (0.3, 2.2, 6.0))
-check_true("M2[4](c): sin^2(theta/3) >= 0, so no absolute value", all(sin(k * pi / 300) ** 2 >= 0 for k in range(0, 301)))
-# --- Mock 3 ---
-primitive("M3[1](1): x + 4 sqrt x + ln x", lambda x: x + 4 * sqrt(x) + log(x), lambda x: (sqrt(x) + 1) ** 2 / x, XN)
-primitive("M3[1](2): -cos(ln x)", lambda x: -cos(log(x)), lambda x: sin(log(x)) / x, XN)
-primitive("M3[1](3): ln(x^2+4) - (3/2) arctan(x/2)", lambda x: log(x * x + 4) - 1.5 * atan(x / 2), lambda x: (2 * x - 3) / (x * x + 4), XS)
-primitive("M3[1](4): x arctan x - (1/2) ln(1+x^2)", lambda x: x * atan(x) - 0.5 * log(1 + x * x), atan, XS)
-for x in (0.3, 1.1):
-    check(f"M3[1](5): sin 3x cos x = (sin 4x + sin 2x)/2 at {x}", sin(3 * x) * cos(x), (sin(4 * x) + sin(2 * x)) / 2)
-check("M3[1](5): int_0^(pi/2) sin 3x cos x = 1/2", integral(lambda x: sin(3 * x) * cos(x), 0, pi / 2), 0.5)
-check("M3[1](6): int_0^(pi/2) cos x/sqrt(sin x) = 2", imp(lambda x: cos(x) / sqrt(sin(x)), 0, pi / 2), 2, 1e-9)
-check("M3[1](6): int_w^(pi/2) = 2 - 2 sqrt(sin w) (w = 0.3)", integral(lambda x: cos(x) / sqrt(sin(x)), 0.3, pi / 2), 2 - 2 * sqrt(sin(0.3)))
-v3 = lambda t: 3 * t * t - 4 * t + 1
-s3 = lambda t: t ** 3 - 2 * t * t + t
-primitive("M3[2](a): v' = a = 6t - 4", v3, lambda t: 6 * t - 4, (0.2, 0.9, 1.7)); check("M3[2](a): v(0) = 1", v3(0), 1)
-primitive("M3[2](a): s' = v", s3, v3, (0.2, 0.9, 1.7)); check("M3[2](a): s(0) = 0", s3(0), 0)
-check("M3[2](b): at rest at t = 1/3", v3(Fr(1, 3)), 0); check("M3[2](b): at rest at t = 1", v3(1), 0)
-check("M3[2](c): s(1/3) = 4/27", s3(Fr(1, 3)), Fr(4, 27)); check("M3[2](c): s(1) = 0", s3(1), 0)
-check("M3[2](c): distance int_0^1 |v| = 8/27", integral(lambda t: abs(v3(t)), 0, 1 / 3) + integral(lambda t: abs(v3(t)), 1 / 3, 1), 8 / 27)
-check("M3[2](c): displacement 0", integral(v3, 0, 1), 0, 1e-12)
-check_true("M3[3](a): x >= x^3 on [0, 1]", all(k / 100 >= (k / 100) ** 3 for k in range(0, 101)))
-check("M3[3](a): area int_0^1 (x - x^3) = 1/4", integral(lambda x: x - x ** 3, 0, 1), 0.25)
-check("M3[3](b): volume pi int_0^1 (x^2 - x^6) = 4 pi/21", pi * integral(lambda x: x * x - x ** 6, 0, 1), 4 * pi / 21)
-check("M3[4](a): w^2 e^-w -> 0 (w = 100)", 100 ** 2 * exp(-100), 0, 1e-35)
-check("M3[4](a): the middle step 2w/e^w -> 0 (w = 100)", 200 * exp(-100), 0, 1e-35)
-primitive("M3[4](b): -(x^2 + 2x + 2) e^-x is a primitive of x^2 e^-x", lambda x: -(x * x + 2 * x + 2) * exp(-x), lambda x: x * x * exp(-x), XS)
-check("M3[4](b): int_0^inf x^2 e^-x = 2", imp(lambda x: x * x * exp(-x), 0, INF), 2, 1e-9)
-check("M3[4](b): int_0^w = 2 - (w^2 + 2w + 2) e^-w (w = 4)", integral(lambda x: x * x * exp(-x), 0, 4), 2 - 26 * exp(-4))
+# ================= MOCK MIDTERMS (exams.mjs: Mocks 1–3 are im5, im6, im7, in the AY2025 layout; Mock 4 is im4) =================
+def t_inv(xf, X, a, b):
+    """the parameter t in [a, b] where a monotonic x(t) equals X (bisection)"""
+    lo, hi, inc = a, b, xf(b) > xf(a)
+    for _ in range(90):
+        m = (lo + hi) / 2
+        if (xf(m) < X) == inc: lo = m
+        else: hi = m
+    return (lo + hi) / 2
+# --- Mock 1 (im5) ---
+check("M1 Q.1(1): int_0^3 (x^2 - 6x + 5) = -3", integral(lambda x: x * x - 6 * x + 5, 0, 3), -3)
+check("M1 Q.1(1): 9 - 27 + 15", 9 - 27 + 15, -3)
+check("M1 Q.1(2): int_0^(pi/4) cos 2x = 1/2", integral(lambda x: cos(2 * x), 0, pi / 4), 0.5)
+check("M1 Q.1(3): int_0^2 3^x = 8/ln 3", integral(lambda x: 3 ** x, 0, 2), 8 / log(3))
+check("M1 Q.1(4): int_0^1 dx/(3x+1) = (2/3) ln 2", integral(lambda x: 1 / (3 * x + 1), 0, 1), 2 / 3 * log(2))
+check("M1 Q.1(4): (1/3) ln 4 = (2/3) ln 2", log(4) / 3, 2 / 3 * log(2))
+check("M1 Q.2(1): int_1^4 dx/(x^2 - 2x + 10) = pi/12", integral(lambda x: 1 / (x * x - 2 * x + 10), 1, 4), pi / 12)
+check("M1 Q.2(1): (x-1)^2 + 9 = x^2 - 2x + 10 at 2.5", (2.5 - 1) ** 2 + 9, 2.5 ** 2 - 2 * 2.5 + 10)
+check("M1 Q.2(2): int_1^16 (x-4)/(x + 2 sqrt x) = 3", integral(lambda x: (x - 4) / (x + 2 * sqrt(x)), 1, 16), 3)
+for x in (2.0, 9.5):
+    check(f"M1 Q.2(2): (x-4)/(x + 2 sqrt x) = 1 - 2/sqrt x at {x}", (x - 4) / (x + 2 * sqrt(x)), 1 - 2 / sqrt(x))
+FM = lambda x: x * x * sin(x) + 2 * x * cos(x) - 2 * sin(x)
+primitive("M1 Q.3(1): x^2 sin x + 2x cos x - 2 sin x", FM, lambda x: x * x * cos(x), XN)
+check("M1 Q.3(1): int_0^pi x^2 cos x = -2 pi", integral(lambda x: x * x * cos(x), 0, pi), -2 * pi)
+JM = lambda x: exp(2 * x) * (2 * sin(x) - cos(x)) / 5
+primitive("M1 Q.3(2): e^(2x)(2 sin x - cos x)/5", JM, lambda x: exp(2 * x) * sin(x), XN)
+check("M1 Q.3(2): int_0^(pi/2) e^(2x) sin x = (2e^pi + 1)/5", integral(lambda x: exp(2 * x) * sin(x), 0, pi / 2), (2 * exp(pi) + 1) / 5)
+check("M1 Q.4: pi int_0^1 (sqrt x e^x)^2 = pi(e^2 + 1)/4", pi * integral(lambda x: (sqrt(x) * exp(x)) ** 2, 0, 1), pi * (exp(2) + 1) / 4)
+primitive("M1 Q.4: e^(2x)(x/2 - 1/4) is a primitive of x e^(2x)", lambda x: exp(2 * x) * (x / 2 - 0.25), lambda x: x * exp(2 * x), XN)
+x5 = lambda t: t + sin(t) * cos(t); y5 = lambda t: sin(t) ** 2
+for t in (0.4, 1.3, 2.6):
+    check(f"M1 Q.5(1): x' = 2cos^2 t at {t}", d1(x5, t), 2 * cos(t) ** 2, 1e-6)
+    check(f"M1 Q.5(1): x'^2 + y'^2 = 4cos^2 t at {t}", d1(x5, t) ** 2 + d1(y5, t) ** 2, 4 * cos(t) ** 2, 1e-6)
+check("M1 Q.5(1): length = 4", plen(x5, y5, 0, pi, 8000), 4, 1e-6)
+check("M1 Q.5(1): chords tend to 4", chord_len(x5, y5, 0, pi), 4, 1e-6)
+check("M1 Q.5(1): without the | |: 0", integral(lambda t: 2 * cos(t), 0, pi), 0, 1e-9)
+check_true("M1 Q.5(2): y >= 0 and x increasing on [0, pi], y = 0 at both ends",
+           all(y5(pi * k / 400) >= 0 and x5(pi * (k + 1) / 400) >= x5(pi * k / 400) for k in range(400)) and abs(y5(pi)) < 1e-12)
+check("M1 Q.5(2): area int y x' dt = pi/4", integral(lambda t: y5(t) * 2 * cos(t) ** 2, 0, pi), pi / 4)
+check("M1 Q.5(2): int_0^pi sin^2 2t = pi/2", integral(lambda t: sin(2 * t) ** 2, 0, pi), pi / 2)
+check("M1 Q.5(2): the same area in x: int_0^pi y dx", integral(lambda X: y5(t_inv(x5, X, 0, pi)), 0, pi, 20000), pi / 4, 1e-5)
+F6a = lambda n: imp(lambda x: x ** n * exp(-2 * x), 0, INF)
+check("M1 Q.6(1): F(0) = 1/2", F6a(0), 0.5, 1e-9)
+for n in range(1, 7):
+    check(f"M1 Q.6(2): F({n}) = ({n}/2) F({n - 1})", F6a(n), n / 2 * F6a(n - 1), 1e-8)
+    check(f"M1 Q.6(3): F({n}) = {n}!/2^{n + 1}", F6a(n), math.factorial(n) / 2 ** (n + 1), 1e-8)
+check_true("M1 Q.6(2): the bracket w^n e^(-2w) -> 0 (n = 5)", 60 ** 5 * exp(-120) < 1e-40 and 30 ** 5 * exp(-60) < 1e-17)
+# --- Mock 2 (im6) ---
+check("M2 Q.1(1): int_-1^2 (2x^3 - 3x^2) = -3/2", integral(lambda x: 2 * x ** 3 - 3 * x * x, -1, 2), -1.5)
+check("M2 Q.1(2): int_0^pi sin(x/2) = 2", integral(lambda x: sin(x / 2), 0, pi), 2)
+check("M2 Q.1(3): int_0^(1/2) 4^x = 1/(2 ln 2)", integral(lambda x: 4 ** x, 0, 0.5), 1 / (2 * log(2)))
+check("M2 Q.1(4): int_1^4 2/(4x-1) = (1/2) ln 5", integral(lambda x: 2 / (4 * x - 1), 1, 4), log(5) / 2)
+check("M2 Q.2(1): int_-2^0 dx/(x^2 + 4x + 8) = pi/8", integral(lambda x: 1 / (x * x + 4 * x + 8), -2, 0), pi / 8)
+check("M2 Q.2(1): (x+2)^2 + 4 = x^2 + 4x + 8 at -0.7", (-0.7 + 2) ** 2 + 4, 0.49 - 2.8 + 8)
+check("M2 Q.2(2): int_1^4 dx/(x + sqrt x) = 2 ln(3/2)", integral(lambda x: 1 / (x + sqrt(x)), 1, 4), 2 * log(1.5))
+check("M2 Q.2(2): with t = sqrt x: int_1^2 2/(t+1) dt", integral(lambda t: 2 / (t + 1), 1, 2), 2 * log(1.5))
+GM = lambda x: x * x / 2 * log(x) ** 2 - x * x / 2 * log(x) + x * x / 4
+primitive("M2 Q.3(1): (x^2/2)(ln x)^2 - (x^2/2) ln x + x^2/4", GM, lambda x: x * log(x) ** 2, XN)
+check("M2 Q.3(1): int_1^e x (ln x)^2 = (e^2 - 1)/4", integral(lambda x: x * log(x) ** 2, 1, math.e), (math.e ** 2 - 1) / 4)
+JB = lambda x: exp(x) * (sin(2 * x) - 2 * cos(2 * x)) / 5
+primitive("M2 Q.3(2): e^x (sin 2x - 2cos 2x)/5", JB, lambda x: exp(x) * sin(2 * x), XN)
+check("M2 Q.3(2): int_0^pi e^x sin x cos x = (1 - e^pi)/5", integral(lambda x: exp(x) * sin(x) * cos(x), 0, pi), (1 - exp(pi)) / 5)
+check("M2 Q.4: pi int_1^2 f^2 = pi ln(4/3)", pi * integral(lambda x: (1 / sqrt(x * x + x)) ** 2, 1, 2), pi * log(4 / 3))
+for x in (1.3, 1.8):
+    check(f"M2 Q.4: 1/(x(x+1)) = 1/x - 1/(x+1) at {x}", 1 / (x * (x + 1)), 1 / x - 1 / (x + 1))
+xa = lambda t: cos(t) ** 3; ya = lambda t: sin(t) ** 3
+for t in (0.3, 1.1):
+    check(f"M2 Q.5(1): x'^2 + y'^2 = 9 sin^2 t cos^2 t at {t}", d1(xa, t) ** 2 + d1(ya, t) ** 2, 9 * sin(t) ** 2 * cos(t) ** 2, 1e-6)
+check("M2 Q.5(1): length = 3/2", plen(xa, ya, 0, pi / 2), 1.5, 1e-7)
+check("M2 Q.5(1): chords tend to 3/2", chord_len(xa, ya, 0, pi / 2), 1.5, 1e-6)
+check("M2 Q.5(2): area 3 int_0^(pi/2) sin^4 cos^2 = 3 pi/32", 3 * integral(lambda t: sin(t) ** 4 * cos(t) ** 2, 0, pi / 2), 3 * pi / 32)
+check("M2 Q.5(2): the same area in x: int_0^1 y dx", integral(lambda X: ya(t_inv(xa, X, 0, pi / 2)), 0, 1, 20000), 3 * pi / 32, 1e-5)
+check("M2 Q.5(2): I_4 = 3 pi/16", integral(lambda t: sin(t) ** 4, 0, pi / 2), 3 * pi / 16)
+check("M2 Q.5(2): I_6 = 5 pi/32", integral(lambda t: sin(t) ** 6, 0, pi / 2), 5 * pi / 32)
+L6 = lambda n: imp(lambda u: (-u) ** n * exp(-u), 0, INF)   # x = e^(-u) turns int_0^1 (ln x)^n dx into this
+check("M2 Q.6(1): L(1) = -1", L6(1), -1, 1e-9)
+check("M2 Q.6(1): directly, int_0^1 ln x dx = -1", imp(log, 0, 1), -1, 1e-9)
+for n in range(1, 7):
+    check(f"M2 Q.6(2): L({n}) = -{n} L({n - 1})", L6(n), -n * L6(n - 1), 1e-8)
+    check(f"M2 Q.6(3): L({n}) = (-1)^{n} {n}!", L6(n), (-1) ** n * math.factorial(n), 1e-8)
+check("M2 Q.6(3): directly, int_0^1 (ln x)^2 dx = 2", imp(lambda x: log(x) ** 2, 0, 1), 2, 1e-8)
+check_true("M2 Q.6(2): w (ln w)^n -> 0 as w -> +0 (n = 4)", all(abs(w * log(w) ** 4) < bd for w, bd in ((1e-6, 0.1), (1e-12, 1e-5), (1e-30, 1e-22))))
+# --- Mock 3 (im7) ---
+check("M3 Q.1(1): int_-1^1 (4x^3 - 6x + 2) = 4", integral(lambda x: 4 * x ** 3 - 6 * x + 2, -1, 1), 4)
+check("M3 Q.1(2): int_0^1 sin(pi x) = 2/pi", integral(lambda x: sin(pi * x), 0, 1), 2 / pi)
+check("M3 Q.1(3): int_0^1 5^x = 4/ln 5", integral(lambda x: 5 ** x, 0, 1), 4 / log(5))
+check("M3 Q.1(4): int_-1^3 dx/(2x+3) = ln 3", integral(lambda x: 1 / (2 * x + 3), -1, 3), log(3))
+check("M3 Q.2(1): int_0^1 dx/(x^2 + x + 1) = pi/(3 sqrt3)", integral(lambda x: 1 / (x * x + x + 1), 0, 1), pi / (3 * sqrt(3)))
+check("M3 Q.2(1): (x + 1/2)^2 + 3/4 = x^2 + x + 1 at 0.7", (0.7 + 0.5) ** 2 + 0.75, 0.49 + 0.7 + 1)
+check("M3 Q.2(1): arctan sqrt3 - arctan(1/sqrt3) = pi/6", atan(sqrt(3)) - atan(1 / sqrt(3)), pi / 6)
+check("M3 Q.2(1): pi/(3 sqrt3) = sqrt3 pi/9", pi / (3 * sqrt(3)), sqrt(3) * pi / 9)
+check("M3 Q.2(2): int_0^1 sqrt x/(1 + sqrt x) = 2 ln 2 - 1", imp(lambda x: sqrt(x) / (1 + sqrt(x)), 0, 1), 2 * log(2) - 1, 1e-9)
+check("M3 Q.2(2): with t = sqrt x: 2 int_0^1 t^2/(t+1) dt", integral(lambda t: 2 * t * t / (t + 1), 0, 1), 2 * log(2) - 1)
+for t in (0.3, 0.8):
+    check(f"M3 Q.2(2): t^2/(t+1) = t - 1 + 1/(t+1) at {t}", t * t / (t + 1), t - 1 + 1 / (t + 1))
+HM = lambda x: x * x / 2 * sin(2 * x) + x / 2 * cos(2 * x) - sin(2 * x) / 4
+primitive("M3 Q.3(1): (x^2/2) sin 2x + (x/2) cos 2x - (1/4) sin 2x", HM, lambda x: x * x * cos(2 * x), XN)
+check("M3 Q.3(1): int_0^(pi/4) x^2 cos 2x = pi^2/32 - 1/4", integral(lambda x: x * x * cos(2 * x), 0, pi / 4), pi ** 2 / 32 - 0.25)
+JC = lambda x: -exp(-x) * (sin(x) + cos(x)) / 2
+primitive("M3 Q.3(2): -e^(-x)(sin x + cos x)/2", JC, lambda x: exp(-x) * sin(x), XN)
+check("M3 Q.3(2): int_0^pi e^(-x) sin x = (1 + e^(-pi))/2", integral(lambda x: exp(-x) * sin(x), 0, pi), (1 + exp(-pi)) / 2)
+check("M3 Q.4: pi int_0^1 f^2 = pi/4", pi * integral(lambda x: (sqrt(x) / (x * x + 1)) ** 2, 0, 1), pi / 4)
+check("M3 Q.4: with u = x^2 + 1: pi int_1^2 du/(2u^2)", pi * integral(lambda u: 1 / (2 * u * u), 1, 2), pi / 4)
+xb = lambda t: 2 * t * t; yb = lambda t: t - 4 * t ** 3 / 3
+TB = sqrt(3) / 2
+for t in (0.2, 0.7):
+    check(f"M3 Q.5(1): x'^2 + y'^2 = (1 + 4t^2)^2 at {t}", d1(xb, t) ** 2 + d1(yb, t) ** 2, (1 + 4 * t * t) ** 2, 1e-6)
+check("M3 Q.5(1): length = sqrt3", plen(xb, yb, 0, TB), sqrt(3), 1e-7)
+check("M3 Q.5(1): chords tend to sqrt3", chord_len(xb, yb, 0, TB), sqrt(3), 1e-6)
+check("M3 Q.5(2): y = 0 at t = sqrt3/2, where x = 3/2", abs(yb(TB)) + abs(xb(TB) - 1.5), 0, 1e-12)
+check_true("M3 Q.5(2): y >= 0 on the domain", all(yb(TB * k / 400) >= -1e-12 for k in range(401)))
+check("M3 Q.5(2): area = sqrt3/5", integral(lambda t: yb(t) * 4 * t, 0, TB), sqrt(3) / 5)
+check("M3 Q.5(2): the same area in x: int_0^(3/2) y dx", integral(lambda X: yb(sqrt(X / 2)), 0, 1.5, 20000), sqrt(3) / 5, 1e-6)
+K6 = lambda n: imp(lambda x: log(x) ** n / x ** 2, 1, INF)
+check("M3 Q.6(1): K(0) = 1", K6(0), 1, 1e-9)
+for n in range(1, 7):
+    check(f"M3 Q.6(2): K({n}) = {n} K({n - 1})", K6(n), n * K6(n - 1), 1e-8)
+    check(f"M3 Q.6(3): K({n}) = {n}!", K6(n), math.factorial(n), 1e-8)
+check_true("M3 Q.6(2): (ln w)^n / w -> 0 (n = 4)", all(log(w) ** 4 / w < bd for w, bd in ((1e8, 1e-2), (1e15, 1e-8), (1e40, 1e-31))))
 
 # --- Mock 4 (quiz style) ---
 f41 = lambda x: 3 * x * x + 2 * x
@@ -1303,8 +1332,10 @@ for x in (2.3, 2.8):
     check(f"M4 Q.2(3): 1/(x^2-1) = (1/2)(1/(x-1) - 1/(x+1)) at {x}", 1 / (x * x - 1), 0.5 * (1 / (x - 1) - 1 / (x + 1)))
 check("M4 Q.2(4): int_1^3 dx/(x^2-2x+5) = pi/8", integral(lambda x: 1 / (x * x - 2 * x + 5), 1, 3), pi / 8)
 check("M4 Q.2(4): (x-1)^2 + 4 = x^2 - 2x + 5 at 2.2", (2.2 - 1) ** 2 + 4, 2.2 ** 2 - 2 * 2.2 + 5); check_true("M4 Q.2(4): 4 - 20 < 0", 4 - 20 < 0)
-primitive("M4 Q.3(1): 2 sqrt x ln x - 4 sqrt x", lambda x: 2 * sqrt(x) * log(x) - 4 * sqrt(x), lambda x: log(x) / sqrt(x), XN)
-check("M4 Q.3(1): int_1^(e^2) ln x / sqrt x = 4", integral(lambda x: log(x) / sqrt(x), 1, math.e ** 2), 4)
+primitive("M4 Q.3(1): (x^2/2) arctan x - x/2 + (1/2) arctan x", lambda x: x * x / 2 * atan(x) - x / 2 + atan(x) / 2, lambda x: x * atan(x), XN)
+check("M4 Q.3(1): int_0^1 x arctan x = pi/4 - 1/2", integral(lambda x: x * atan(x), 0, 1), pi / 4 - 0.5)
+check("M4 Q.3(1): int_0^1 x^2/(1+x^2) = 1 - pi/4", integral(lambda x: x * x / (1 + x * x), 0, 1), 1 - pi / 4)
+check("M4 Q.3(1): pi/8 - (1 - pi/4)/2", pi / 8 - (1 - pi / 4) / 2, pi / 4 - 0.5)
 check("M4 Q.3(2): int_0^(pi/2) dx/(2 + cos x) = pi/(3 sqrt3)", integral(lambda x: 1 / (2 + cos(x)), 0, pi / 2), pi / (3 * sqrt(3)))
 check("M4 Q.3(2): with u = tan(x/2): int_0^1 2/(u^2+3) du", integral(lambda u: 2 / (u * u + 3), 0, 1), pi / (3 * sqrt(3)))
 for x in (0.4, 1.2):

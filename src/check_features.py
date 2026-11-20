@@ -507,8 +507,8 @@ with sync_playwright() as p:
     check('new (20 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (20 Nov): the past midterms of the integral part are New, even locked, and so are the mocks of 19 Nov',
-          pg.locator('#past .sheet-title .new-pill').count() == 3 and pg.locator('#mocks .sheet-title .new-pill').count() == 4 and 'exams' not in dots(pg))
+    check('new (20 Nov): the past midterms of the integral part (17 and 20 Nov) are New, even locked, and so are the mocks of 19 and 20 Nov',
+          pg.locator('#past .sheet-title .new-pill').count() == 4 and pg.locator('#mocks .sheet-title .new-pill').count() == 4 and 'exams' not in dots(pg))
     # Calculus midterm 1's lessons are past their 14 days; only its AY2024 past midterm (17 Nov) is New
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')

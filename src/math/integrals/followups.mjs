@@ -19,10 +19,10 @@ $\Delta x=\frac{1}{N}$ and $x_k=\frac{k}{N}$, so
 $$S_N=\sum_{k=1}^{N}\left(\frac{3k^2}{N^2}-\frac{2k}{N}+2\right)\frac{1}{N}$$
 
 Take the constants out and use the partial sums:
-$$S_N=\frac{3}{N^3}\cdot\frac{N(N+1)(2N+1)}{6}-\frac{2}{N^2}\cdot\frac{N(N+1)}{2}+2$$
+$$\begin{aligned}S_N&=\frac{3}{N^3}\cdot\frac{N(N+1)(2N+1)}{6}\\[4pt]&\quad-\frac{2}{N^2}\cdot\frac{N(N+1)}{2}+2\end{aligned}$$
 
-Over the common denominator $2N^2$:
-$$S_N=\frac{(N+1)(2N+1)-2N(N+1)+4N^2}{2N^2}=\frac{4N^2+N+1}{2N^2}$$
+Simplify each term, then use the common denominator $2N^2$:
+$$\begin{aligned}S_N&=\frac{(N+1)(2N+1)}{2N^2}-\frac{N+1}{N}+2\\[4pt]&=\frac{4N^2+N+1}{2N^2}\end{aligned}$$
 
 As $N\to\infty$, $S_N\to\frac{4}{2}=2$. Check: $\int_0^1(3x^2-2x+2)\,dx=1-1+2=2$.` },
       { label: 'Q.2', pts: '2pt×4', stem: R`Compute the definite integrals of $f(x)$ over the interval $I$.`,
@@ -58,17 +58,17 @@ The interval has length $2$, so $\Delta x=\frac{2}{N}$ (not $\frac{1}{N}$) and $
 $$\begin{aligned}S_N&=\sum_{k=1}^{N}\left(\frac{4k^2}{N^2}+1\right)\frac{2}{N}\\[4pt]&=\frac{8}{N^3}\sum_{k=1}^{N}k^2+\frac{2}{N}\sum_{k=1}^{N}1\end{aligned}$$
 
 The constant is added $N$ times, so the last term is $2$:
-$$S_N=\frac{4(N+1)(2N+1)}{3N^2}+2=\frac{14N^2+12N+4}{3N^2}$$
+$$\begin{aligned}S_N&=\frac{4(N+1)(2N+1)}{3N^2}+2\\[4pt]&=\frac{14N^2+12N+4}{3N^2}\end{aligned}$$
 
 As $N\to\infty$, $S_N\to\frac{14}{3}$. Check: $\int_0^2(x^2+1)\,dx=\frac{8}{3}+2=\frac{14}{3}$.` },
       { label: 'Q.2', pts: '2pt×4', stem: R`Compute the definite integrals of $f(x)$ over the interval $I$.`,
-        parts: [R`$f(x)=2x^3-x^2+3$;  $I:\ -2\le x\le1$`, R`$f(x)=\sin3x$;  $I:\ 0\le x\le\frac{\pi}{3}$`,
+        parts: [R`$f(x)=2x^3-x^2+3$;  $I:\ -2\le x\le1$`, R`$f(x)=\sin4x$;  $I:\ 0\le x\le\frac{\pi}{4}$`,
                 R`$f(x)=e^{-x}$;  $I:\ -1\le x\le0$`, R`$f(x)=\frac{1}{1+x^2}$;  $I:\ -\sqrt3\le x\le1$`],
-        answer: [R`(1) $-\frac{3}{2}$`, R`(2) $\frac{2}{3}$`, R`(3) $e-1$`, R`(4) $\frac{7\pi}{12}$`],
+        answer: [R`(1) $-\frac{3}{2}$`, R`(2) $\frac{1}{2}$`, R`(3) $e-1$`, R`(4) $\frac{7\pi}{12}$`],
         sol: R`
 **(1)** $F(x)=\frac{x^4}{2}-\frac{x^3}{3}+3x$. Work out $F(-2)$ on its own line: $\frac{16}{2}-\frac{-8}{3}+3\cdot(-2)=8+\frac{8}{3}-6=\frac{14}{3}$. And $F(1)=\frac{1}{2}-\frac{1}{3}+3=\frac{19}{6}$. The integral is $\frac{19}{6}-\frac{14}{3}=-\frac{3}{2}$.
 
-**(2)** $F(x)=-\frac{\cos3x}{3}$. $F\left(\frac{\pi}{3}\right)=-\frac{\cos\pi}{3}=\frac{1}{3}$ and $F(0)=-\frac{1}{3}$, so the integral is $\frac{1}{3}-\left(-\frac{1}{3}\right)=\frac{2}{3}$.
+**(2)** $F(x)=-\frac{\cos4x}{4}$. $F\left(\frac{\pi}{4}\right)=-\frac{\cos\pi}{4}=\frac{1}{4}$ and $F(0)=-\frac{1}{4}$, so the integral is $\frac{1}{4}-\left(-\frac{1}{4}\right)=\frac{1}{2}$.
 
 **(3)** $a=-1$, so $F(x)=-e^{-x}$. $F(0)=-1$ and $F(-1)=-e$, so the integral is $-1-(-e)=e-1$.
 
@@ -90,7 +90,7 @@ The area is $\frac{4}{3}+\frac{2}{3}=2$. The integral alone, $F(0)-F(-2)=\frac{2
     { added: NOV10, focus: 'Each question mirrors Quiz 07 with new numbers.', qs: [
       { label: 'Q.1', pts: '2pt×4', stem: R`Compute the definite integrals over the interval $D$.`,
         parts: [R`$f(x)=\frac{x+2}{x^2+4x+4}$;  $D:\ [0,2]$`, R`$f(x)=\cos^2(x)\cdot\sin(x)$;  $D:\ [0,\pi/2]$`,
-                R`$f(x)=x\cdot e^{3x-1}$;  $D:\ [1/3,1]$`, R`$f(x)=\frac{1}{x^2-4x+5}$;  $D:\ [1,3]$`],
+                R`$f(x)=x\cdot e^{3x-1}$;  $D:\ [1/3,1]$`, R`$f(x)=\frac{1}{x^2-6x+10}$;  $D:\ [2,4]$`],
         answer: [R`(1) $\ln2$`, R`(2) $\frac{1}{3}$`, R`(3) $\frac{2e^2}{9}$`, R`(4) $\frac{\pi}{2}$`],
         sol: R`
 **(1)** $x^2+4x+4=(x+2)^2$, so $f(x)=\frac{1}{x+2}$ and $\Big[\ln(x+2)\Big]_0^2=\ln4-\ln2=\ln2$.
@@ -99,7 +99,7 @@ The area is $\frac{4}{3}+\frac{2}{3}=2$. The integral alone, $F(0)-F(-2)=\frac{2
 
 **(3)** By parts with $f=x$ and $g'=e^{3x-1}$, so $g=\frac{e^{3x-1}}{3}$: $F(x)=\frac{x}{3}e^{3x-1}-\frac{e^{3x-1}}{9}=\frac{e^{3x-1}}{9}(3x-1)$. Then $F(1)=\frac{2e^2}{9}$ and $F\left(\frac{1}{3}\right)=0$.
 
-**(4)** $x^2-4x+5=(x-2)^2+1$. With $u=x-2$ the limits are $-1$ and $1$: $\arctan1-\arctan(-1)=\frac{\pi}{4}+\frac{\pi}{4}=\frac{\pi}{2}$.` },
+**(4)** $x^2-6x+10=(x-3)^2+1$. With $u=x-3$ the limits are $-1$ and $1$: $\arctan1-\arctan(-1)=\frac{\pi}{4}+\frac{\pi}{4}=\frac{\pi}{2}$.` },
       { label: 'Q.2', pts: '2pt', stem: R`Compute the following definite integral.
 $$\int_{\pi/3}^{\pi/2}\frac{1}{1+\cos(x)}\,dx$$`,
         parts: [],
@@ -152,7 +152,7 @@ $$f(x)=\frac{2}{3}\left(\sqrt{x+1}\right)^3;\quad D:\ 0\le x\le2$$`,
         sol: R`
 $f(x)=\frac{2}{3}(x+1)^{3/2}$, so $f'(x)=(x+1)^{1/2}$ and $1+f'(x)^2=x+2$.
 
-$$\ell=\int_0^2\sqrt{x+2}\,dx=\frac{2}{3}\Big[(x+2)^{3/2}\Big]_0^2=\frac{2}{3}\left(8-2\sqrt2\right)$$
+$$\begin{aligned}\ell&=\int_0^2\sqrt{x+2}\,dx\\[4pt]&=\frac{2}{3}\Big[(x+2)^{3/2}\Big]_0^2\\[4pt]&=\frac{2}{3}\left(8-2\sqrt2\right)\end{aligned}$$
 
 which is $\frac{16-4\sqrt2}{3}$, since $2^{3/2}=2\sqrt2$.` },
       { label: 'Q.3', pts: '2pt', stem: R`Compute the following integral for whole numbers $m$ and $n$ with $|n|\ne|m|$.
@@ -173,7 +173,7 @@ $$f(x)=\sin x+\cos x;\quad D:\ 0\le x\le\frac{\pi}{2}$$`,
         sol: R`
 Square with the middle term: $f(x)^2=\sin^2x+2\sin x\cos x+\cos^2x=1+\sin2x$.
 
-$$V=\pi\int_0^{\pi/2}(1+\sin2x)\,dx=\pi\Big[x-\frac{\cos2x}{2}\Big]_0^{\pi/2}$$
+$$\begin{aligned}V&=\pi\int_0^{\pi/2}(1+\sin2x)\,dx\\[4pt]&=\pi\Big[x-\frac{\cos2x}{2}\Big]_0^{\pi/2}\end{aligned}$$
 
 which is $\pi\left(\frac{\pi}{2}+\frac{1}{2}+\frac{1}{2}\right)=\frac{\pi^2}{2}+\pi$. Squaring term by term, $\sin^2x+\cos^2x=1$, would leave out the $2\sin x\cos x$ and give only $\frac{\pi^2}{2}$.` },
       { label: 'Q.2', pts: '4pt', stem: R`Compute the length of the curve in the interval $D$.
@@ -210,10 +210,10 @@ in the polar coordinate.`,
 **(1)** $x=r\cos\theta=(3\theta^2-3)\cos\theta$ and $y=r\sin\theta=(3\theta^2-3)\sin\theta$.
 
 **(2)** $\frac{dr}{d\theta}=6\theta$, so
-$$\begin{aligned}r^2+\left(\frac{dr}{d\theta}\right)^2&=9(\theta^2-1)^2+36\theta^2\\[2pt]&=9(\theta^4+2\theta^2+1)=9(\theta^2+1)^2\end{aligned}$$
+$$\begin{aligned}&r^2+\left(\frac{dr}{d\theta}\right)^2\\[4pt]&=9(\theta^2-1)^2+36\theta^2\\[4pt]&=9(\theta^4+2\theta^2+1)=9(\theta^2+1)^2\end{aligned}$$
 
 The root is $3(\theta^2+1)$:
-$$\ell=\int_0^{\pi}(3\theta^2+3)\,d\theta=\Big[\theta^3+3\theta\Big]_0^{\pi}=\pi^3+3\pi$$` },
+$$\begin{aligned}\ell&=\int_0^{\pi}(3\theta^2+3)\,d\theta\\[4pt]&=\Big[\theta^3+3\theta\Big]_0^{\pi}=\pi^3+3\pi\end{aligned}$$` },
       { label: 'Q.2', pts: '', stem: R`Consider the following parameterized curve,
 $$\begin{cases}x=\ln(t)\\y=-t^3+2t^2+3t\end{cases}$$
 within the region $x\ge0$.`,
@@ -223,7 +223,7 @@ within the region $x\ge0$.`,
 **(1)** $x=\ln t\ge0$ means $t\ge1$. Factor: $y=-t(t^2-2t-3)=-t(t-3)(t+1)$, which for $t\ge1$ is $\ge0$ exactly when $t\le3$. So $1\le t\le3$, that is $0\le x\le\ln3$.
 
 **(2)** $\frac{dx}{dt}=\frac{1}{t}$, so
-$$\begin{aligned}A&=\int_1^3(-t^2+2t+3)\,dt=\Big[-\frac{t^3}{3}+t^2+3t\Big]_1^3\\[4pt]&=9-\frac{11}{3}=\frac{16}{3}\end{aligned}$$` },
+$$\begin{aligned}A&=\int_1^3(-t^2+2t+3)\,dt\\[4pt]&=\Big[-\frac{t^3}{3}+t^2+3t\Big]_1^3\\[4pt]&=9-\frac{11}{3}=\frac{16}{3}\end{aligned}$$` },
     ]},
     { added: NOV17, focus: 'Targets the usual slips: the square root of a square, which needs an absolute value and a split, the derivative of r, turning x ≥ 0 into t ≥ 1 for x = ln t, and the factor 1/t in dx.', qs: [
       { label: 'Q.1', pts: '', stem: R`Consider the curve defined by,
@@ -249,7 +249,7 @@ within the region $x\ge0$.`,
 **(1)** $x\ge0$ means $\ln t\ge0$, so $t\ge1$, not $t\ge0$. $y=t(4-t^2)=t(2-t)(2+t)$, which for $t\ge1$ is $\ge0$ exactly when $t\le2$. So $1\le t\le2$, that is $0\le x\le\ln2$.
 
 **(2)** $dx=\frac{dx}{dt}\,dt=\frac{1}{t}\,dt$, so the $t$-limits are $1$ and $2$ and one $t$ cancels:
-$$A=\int_1^2(4-t^2)\,dt=\Big[4t-\frac{t^3}{3}\Big]_1^2=\frac{16}{3}-\frac{11}{3}=\frac{5}{3}$$
+$$\begin{aligned}A&=\int_1^2(4-t^2)\,dt=\Big[4t-\frac{t^3}{3}\Big]_1^2\\[4pt]&=\frac{16}{3}-\frac{11}{3}=\frac{5}{3}\end{aligned}$$
 
 Dropping the factor $\frac{1}{t}$ would give $\int_1^2(4t-t^3)\,dt=\frac{9}{4}$, and integrating from $0$ to $\ln2$ in $t$ would mix the two variables.` },
     ]},

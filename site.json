@@ -62,6 +62,13 @@
     {
       "date": "2026-11-20",
       "subject": "math",
+      "title": "Calculus midterm 2: last year's midterm and three new mocks",
+      "text": "Calculus midterm 2's Exams tab has the AY2025 midterm of the integral part, last year's paper, retyped with step-by-step answers (password needed). It is in the in-class quizzes' style, and Mocks 1 to 3 are new and follow its layout: definite integrals on an interval, an arctan form and a √x form, two integrals by parts, a volume of revolution, a parametric curve (its length and the area under it), and a function defined by an improper integral. They replace the three mocks in the older papers' layout; Mock 4 (quiz style) stays. Every formula on the page now fits a phone screen with all the steps open.",
+      "link": "math/integrals/#exams"
+    },
+    {
+      "date": "2026-11-20",
+      "subject": "math",
       "title": "Calculus midterm 2: orthogonal functions and Quiz 10",
       "text": "Calculus midterm 2: the 19 & 20 Nov lesson (Day 24 & 25) adds the 20 Nov class: the inner product of functions, orthogonal functions, the Fourier basis (Exercise (4)), Fourier series and their coefficients, with 5 practice problems, a formula group, and a Shortcuts tip on odd and even functions. In-class Quiz 10 (improper integrals and Fourier coefficients) is under Quizzes (password needed), with Follow-up A and B open to everyone.",
       "link": "math/integrals/"
