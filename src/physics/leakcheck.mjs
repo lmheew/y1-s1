@@ -27,8 +27,10 @@ for (const f of [path.join('physics', 'index.html'), ...exams]) {
   pub += page.replace(/<script type="application\/json" id="search-index">[\s\S]*?<\/script>/, '') + lazy.join('\n') + '\n';
   index += (page.match(/<script type="application\/json" id="search-index">([\s\S]*?)<\/script>/) || [, '[]'])[1];
 }
-// the public sources: a textbook formula they print on purpose (v²/r, f_k = μ_k mg) is not a leak
-const shared = ['quizzes.mjs', 'summary.mjs', 'formulas.mjs', 'content.mjs', 'build.mjs'].map((f) => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+// the public sources: a textbook formula they print on purpose (v²/r, f_k = μ_k mg, a phase of π/2) is not a leak; the
+// final page's Summary, Formulas and chapters count too (since 14 Nov), but no page's Practice or mocks
+const shared = [...['quizzes.mjs', 'summary.mjs', 'formulas.mjs', 'content.mjs', 'build.mjs'].map((f) => path.join(SRC, f)),
+  ...['summary.mjs', 'formulas.mjs', 'content.mjs'].map((f) => path.join(SRC, 'final', f))].map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 let leaks = 0, checked = 0;
 const probs = [...exercises.flatMap((x) => x.problems), ...past.flatMap((p) => p.qs)];

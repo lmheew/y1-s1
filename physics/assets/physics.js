@@ -547,7 +547,9 @@
     });
   }
 
-  // ----- timers: count up; with data-limit (seconds, the mock exams) count down, then show the overtime as +mm:ss -----
+  // ----- timers: count up; with data-limit (seconds, the mock exams) count down, then show the overtime as +mm:ss.
+  // Each change is told to the sheet ('timerstate': start, pause, resume, up, finish, reset), which keeps a timed
+  // attempt with answer boxes (bindMock); Finish (.t-done, on such sheets) stops the clock and ends the attempt. -----
   const fmt = (ms) => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
   function bindTimers(scope) {
     $$('[data-timer]', scope).forEach((t) => {
@@ -555,27 +557,39 @@
       t.dataset.bound = '1';
       let start = 0, acc = 0, iv = null;
       const limit = Number(t.dataset.limit || 0) * 1000;
-      const out = $('.time', t), go = $('.t-go', t), label = $('.t-go span', t), rst = $('.t-reset', t);
+      const out = $('.time', t), go = $('.t-go', t), label = $('.t-go span', t), rst = $('.t-reset', t), done = $('.t-done', t);
+      const tell = (state) => t.dispatchEvent(new CustomEvent('timerstate', { bubbles: true, detail: { state } }));
       const display = (ms) => {
         if (!limit) { out.textContent = fmt(ms); return; }
         const left = limit - ms;
         out.textContent = left > 0 ? fmt(left + 999) : '+' + fmt(-left);
         t.classList.toggle('over', left <= 0);
-        if (left <= 0 && !t.dataset.rang) { t.dataset.rang = '1'; label.textContent = "Time's up"; }
+        if (left <= 0 && !t.dataset.rang) { t.dataset.rang = '1'; label.textContent = "Time's up"; tell('up'); }
       };
       const tick = () => display(acc + Date.now() - start);
       go.addEventListener('click', () => {
+        const fresh = !iv && !acc;
         if (iv) { acc += Date.now() - start; clearInterval(iv); iv = null; label.textContent = 'Resume'; }
         else { start = Date.now(); iv = setInterval(tick, 250); tick(); label.textContent = t.classList.contains('over') ? "Time's up" : 'Pause'; }
         rst.hidden = false;
         t.classList.toggle('running', Boolean(iv));
         document.dispatchEvent(new Event('quiztimer')); // the floating calculator turns off while a timer runs
+        tell(iv ? (fresh ? 'start' : 'resume') : 'pause');
       });
       rst.addEventListener('click', () => {
         clearInterval(iv); iv = null; acc = 0; delete t.dataset.rang;
-        t.classList.remove('running', 'over');
+        t.classList.remove('running', 'over', 'done');
         display(0); label.textContent = 'Start timer'; rst.hidden = true;
         document.dispatchEvent(new Event('quiztimer'));
+        tell('reset');
+      });
+      if (done) done.addEventListener('click', () => {
+        if (iv) { acc += Date.now() - start; clearInterval(iv); iv = null; }
+        t.classList.remove('running');
+        t.classList.add('done');
+        rst.hidden = false;
+        document.dispatchEvent(new Event('quiztimer'));
+        tell('finish');
       });
     });
   }
@@ -892,6 +906,11 @@
   let scores = {};
   try { scores = JSON.parse(localStorage.getItem(SKEY) || '{}') || {}; } catch (e) { scores = {}; }
   const saveScores = () => { try { localStorage.setItem(SKEY, JSON.stringify(scores)); } catch (e) { /* ignore */ } };
+  // typed answers, kept in this browser until "Clear ticks and answers": { mock id: { box id: text } }
+  const TKEY = SKEY + ':typed';
+  let typed = {};
+  try { typed = JSON.parse(localStorage.getItem(TKEY) || '{}') || {}; } catch (e) { typed = {}; }
+  const saveTyped = () => { try { localStorage.setItem(TKEY, JSON.stringify(typed)); } catch (e) { /* ignore */ } };
   // a mock or past midterm you mark yourself: ticks add up to a score, kept in this browser
   function bindMock(sh) {
     if (sh.dataset.bound) return;
@@ -909,17 +928,181 @@
       $('.score-val', sh).textContent = pts;
       if (segScore) segScore.textContent = ticks.size ? ` · ${pts}/${total}` : '';
     };
+    const keep = () => { scores[id] = Array.from(ticks); saveScores(); paintScore(); };
+    const entry = bindEntry(sh, id, ticks, keep);
     sh.addEventListener('click', (e) => {
       const b = e.target.closest('.mk');
       if (b) {
         if (ticks.has(b.dataset.k)) ticks.delete(b.dataset.k); else ticks.add(b.dataset.k);
-        scores[id] = Array.from(ticks); saveScores(); paintScore();
+        keep();
         return;
       }
-      if (e.target.closest('.mk-clear')) { ticks.clear(); delete scores[id]; saveScores(); paintScore(); }
+      if (e.target.closest('.mk-clear')) { ticks.clear(); delete scores[id]; saveScores(); paintScore(); if (entry) entry.clear(); }
     });
     paintScore();
   }
+
+  // ----- answer boxes (answers.js reads them; build.mjs entryPanel). Starting the timer starts an attempt: Show
+  // answer gives way to Enter answer, and the boxes are marked at Finish or when the time is up, with every part
+  // marked right ticked and the others unticked. Outside an attempt, Check marks a question at once. -----
+  function bindEntry(sh, id, ticks, keep) {
+    const ANS = window.MathAnswer;
+    const rows = ANS ? $$('.ent-row[data-key]', sh) : [];
+    if (!rows.length) return null;
+    const box = (row) => $('.ent-in', row);
+    const saved = typed[id] || {};
+    const preview = (row) => {
+      const inp = box(row), out = $('.ent-prev', row), dv = $('.ent-div', row);
+      const r = ANS.render(inp.value, row._key);
+      out.classList.toggle('err', Boolean(r.err));
+      if (r.err) out.textContent = r.err; else out.innerHTML = r.html;
+      if (dv) dv.setAttribute('aria-pressed', String(/^\s*diverges\s*$/i.test(inp.value)));
+    };
+    const unmark = (row) => { row.classList.remove('ok', 'no', 'none'); $('.ent-res', row).textContent = ''; };
+    const tally = (q) => {
+      const t = $('.ent-tally', q);
+      if (!t) return;
+      const parts = {};
+      $$('.ent-row[data-key]', q).forEach((row) => {
+        const k = row.dataset.k;
+        const s = row.classList.contains('ok') ? 1 : row.classList.contains('no') || row.classList.contains('none') ? 0 : -1;
+        parts[k] = k in parts ? Math.min(parts[k], s) : s;
+      });
+      const v = Object.values(parts);
+      t.textContent = v.some((s) => s < 0) ? '' : `${v.filter((s) => s === 1).length} of ${v.length} right`;
+    };
+    rows.forEach((row) => {
+      try { row._key = JSON.parse(row.dataset.key); } catch (e) { row._key = { v: '' }; }
+      const inp = box(row);
+      if (saved[inp.id] != null) inp.value = saved[inp.id];
+      preview(row);
+    });
+    const qs = Array.from(new Set(rows.map((r) => r.closest('.rq'))));
+    // mark some rows; returns each part's result: right only when every box of the part is right
+    const mark = (list) => {
+      const parts = {};
+      list.forEach((row) => {
+        const r = ANS.check(box(row).value, row._key);
+        unmark(row);
+        const res = $('.ent-res', row);
+        if (r.state === 'right') { row.classList.add('ok'); res.textContent = 'Right'; }
+        else if (r.state === 'empty') { row.classList.add('none'); res.textContent = 'No answer'; }
+        else { row.classList.add('no'); res.textContent = r.state === 'unread' ? `Not read: ${r.msg}` : `Not right${r.hint ? ` · ${r.hint}` : ''}`; }
+        const k = row.dataset.k, was = parts[k];
+        parts[k] = !was || was === r.state ? r.state : 'wrong';
+      });
+      return parts;
+    };
+    // answers that have been marked are cleared when a new attempt starts; answers of an attempt that never ended
+    // (the page was reloaded during it) stay for the next one
+    const done = () => { (typed[id] = typed[id] || {})._done = 1; saveTyped(); };
+    const clear = () => {
+      rows.forEach((row) => { box(row).value = ''; preview(row); unmark(row); });
+      qs.forEach(tally);
+      delete typed[id];
+      saveTyped();
+    };
+    const finish = () => {
+      if (!sh.classList.contains('attempt')) return;
+      sh.classList.remove('attempt');
+      if (!rows.some((row) => box(row).value.trim())) return; // worked on paper only: nothing to mark
+      const parts = mark(rows);
+      Object.entries(parts).forEach(([k, s]) => { if (s === 'right') ticks.add(k); else ticks.delete(k); });
+      keep();
+      qs.forEach(tally);
+      done();
+      $$('details.ent', sh).forEach((d) => { d.open = true; });
+    };
+    sh.addEventListener('timerstate', (e) => {
+      const s = e.detail && e.detail.state;
+      if (s === 'start') {
+        if (typed[id] && typed[id]._done) clear();
+        sh.classList.add('attempt');
+        rows.forEach(unmark);
+        qs.forEach(tally);
+        $$('details.sol', sh).forEach((d) => { d.open = false; });
+      } else if (s === 'finish' || s === 'up') finish();
+      else if (s === 'reset') sh.classList.remove('attempt');
+    });
+    sh.addEventListener('input', (e) => {
+      const row = e.target.closest && e.target.closest('.ent-row[data-key]');
+      if (!row) return;
+      preview(row);
+      if (row.classList.contains('ok') || row.classList.contains('no') || row.classList.contains('none')) { unmark(row); tally(row.closest('.rq')); }
+      const inp = box(row);
+      (typed[id] = typed[id] || {})[inp.id] = inp.value;
+      if (!inp.value) delete typed[id][inp.id];
+      if (!Object.keys(typed[id]).some((k) => k !== '_done')) delete typed[id];
+      saveTyped();
+    });
+    sh.addEventListener('click', (e) => {
+      const chk = e.target.closest('.ent-check');
+      if (chk) {
+        const q = chk.closest('.rq');
+        const parts = mark($$('.ent-row[data-key]', q));
+        Object.entries(parts).forEach(([k, s]) => { if (s === 'right') ticks.add(k); else if (s === 'wrong' || s === 'unread') ticks.delete(k); });
+        keep();
+        tally(q);
+        done();
+        return;
+      }
+      const dv = e.target.closest('.ent-div');
+      if (dv) {
+        const inp = box(dv.closest('.ent-row'));
+        inp.value = dv.getAttribute('aria-pressed') === 'true' ? '' : 'diverges';
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    // Enter goes to the next box, and on the last one checks the question (outside an attempt)
+    sh.addEventListener('keydown', (e) => {
+      const inp = e.target.closest && e.target.closest('.ent-in');
+      if (!inp || e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      const all = $$('.ent-in', inp.closest('.ent-body'));
+      const nx = all[all.indexOf(inp) + 1];
+      if (nx) nx.focus();
+      else if (!sh.classList.contains('attempt')) $('.ent-check', inp.closest('.ent-body')).click();
+      else inp.blur();
+    });
+    return { clear };
+  }
+  // keys a phone keyboard lacks (π, √ …), under the box being typed in; a tap keeps the keyboard up
+  const KEYS = ['π', '√', '^', '(', ')', '/'];
+  let keysBar = null, keysFor = null, keysHide = 0;
+  function insertKey(inp, k) {
+    const a = inp.selectionStart == null ? inp.value.length : inp.selectionStart, b = inp.selectionEnd == null ? a : inp.selectionEnd;
+    const text = k === '√' ? '√()' : k === 'Γ(' ? 'Γ()' : k;
+    inp.setRangeText(text, a, b, 'end');
+    if (text.endsWith('()')) inp.setSelectionRange(a + text.length - 1, a + text.length - 1);
+    inp.focus({ preventScroll: true });
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  document.addEventListener('focusin', (e) => {
+    const inp = e.target.closest && e.target.closest('.ent-in');
+    if (!inp) return;
+    clearTimeout(keysHide);
+    if (!keysBar) {
+      keysBar = document.createElement('div');
+      keysBar.className = 'ent-keys';
+      keysBar.setAttribute('role', 'toolbar');
+      keysBar.setAttribute('aria-label', 'Symbols');
+      const hold = (ev) => { if (ev.target.closest('button')) ev.preventDefault(); };
+      keysBar.addEventListener('pointerdown', hold);
+      keysBar.addEventListener('mousedown', hold);
+      keysBar.addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b && keysFor) insertKey(keysFor, b.dataset.k); });
+    }
+    const row = inp.closest('.ent-row');
+    const keys = KEYS.concat((row.dataset.extra || '').split(' ').filter(Boolean));
+    keysBar.innerHTML = keys.map((k) => `<button type="button" tabindex="-1" data-k="${k}" aria-label="${k === '√' ? 'square root' : k === 'π' ? 'pi' : k}">${k}</button>`).join('');
+    if (keysBar.parentElement !== row) row.append(keysBar);
+    keysBar.hidden = false;
+    keysFor = inp;
+  });
+  document.addEventListener('focusout', (e) => {
+    if (!keysBar || !(e.target.closest && e.target.closest('.ent-in'))) return;
+    clearTimeout(keysHide);
+    keysHide = setTimeout(() => { if (!document.activeElement || !document.activeElement.closest('.ent-in')) keysBar.hidden = true; }, 150);
+  });
   VIEW_INIT.exams = (scope) => {
     bindSegs(scope);
     bindTimers(scope);

@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-21",
+      "subject": "math",
+      "title": "Calculus midterm 2: answer boxes in the mocks",
+      "text": "Every mock midterm of Calculus midterm 2, and last year's AY2025 paper, has answer boxes: open Enter answer under a question and type the final answer, such as 2/3 ln 2, pi/4 or sqrt(3)/5. The line under each box shows how it is read, so a bracket in the wrong place shows at once, and any equal exact form counts. Without the timer, Check marks a question at once. With the timer, Show answer hides until the end, the boxes are marked at Finish or when the time is up, and every part marked right is ticked for the score. A near miss gets a hint, such as the sign or a factor of 2.",
+      "link": "math/integrals/#exams"
+    },
+    {
       "date": "2026-11-20",
       "subject": "math",
       "title": "Calculus midterm 2: last year's midterm and three new mocks",

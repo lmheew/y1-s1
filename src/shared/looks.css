@@ -68,7 +68,8 @@
 :root[data-look="paper"] :is(.tab, .pill, .chip, .mbtn, .linkbtn, .seg-btn, .t-go, .t-reset, .u-go, .u-show, .mk, .state-tag, .foot-links a,
   .kicker, .tile-k, .tile-q, .tile-soon, .src, .pts, .qtopic, .answer .lbl, .ucount, .s-sec, .ss-l, .fname, .nname, .uring-no, .uring-count,
   .legend, .ring-center small, .new-pill, .gx-ctl, .gx-tick, .gx-label, .calc-panel, .calc-tip, .u-field input, .search-field input, .time,
-  .step-count, .appear, .e-stats, .e-when, .e-soon, .smod-when, .sheet-part, .seg-score, .scorebar .score-note) { font-family: var(--ui-font); }
+  .step-count, .appear, .e-stats, .e-when, .e-soon, .smod-when, .sheet-part, .seg-score, .scorebar .score-note, .t-done, .ent-in, .ent-help,
+  .ent-res, .ent-tally, .ent-wait, .ent-note, .ent-prev.err, .ent-prev .ent-as) { font-family: var(--ui-font); }
 :root[data-look="paper"] body { font-size: 16.5px; line-height: 1.72; }
 :root[data-look="paper"] .brand-text b { font-weight: 600; letter-spacing: -.005em; }
 :root[data-look="paper"] .band-title .en { font-weight: 500; letter-spacing: -.015em; }
@@ -354,6 +355,16 @@
 :root[data-look="classic"] .exam.soon { border-style: dashed; }
 :root[data-look="classic"] .e-soon { border: 1.5px solid var(--green); }
 @media (hover: hover) { :root[data-look="classic"] a.exam:hover { background: var(--tint); } }
+
+/* ---------- answer boxes (page.css): Paper's smaller corners and hairlines, Classic's square fields ---------- */
+:root[data-look="paper"] :is(.ent-in, .ent-keys button) { border-color: var(--line); border-radius: 8px; }
+:root[data-look="paper"] .ent-in:focus { border-color: var(--ink-soft); }
+:root[data-look="paper"] .t-done { border-color: var(--line); color: var(--ink); }
+:root[data-look="classic"] :is(.ent-in, .ent-keys button) { border: 1.5px solid var(--line); border-radius: 0; background: var(--surface); }
+:root[data-look="classic"] .ent-in:focus { border-color: var(--green); box-shadow: none; }
+:root[data-look="classic"] .t-done { min-height: 0; padding: 7px 11px; border: 1.5px solid var(--green); background: var(--surface); }
+:root:is([data-look="paper"], [data-look="classic"]) .ent-row.ok .ent-in { border-color: var(--green); }
+:root:is([data-look="paper"], [data-look="classic"]) .ent-row.no .ent-in { border-color: var(--warn); }
 
 /* ---------- the appearance menu (page.js): the light/dark button opens it ---------- */
 .appear { position: fixed; z-index: 45; right: max(12px, env(safe-area-inset-right, 0px)); width: min(312px, calc(100vw - 24px));

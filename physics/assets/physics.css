@@ -541,6 +541,53 @@ details[open] .when-open { display: inline; }
 .scorebar .score-note { flex: 1; font-size: 13px; color: var(--ink-soft); }
 .timer.over .time { color: var(--warn); }
 .timer.over .t-go { background: var(--warn); }
+/* ----- answer boxes (build.mjs entryPanel, page.js bindEntry, answers.js). A timed attempt (.attempt, from Start
+   timer to Finish or the time being up) hides Show answer and marks the boxes at its end; outside one, Check marks a
+   question at once. ----- */
+.t-done { display: none; appearance: none; min-height: 38px; border: 1px solid var(--green-line); border-radius: 999px; background: var(--glass-2); color: var(--green-text); padding: 0 14px; font: 700 13px/1 var(--font); cursor: pointer; }
+.sheet.attempt .t-done { display: inline-flex; align-items: center; }
+.timer.done .t-go { display: none; }
+.sheet.attempt .reveal > details.sol { display: none; }
+.ent-body { display: grid; gap: 14px; min-width: 0; padding: 0 0 14px; }
+.ent-help { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.ent-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 10px; min-width: 0; }
+.ent-l { display: inline-flex; align-items: baseline; gap: 6px; min-width: 2.2em; white-space: nowrap; }
+.ent-l .pn { font-size: 14px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.ent-field { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ent-in { flex: 1; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid var(--green-line); border-radius: 12px; background: var(--glass-2); color: var(--ink); font: 500 16px/1.2 var(--font); }
+.ent-in:focus { outline: none; box-shadow: 0 0 0 3px var(--flash); border-color: var(--green); }
+.ent-div { flex: none; }
+.ent-prev, .ent-res, .ent-keys, .ent-note { grid-column: 2; min-width: 0; }
+.ent-row > .ent-note { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.ent-prev { min-height: 1.7em; overflow-x: auto; overflow-y: hidden; font-family: KaTeX_Main, "Times New Roman", serif; font-size: 17px; line-height: 1.7; color: var(--ink); }
+.ent-prev:empty::before { content: "\2002"; }
+.ent-prev.err { font-family: var(--font); font-size: 13px; line-height: 1.5; color: var(--warn); }
+.ent-prev i { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; }
+.ent-prev .fn { font-style: normal; }
+.ent-prev .fr { display: inline-flex; flex-direction: column; align-items: stretch; vertical-align: middle; margin: 0 2px; font-size: 90%; line-height: 1.3; text-align: center; }
+.ent-prev .fr > span { padding: 0 3px; white-space: nowrap; }
+.ent-prev .fr > span:first-child { border-bottom: 1px solid currentColor; }
+.ent-prev sup { font-size: 72%; line-height: 0; }
+.ent-prev .sq > span { padding-left: 1px; border-top: 1px solid currentColor; }
+.ent-prev .ent-as { font-family: var(--font); font-size: 12.5px; color: var(--ink-soft); }
+.ent-res { font-size: 13.5px; font-weight: 700; line-height: 1.5; }
+.ent-res:empty { display: none; }
+.ent-row.ok .ent-res { color: var(--green-text); }
+.ent-row.ok .ent-res::before { content: "✓ "; }
+.ent-row.no .ent-res { color: var(--warn); }
+.ent-row.no .ent-res::before { content: "✗ "; }
+.ent-row.none .ent-res { color: var(--ink-soft); }
+.ent-row.ok .ent-in { border-color: var(--green); }
+.ent-row.no .ent-in { border-color: var(--warn); }
+.ent-tally { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.ent-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ent-wait { display: none; font-size: 13px; color: var(--ink-soft); }
+.sheet.attempt .ent-check { display: none; }
+.sheet.attempt .ent-wait { display: inline; }
+.ent-keys { display: flex; flex-wrap: wrap; gap: 5px; padding-top: 2px; }
+.ent-keys[hidden] { display: none; }
+.ent-keys button { appearance: none; min-width: 38px; min-height: 38px; padding: 0 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--glass-2); color: var(--ink); font: 500 17px/1 var(--font); cursor: pointer; touch-action: manipulation; }
+.ent-keys button:active { transform: scale(.95); }
 
 /* ---------- Formulas: Test me ---------- */
 .testbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 18px; padding: 12px 14px; border: 1px dashed var(--green-line); border-radius: 18px; }
@@ -718,7 +765,7 @@ details[open] .when-open { display: inline; }
   body { background: #FFFFFF; color: var(--ink); padding: 0; }
   body::before, body::after, main::after, .appbar, .tabbar, .search-sheet, .site-foot, .sheet-tools, .timer, .stepbar, .mkrow, .scorebar, .seg, .new-pill { display: none !important; }
   .prob, .rq, .frow, .smod, .unit > .ideas > li { content-visibility: visible !important; } /* printing draws them all */
-  .night-tools, .night-link, .ov-btns, .ssetup, .sbar, .sdone { display: none !important; }
+  .night-tools, .night-link, .ov-btns, .ssetup, .sbar, .sdone, details.ent { display: none !important; }
   .nrows { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
   .nrow, .nsec .watch li, .nhabits li { break-inside: avoid; }
   .nsec h2 { break-after: avoid; }
@@ -1180,7 +1227,8 @@ details[open] .when-open { display: inline; }
 :root[data-look="paper"] :is(.tab, .pill, .chip, .mbtn, .linkbtn, .seg-btn, .t-go, .t-reset, .u-go, .u-show, .mk, .state-tag, .foot-links a,
   .kicker, .tile-k, .tile-q, .tile-soon, .src, .pts, .qtopic, .answer .lbl, .ucount, .s-sec, .ss-l, .fname, .nname, .uring-no, .uring-count,
   .legend, .ring-center small, .new-pill, .gx-ctl, .gx-tick, .gx-label, .calc-panel, .calc-tip, .u-field input, .search-field input, .time,
-  .step-count, .appear, .e-stats, .e-when, .e-soon, .smod-when, .sheet-part, .seg-score, .scorebar .score-note) { font-family: var(--ui-font); }
+  .step-count, .appear, .e-stats, .e-when, .e-soon, .smod-when, .sheet-part, .seg-score, .scorebar .score-note, .t-done, .ent-in, .ent-help,
+  .ent-res, .ent-tally, .ent-wait, .ent-note, .ent-prev.err, .ent-prev .ent-as) { font-family: var(--ui-font); }
 :root[data-look="paper"] body { font-size: 16.5px; line-height: 1.72; }
 :root[data-look="paper"] .brand-text b { font-weight: 600; letter-spacing: -.005em; }
 :root[data-look="paper"] .band-title .en { font-weight: 500; letter-spacing: -.015em; }
@@ -1466,6 +1514,16 @@ details[open] .when-open { display: inline; }
 :root[data-look="classic"] .exam.soon { border-style: dashed; }
 :root[data-look="classic"] .e-soon { border: 1.5px solid var(--green); }
 @media (hover: hover) { :root[data-look="classic"] a.exam:hover { background: var(--tint); } }
+
+/* ---------- answer boxes (page.css): Paper's smaller corners and hairlines, Classic's square fields ---------- */
+:root[data-look="paper"] :is(.ent-in, .ent-keys button) { border-color: var(--line); border-radius: 8px; }
+:root[data-look="paper"] .ent-in:focus { border-color: var(--ink-soft); }
+:root[data-look="paper"] .t-done { border-color: var(--line); color: var(--ink); }
+:root[data-look="classic"] :is(.ent-in, .ent-keys button) { border: 1.5px solid var(--line); border-radius: 0; background: var(--surface); }
+:root[data-look="classic"] .ent-in:focus { border-color: var(--green); box-shadow: none; }
+:root[data-look="classic"] .t-done { min-height: 0; padding: 7px 11px; border: 1.5px solid var(--green); background: var(--surface); }
+:root:is([data-look="paper"], [data-look="classic"]) .ent-row.ok .ent-in { border-color: var(--green); }
+:root:is([data-look="paper"], [data-look="classic"]) .ent-row.no .ent-in { border-color: var(--warn); }
 
 /* ---------- the appearance menu (page.js): the light/dark button opens it ---------- */
 .appear { position: fixed; z-index: 45; right: max(12px, env(safe-area-inset-right, 0px)); width: min(312px, calc(100vw - 24px));

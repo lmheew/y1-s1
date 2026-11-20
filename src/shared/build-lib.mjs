@@ -179,7 +179,8 @@ export const addedAttr = (o) => (o && o.added ? ` data-added="${esc(o.added)}"` 
 export const meta = (parts) => parts.filter(Boolean).map((t) => (t.length <= 24 ? `<span class="nw">${esc(t)}</span>` : esc(t))).join(' · ');
 
 // limit in seconds: 0 counts up (quizzes); otherwise it counts down and then shows the overtime (mock exams)
-export const timerHTML = (limit) => `<div class="timer" data-timer${limit ? ` data-limit="${limit}"` : ''}><span class="time" aria-live="off">${limit ? `${String(Math.floor(limit / 60)).padStart(2, '0')}:00` : '00:00'}</span><button type="button" class="t-go">${UI_ICONS.timer}<span>Start timer</span></button><button type="button" class="t-reset" hidden>Reset</button></div>`;
+// finish: a sheet with answer boxes, where Finish ends a timed attempt and marks them (page.js)
+export const timerHTML = (limit, finish = false) => `<div class="timer" data-timer${limit ? ` data-limit="${limit}"` : ''}><span class="time" aria-live="off">${limit ? `${String(Math.floor(limit / 60)).padStart(2, '0')}:00` : '00:00'}</span><button type="button" class="t-go">${UI_ICONS.timer}<span>Start timer</span></button>${finish ? '<button type="button" class="t-done">Finish</button>' : ''}<button type="button" class="t-reset" hidden>Reset</button></div>`;
 
 export const unlockForm = (key, text) => `
     <form class="unlock" novalidate>

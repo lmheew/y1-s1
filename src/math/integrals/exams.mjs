@@ -8,12 +8,14 @@
 // the new ids keep marks saved for those from showing on these. Mock 4 (im4, 19 Nov) follows the in-class quizzes
 // (six questions of 10 points, 60 in all). A mock may carry its own note above it (`focus`).
 // Same markup as content.mjs; `pts` gives the points of each part, `labels` the paper-style labels ('' for a question
-// that is one question). No function of a past paper or an in-class sheet is reused (leakcheck.mjs). Every answer is
-// checked in verify.py.
+// that is one question), and `check` the keys of the answer boxes, one per part (a string in the notation of
+// ../answers.js, { v, pre, vars, fns, div }, or a list of those for a part with more than one result). No function of a
+// past paper or an in-class sheet is reused (leakcheck.mjs). Every answer is checked in verify.py, every key in
+// ../answers_test.js.
 const R = String.raw;
 const NOV19 = '2026-11-19';
 const NOV20 = '2026-11-20';
-const FOCUS25 = 'In the layout of the AY2025 midterm of the integral part: six questions, from definite integrals on an interval to a function defined by an improper integral. Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.';
+const FOCUS25 = 'In the layout of the AY2025 midterm of the integral part: six questions, from definite integrals on an interval to a function defined by an improper integral. Work on paper, without notes or a calculator, and type each final answer under Enter answer: the boxes are marked at Finish or when the time is up, and every part marked right is ticked. Then open the worked answers.';
 const Q1 = R`Compute each definite integral of $f(x)$ on the interval $D$.`;
 const Q2 = R`Compute each definite integral.`;
 const Q3 = R`Compute each definite integral by parts.`;
@@ -30,6 +32,7 @@ export const mocks = [
         parts: [R`$f(x)=x^2-6x+5$;  $D:\ [0,3]$`, R`$f(x)=\cos(2x)$;  $D:\ [0,\pi/4]$`, R`$f(x)=3^x$;  $D:\ [0,2]$`, R`$f(x)=\frac{1}{3x+1}$;  $D:\ [0,1]$`],
         pts: [4, 4, 4, 4],
         answer: [R`(1) $-3$`, R`(2) $\frac{1}{2}$`, R`(3) $\frac{8}{\ln3}$`, R`(4) $\frac{1}{3}\ln4=\frac{2}{3}\ln2$`],
+        check: ['-3', '1/2', '8/ln(3)', '2/3*ln(2)'],
         sol: R`**(1)** $\Big[\frac{x^3}{3}-3x^2+5x\Big]_0^3=9-27+15=-3$. It is negative because $f=(x-1)(x-5)<0$ on most of $[0,3]$: an integral, not an area.
 
 **(2)** Divide by the $2$ inside: $\Big[\frac{\sin2x}{2}\Big]_0^{\pi/4}=\frac{1}{2}-0=\frac{1}{2}$.
@@ -43,6 +46,7 @@ export const mocks = [
         parts: [R`$\displaystyle\int_1^4\frac{dx}{x^2-2x+10}$`, R`$\displaystyle\int_1^{16}\frac{x-4}{x+2\sqrt x}\,dx$`],
         pts: [8, 8],
         answer: [R`(1) $\frac{\pi}{12}$`, R`(2) $3$`],
+        check: ['pi/12', '3'],
         sol: R`**(1)** $\Delta=4-40<0$, so make a square: $x^2-2x+10=(x-1)^2+9$. With $u=x-1$ (limits $0$ and $3$) and $a=3$:
 $$\begin{aligned}\int_0^3\frac{du}{u^2+9}&=\frac{1}{3}\Big[\arctan\frac{u}{3}\Big]_0^3\\[4pt]&=\frac{1}{3}\cdot\frac{\pi}{4}=\frac{\pi}{12}\end{aligned}$$
 
@@ -54,6 +58,7 @@ $$\begin{aligned}\int_1^{16}\left(1-2x^{-1/2}\right)dx&=\Big[x-4\sqrt x\Big]_1^{
         parts: [R`$\displaystyle\int_0^{\pi}x^2\cos x\,dx$`, R`$\displaystyle\int_0^{\pi/2}e^{2x}\sin x\,dx$`],
         pts: [9, 9],
         answer: [R`(1) $-2\pi$`, R`(2) $\frac{2e^{\pi}+1}{5}$`],
+        check: ['-2*pi', '(2*e^pi+1)/5'],
         sol: R`**(1)** By parts twice, differentiating the power of $x$ each time:
 $$\begin{aligned}&\int x^2\cos x\,dx\\[4pt]&=x^2\sin x-\int2x\sin x\,dx\\[4pt]&=x^2\sin x+2x\cos x-2\sin x\end{aligned}$$
 At $\pi$: $0-2\pi-0=-2\pi$. At $0$: $0$. So the integral is $-2\pi$.
@@ -69,6 +74,7 @@ So $\frac{5}{4}J=\frac{e^{2x}}{4}(2\sin x-\cos x)$, that is $J=\frac{e^{2x}(2\si
         parts: [R`$f(x)=\sqrt{x}\,e^{x}$`],
         pts: [14],
         answer: [R`$\frac{\pi\left(e^2+1\right)}{4}$`],
+        check: [{ v: 'pi*(e^2+1)/4', pre: R`$V=$` }],
         sol: R`$f(x)^2=xe^{2x}$, so $V=\pi\int_0^1xe^{2x}\,dx$.
 
 By parts, differentiating $x$: $\int xe^{2x}\,dx=\frac{x}{2}e^{2x}-\int\frac{1}{2}e^{2x}\,dx=e^{2x}\left(\frac{x}{2}-\frac{1}{4}\right)$. So
@@ -79,6 +85,7 @@ $$V=\pi\left(\frac{e^2}{4}+\frac{1}{4}\right)=\frac{\pi\left(e^2+1\right)}{4}$$`
         parts: [LENGTH, R`Find the area enclosed by the curve and the $x$-axis.`],
         pts: [9, 9],
         answer: [R`(1) $4$`, R`(2) $\frac{\pi}{4}$`],
+        check: ['4', 'pi/4'],
         sol: R`**(1)** $\frac{dx}{dt}=1+\cos^2t-\sin^2t=2\cos^2t$ and $\frac{dy}{dt}=2\sin t\cos t$, so
 $$\begin{aligned}&\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2\\[4pt]&=4\cos^4t+4\sin^2t\cos^2t=4\cos^2t\end{aligned}$$
 
@@ -96,6 +103,7 @@ $$F(n)=\int_0^{\infty}x^ne^{-2x}\,dx$$`,
         parts: [R`Compute $F(0)$.`, R`Give the relation between $F(n)$ and $F(n-1)$ for $n\ge1$.`, R`Compute $F(n)$ for a whole number $n\ge0$.`],
         pts: [6, 6, 6],
         answer: [R`(1) $F(0)=\frac{1}{2}$`, R`(2) $F(n)=\frac{n}{2}\,F(n-1)$`, R`(3) $F(n)=\frac{n!}{2^{n+1}}$`],
+        check: [{ v: '1/2', pre: R`$F(0)=$` }, { v: 'n/2*F(n-1)', pre: R`$F(n)=$`, vars: { n: 'int 1 7' }, fns: ['F'] }, { v: 'n!/2^(n+1)', pre: R`$F(n)=$`, vars: { n: 'int 0 7' } }],
         sol: R`**(1)** $F(0)=\int_0^{\infty}e^{-2x}\,dx=\lim_{w\to\infty}\Big[-\frac{1}{2}e^{-2x}\Big]_0^{w}=\lim_{w\to\infty}\frac{1-e^{-2w}}{2}=\frac{1}{2}$.
 
 **(2)** By parts, with $f=x^n$ and $g'=e^{-2x}$, so $f'=nx^{n-1}$ and $g=-\frac{1}{2}e^{-2x}$:
@@ -117,6 +125,7 @@ This holds for $n=0$ too, with $0!=1$.`,
         parts: [R`$f(x)=2x^3-3x^2$;  $D:\ [-1,2]$`, R`$f(x)=\sin\left(\frac{x}{2}\right)$;  $D:\ [0,\pi]$`, R`$f(x)=4^x$;  $D:\ [0,1/2]$`, R`$f(x)=\frac{2}{4x-1}$;  $D:\ [1,4]$`],
         pts: [4, 4, 4, 4],
         answer: [R`(1) $-\frac{3}{2}$`, R`(2) $2$`, R`(3) $\frac{1}{2\ln2}$`, R`(4) $\frac{1}{2}\ln5$`],
+        check: ['-3/2', '2', '1/(2*ln(2))', '1/2*ln(5)'],
         sol: R`**(1)** $\Big[\frac{x^4}{2}-x^3\Big]_{-1}^{2}=(8-8)-\left(\frac{1}{2}+1\right)=-\frac{3}{2}$. Mind the signs at $-1$: $\frac{(-1)^4}{2}=\frac{1}{2}$ and $-(-1)^3=+1$.
 
 **(2)** The inside is $\frac{x}{2}$, so multiply by $2$: $\Big[-2\cos\frac{x}{2}\Big]_0^{\pi}=-2\cos\frac{\pi}{2}+2\cos0=2$.
@@ -130,6 +139,7 @@ This holds for $n=0$ too, with $0!=1$.`,
         parts: [R`$\displaystyle\int_{-2}^{0}\frac{dx}{x^2+4x+8}$`, R`$\displaystyle\int_1^4\frac{dx}{x+\sqrt x}$`],
         pts: [8, 8],
         answer: [R`(1) $\frac{\pi}{8}$`, R`(2) $2\ln\frac{3}{2}$`],
+        check: ['pi/8', '2*ln(3/2)'],
         sol: R`**(1)** $\Delta=16-32<0$, so make a square: $x^2+4x+8=(x+2)^2+4$. With $u=x+2$ (limits $0$ and $2$) and $a=2$:
 $$\begin{aligned}\int_0^2\frac{du}{u^2+4}&=\frac{1}{2}\Big[\arctan\frac{u}{2}\Big]_0^2\\[4pt]&=\frac{1}{2}\cdot\frac{\pi}{4}=\frac{\pi}{8}\end{aligned}$$
 
@@ -141,6 +151,7 @@ $$\int_1^2\frac{2t\,dt}{t(t+1)}=2\Big[\ln(t+1)\Big]_1^2=2\ln\frac{3}{2}$$`,
         parts: [R`$\displaystyle\int_1^{e}x(\ln x)^2\,dx$`, R`$\displaystyle\int_0^{\pi}e^x\sin x\cos x\,dx$`],
         pts: [9, 9],
         answer: [R`(1) $\frac{e^2-1}{4}$`, R`(2) $\frac{1-e^{\pi}}{5}$`],
+        check: ['(e^2-1)/4', '(1-e^pi)/5'],
         sol: R`**(1)** Differentiate $(\ln x)^2$ and integrate $x$; then parts once more for $\int x\ln x\,dx=\frac{x^2}{2}\ln x-\frac{x^2}{4}$:
 $$\begin{aligned}&\int x(\ln x)^2dx\\[4pt]&=\frac{x^2}{2}(\ln x)^2-\int x\ln x\,dx\\[4pt]&=\frac{x^2}{2}(\ln x)^2-\frac{x^2}{2}\ln x+\frac{x^2}{4}\end{aligned}$$
 
@@ -157,6 +168,7 @@ From $0$ to $\pi$, $J$ gives $\frac{-2e^{\pi}+2}{5}$, and half of it is $\frac{1
         parts: [R`$f(x)=\dfrac{1}{\sqrt{x^2+x}}$`],
         pts: [14],
         answer: [R`$\pi\ln\frac{4}{3}$`],
+        check: [{ v: 'pi*ln(4/3)', pre: R`$V=$` }],
         sol: R`$f(x)^2=\frac{1}{x^2+x}=\frac{1}{x(x+1)}$, and by partial fractions $\frac{1}{x(x+1)}=\frac{1}{x}-\frac{1}{x+1}$.
 
 So
@@ -167,6 +179,7 @@ $$\begin{aligned}V&=\pi\Big[\ln\frac{x}{x+1}\Big]_1^2=\pi\left(\ln\frac{2}{3}-\l
         parts: [LENGTH, R`Find the area enclosed by the curve and the two axes.`],
         pts: [9, 9],
         answer: [R`(1) $\frac{3}{2}$`, R`(2) $\frac{3\pi}{32}$`],
+        check: ['3/2', '3*pi/32'],
         sol: R`**(1)** $\frac{dx}{dt}=-3\cos^2t\sin t$ and $\frac{dy}{dt}=3\sin^2t\cos t$, so
 $$\begin{aligned}&\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2\\[4pt]&=9\sin^2t\cos^2t\left(\cos^2t+\sin^2t\right)\\[4pt]&=9\sin^2t\cos^2t\end{aligned}$$
 
@@ -186,6 +199,7 @@ $$L(n)=\int_0^{1}(\ln x)^n\,dx$$`,
         parts: [R`Compute $L(1)$.`, R`Give the relation between $L(n)$ and $L(n-1)$ for $n\ge1$.`, R`Compute $L(n)$ for a whole number $n\ge0$.`],
         pts: [6, 6, 6],
         answer: [R`(1) $L(1)=-1$`, R`(2) $L(n)=-n\,L(n-1)$`, R`(3) $L(n)=(-1)^n\,n!$`],
+        check: [{ v: '-1', pre: R`$L(1)=$` }, { v: '-n*L(n-1)', pre: R`$L(n)=$`, vars: { n: 'int 1 7' }, fns: ['L'] }, { v: '(-1)^n*n!', pre: R`$L(n)=$`, vars: { n: 'int 0 7' } }],
         sol: R`**(1)** $\ln x$ diverges at $0$, so integrate from $w>0$. By parts, $\int\ln x\,dx=x\ln x-x$:
 $$\begin{aligned}L(1)&=\lim_{w\to+0}\Big[x\ln x-x\Big]_w^{1}\\[4pt]&=-1-\lim_{w\to+0}\left(w\ln w-w\right)=-1\end{aligned}$$
 since $w\ln w\to0$ (L'Hôpital's rule).
@@ -209,6 +223,7 @@ For example, $L(2)=2$ and $L(3)=-6$.`,
         parts: [R`$f(x)=4x^3-6x+2$;  $D:\ [-1,1]$`, R`$f(x)=\sin(\pi x)$;  $D:\ [0,1]$`, R`$f(x)=5^x$;  $D:\ [0,1]$`, R`$f(x)=\frac{1}{2x+3}$;  $D:\ [-1,3]$`],
         pts: [4, 4, 4, 4],
         answer: [R`(1) $4$`, R`(2) $\frac{2}{\pi}$`, R`(3) $\frac{4}{\ln5}$`, R`(4) $\ln3$`],
+        check: ['4', '2/pi', '4/ln(5)', 'ln(3)'],
         sol: R`**(1)** $\Big[x^4-3x^2+2x\Big]_{-1}^{1}=(1-3+2)-(1-3-2)=0-(-4)=4$.
 
 **(2)** Divide by the $\pi$ inside: $\Big[-\frac{\cos\pi x}{\pi}\Big]_0^1=\frac{1}{\pi}+\frac{1}{\pi}=\frac{2}{\pi}$.
@@ -222,6 +237,7 @@ For example, $L(2)=2$ and $L(3)=-6$.`,
         parts: [R`$\displaystyle\int_0^1\frac{dx}{x^2+x+1}$`, R`$\displaystyle\int_0^1\frac{\sqrt x}{1+\sqrt x}\,dx$`],
         pts: [8, 8],
         answer: [R`(1) $\frac{\pi}{3\sqrt3}=\frac{\sqrt3\,\pi}{9}$`, R`(2) $2\ln2-1$`],
+        check: ['pi/(3*sqrt(3))', '2*ln(2)-1'],
         sol: R`**(1)** $\Delta=1-4<0$, so make a square: $x^2+x+1=\left(x+\frac{1}{2}\right)^2+\frac{3}{4}$. With $u=x+\frac{1}{2}$ (limits $\frac{1}{2}$ and $\frac{3}{2}$) and $a=\frac{\sqrt3}{2}$:
 $$\begin{aligned}\int_{1/2}^{3/2}\frac{du}{u^2+\frac{3}{4}}&=\frac{2}{\sqrt3}\Big[\arctan\frac{2u}{\sqrt3}\Big]_{1/2}^{3/2}\\[4pt]&=\frac{2}{\sqrt3}\left(\frac{\pi}{3}-\frac{\pi}{6}\right)=\frac{\pi}{3\sqrt3}\end{aligned}$$
 using $\arctan\sqrt3=\frac{\pi}{3}$ and $\arctan\frac{1}{\sqrt3}=\frac{\pi}{6}$.
@@ -236,6 +252,7 @@ Divide: $\frac{t^2}{t+1}=t-1+\frac{1}{t+1}$, so the integral is $2\left(\frac{1}
         parts: [R`$\displaystyle\int_0^{\pi/4}x^2\cos2x\,dx$`, R`$\displaystyle\int_0^{\pi}e^{-x}\sin x\,dx$`],
         pts: [9, 9],
         answer: [R`(1) $\frac{\pi^2}{32}-\frac{1}{4}$`, R`(2) $\frac{1+e^{-\pi}}{2}$`],
+        check: ['pi^2/32-1/4', '(1+e^(-pi))/2'],
         sol: R`**(1)** By parts twice, differentiating the power of $x$ and integrating $\cos2x$ (divide by $2$ each time):
 $$\begin{aligned}&\int x^2\cos2x\,dx\\[4pt]&=\frac{x^2}{2}\sin2x-\int x\sin2x\,dx\\[4pt]&=\frac{x^2}{2}\sin2x+\frac{x}{2}\cos2x-\frac{1}{4}\sin2x\end{aligned}$$
 At $\frac{\pi}{4}$: $\frac{\pi^2}{32}+0-\frac{1}{4}$. At $0$: $0$. So the integral is $\frac{\pi^2}{32}-\frac{1}{4}$.
@@ -251,6 +268,7 @@ At $\pi$: $\frac{e^{-\pi}}{2}$; at $0$: $-\frac{1}{2}$. The integral is $\frac{1
         parts: [R`$f(x)=\dfrac{\sqrt x}{x^2+1}$`],
         pts: [14],
         answer: [R`$\frac{\pi}{4}$`],
+        check: [{ v: 'pi/4', pre: R`$V=$` }],
         sol: R`$f(x)^2=\frac{x}{\left(x^2+1\right)^2}$. With $u=x^2+1$, $du=2x\,dx$, and the limits move to $1$ and $2$:
 $$\begin{aligned}V&=\pi\int_1^2\frac{du}{2u^2}=\frac{\pi}{2}\Big[-\frac{1}{u}\Big]_1^2\\[4pt]&=\frac{\pi}{2}\cdot\frac{1}{2}=\frac{\pi}{4}\end{aligned}$$`,
       },
@@ -259,6 +277,7 @@ $$\begin{aligned}V&=\pi\int_1^2\frac{du}{2u^2}=\frac{\pi}{2}\Big[-\frac{1}{u}\Bi
         parts: [LENGTH, R`Find the area enclosed by the curve and the $x$-axis.`],
         pts: [9, 9],
         answer: [R`(1) $\sqrt3$`, R`(2) $\frac{\sqrt3}{5}$`],
+        check: ['sqrt(3)', 'sqrt(3)/5'],
         sol: R`**(1)** $\frac{dx}{dt}=4t$ and $\frac{dy}{dt}=1-4t^2$, so the sum of squares is a perfect square:
 $$\begin{aligned}&16t^2+\left(1-4t^2\right)^2\\[4pt]&=1+8t^2+16t^4=\left(1+4t^2\right)^2\end{aligned}$$
 
@@ -275,6 +294,7 @@ $$K(n)=\int_1^{\infty}\frac{(\ln x)^n}{x^2}\,dx$$`,
         parts: [R`Compute $K(0)$.`, R`Give the relation between $K(n)$ and $K(n-1)$ for $n\ge1$.`, R`Compute $K(n)$ for a whole number $n\ge0$.`],
         pts: [6, 6, 6],
         answer: [R`(1) $K(0)=1$`, R`(2) $K(n)=n\,K(n-1)$`, R`(3) $K(n)=n!$`],
+        check: [{ v: '1', pre: R`$K(0)=$` }, { v: 'n*K(n-1)', pre: R`$K(n)=$`, vars: { n: 'int 1 7' }, fns: ['K'] }, { v: 'n!', pre: R`$K(n)=$`, vars: { n: 'int 0 7' } }],
         sol: R`**(1)** $K(0)=\int_1^{\infty}\frac{dx}{x^2}=\lim_{w\to\infty}\Big[-\frac{1}{x}\Big]_1^{w}=\lim_{w\to\infty}\left(1-\frac{1}{w}\right)=1$.
 
 **(2)** By parts, with $f=(\ln x)^n$ and $g'=\frac{1}{x^2}$, so $f'=\frac{n(\ln x)^{n-1}}{x}$ and $g=-\frac{1}{x}$:
@@ -288,7 +308,7 @@ The bracket is $0$: at $1$, $\ln1=0$; at $\infty$, $\frac{(\ln w)^n}{w}\to0$ (L'
   },
   {
     id: 'im4', title: 'Mock Midterm 4 (quiz style)', minutes: 60, added: NOV19,
-    focus: 'Six questions in the style of the in-class quizzes, 10 points each, like this year’s Calculus midterm 1. Work on paper, without notes or a calculator. When the time is up, open each answer and tick the parts you got right.',
+    focus: 'Six questions in the style of the in-class quizzes, 10 points each, like this year’s Calculus midterm 1. Work on paper, without notes or a calculator, and type each final answer under Enter answer: the boxes are marked at Finish or when the time is up, and every part marked right is ticked. Then open the worked answers.',
     qs: [
       {
         topic: 'Riemann sums and definite integrals', label: 'Q.1', stem: R`Answer each part.`, pts: [4, 2, 4],
@@ -298,6 +318,7 @@ The bracket is $0$: at $1$, $\ln1=0$; at $\infty$, $\frac{(\ln w)^n}{w}\to0$ (L'
           R`The area between $y=x^2-2x$ and the $x$-axis on $[0,3]$`,
         ],
         answer: [R`(1) $S_N=2+\frac{5}{2N}+\frac{1}{2N^2}\to2$`, R`(2) $\frac{3}{2}$`, R`(3) $\frac{8}{3}$`],
+        check: [[{ v: '2+5/(2*N)+1/(2*N^2)', pre: R`$S_N=$`, vars: { N: 'real 1 12' } }, { v: '2', pre: R`$\lim_{N\to\infty}S_N=$` }], '3/2', '8/3'],
         sol: R`**(1)** $\Delta x=\frac{1}{N}$ and $x_k=\frac{k}{N}$, so $f(x_k)=\frac{3k^2}{N^2}+\frac{2k}{N}$. Take the constants out of the sums:
 $$\begin{aligned}S_N&=\sum_{k=1}^{N}\left(\frac{3k^2}{N^2}+\frac{2k}{N}\right)\frac{1}{N}\\[4pt]&=\frac{3}{N^3}\sum_{k=1}^{N}k^2+\frac{2}{N^2}\sum_{k=1}^{N}k\end{aligned}$$
 
@@ -320,6 +341,7 @@ So $\int_0^2f\,dx=-\frac{4}{3}$ and $\int_2^3f\,dx=\frac{4}{3}$, and the area is
           R`$\displaystyle\int_1^3\frac{dx}{x^2-2x+5}$`,
         ],
         answer: [R`(1) $\frac{1}{3}\ln2$`, R`(2) $\frac{1}{2}$`, R`(3) $\frac{1}{2}\ln\frac{3}{2}$`, R`(4) $\frac{\pi}{8}$`],
+        check: ['1/3*ln(2)', '1/2', '1/2*ln(3/2)', 'pi/8'],
         sol: R`**(1)** $u=x^3+1$, $du=3x^2\,dx$, and the limits move to $u=1$ and $u=2$: $\frac{1}{3}\int_1^2\frac{du}{u}=\frac{1}{3}\ln2$.
 
 **(2)** $u=\cos x$, $du=-\sin x\,dx$, and the limits move to $u=1$ and $u=\frac{\sqrt2}{2}$:
@@ -338,6 +360,7 @@ $$\frac{1}{2}\Big[\arctan\frac{x-1}{2}\Big]_1^3=\frac{1}{2}\left(\frac{\pi}{4}-0
           R`$\displaystyle\int_0^{\pi/2}\frac{dx}{2+\cos x}$, with $u=\tan\frac{x}{2}$`,
         ],
         answer: [R`(1) $\frac{\pi}{4}-\frac{1}{2}$`, R`(2) $\frac{\pi}{3\sqrt3}=\frac{\sqrt3\,\pi}{9}$`],
+        check: ['pi/4-1/2', 'pi/(3*sqrt(3))'],
         sol: R`**(1)** By parts, differentiating $\arctan x$: $f=\arctan x$ and $g'=x$, so $f'=\frac{1}{1+x^2}$ and $g=\frac{x^2}{2}$:
 $$\begin{aligned}\int_0^1x\arctan x\,dx&=\Big[\frac{x^2}{2}\arctan x\Big]_0^1\\[4pt]&\quad-\frac{1}{2}\int_0^1\frac{x^2}{1+x^2}\,dx\end{aligned}$$
 
@@ -357,6 +380,7 @@ using $\arctan\frac{1}{\sqrt3}=\frac{\pi}{6}$.`,
           R`$\displaystyle\int_0^{\pi}\sin4x\sin x\,dx$`,
         ],
         answer: [R`(1) $\frac{17\pi}{6}$`, R`(2) $\frac{3}{8}+\ln2$`, R`(3) $0$`],
+        check: ['17*pi/6', '3/8+ln(2)', '0'],
         sol: R`**(1)** Expand the square completely, middle term included:
 $$\begin{aligned}V&=\pi\int_0^1\left(1+2\sqrt x+x\right)dx\\[4pt]&=\pi\left(1+\frac{4}{3}+\frac{1}{2}\right)=\frac{17\pi}{6}\end{aligned}$$
 
@@ -375,6 +399,7 @@ $$\begin{aligned}\ell&=\int_1^2\left(\frac{x}{4}+\frac{1}{x}\right)dx=\Big[\frac
           R`Find the area between $C_2$ and the $x$-axis.`,
         ],
         answer: [R`(1) $x=e^{2\theta}\cos\theta$, $y=e^{2\theta}\sin\theta$`, R`(2) $\frac{3\sqrt5}{2}$`, R`(3) $0\le t\le2$, so $0\le x\le4$`, R`(4) $\frac{128}{15}$`],
+        check: [[{ v: 'e^(2*θ)*cos(θ)', pre: R`$x=$`, vars: { θ: 'real -1 1.5' } }, { v: 'e^(2*θ)*sin(θ)', pre: R`$y=$`, vars: { θ: 'real -1 1.5' } }], '3*sqrt(5)/2', [{ v: '2', pre: R`$0\le t\le$` }, { v: '4', pre: R`$0\le x\le$` }], '128/15'],
         sol: R`**(1)** $x=r\cos\theta=e^{2\theta}\cos\theta$ and $y=r\sin\theta=e^{2\theta}\sin\theta$.
 
 **(2)** $r'=2e^{2\theta}$, so $r^2+r'^2=5e^{4\theta}$ and the root is $\sqrt5\,e^{2\theta}$:
@@ -393,6 +418,7 @@ $$\begin{aligned}A&=\int_0^2\left(4t-t^3\right)2t\,dt=\Big[\frac{8t^3}{3}-\frac{
           R`Does $\displaystyle\int_1^{\infty}\frac{\ln x}{x}\,dx$ converge? If so, find its value.`,
         ],
         answer: [R`(1) $2$`, R`(2) $4$`, R`(3) it diverges`],
+        check: ['2', { v: '4', div: true }, { v: 'diverges', div: true }],
         sol: R`**(1)** The form is $\frac{0}{0}$, so L'Hôpital's rule applies: $\lim_{x\to0}\frac{2e^{2x}}{\cos x}=\frac{2}{1}=2$.
 
 **(2)** The integrand diverges at $x=4$, an open boundary, so integrate up to $w<4$. A primitive is $-2\sqrt{4-x}$ (the inside brings the minus sign):

@@ -449,6 +449,39 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
   const GROUPS = Array.isArray(P.pastText) ? P.pastText : [{ id: 'past', ...P.pastText }];
   const PT = GROUPS[0];
   const totalPts = (m) => m.qs.reduce((t, q) => t + q.pts.reduce((a, b) => a + b, 0), 0);
+  // Answer boxes, from a question's `check` (one key per part, as answers.js reads them: a string, { v, pre, vars, fns,
+  // pc, div }, a list of those for a part with more than one result, or null for a part to tick by hand). page.js
+  // marks them: at Finish or when the time is up in a timed attempt, else with Check.
+  const keyBoxes = (c) => (c == null ? [] : (Array.isArray(c) ? c : [c]).map((b) => (typeof b === 'string' ? { v: b } : b)));
+  function entryPanel(x, id, qi, lab) {
+    if (!x.check) return '';
+    if (x.check.length !== x.parts.length) throw new Error(`${id}: ${x.check.length} keys for ${x.parts.length} parts`);
+    const all = x.check.flatMap((c, pi) => keyBoxes(c).map((b) => [pi, b]));
+    const rows = x.check.map((c, pi) => {
+      const bs = keyBoxes(c);
+      const pn = lab(pi) ? `<span class="pn">(${lab(pi)})</span>` : '';
+      if (!bs.length) return `
+        <div class="ent-row ent-self" data-k="${qi + 1}.${pi + 1}"><span class="ent-l">${pn}</span><p class="ent-note">Tick this part by hand, after the answer.</p></div>`;
+      return bs.map((b, bi) => {
+        const rid = `${id}-a${pi + 1}${bs.length > 1 ? `-${bi + 1}` : ''}`;
+        const key = { v: b.v, ...(b.vars ? { vars: b.vars } : {}), ...(b.fns ? { fns: b.fns } : {}), ...(b.pc ? { pc: true } : {}) };
+        // keys to tap that a phone keyboard lacks, besides π, √, ^, brackets and /: θ, Γ( and !
+        const extra = [...Object.keys(b.vars || {}).filter((v) => /[^A-Za-z]/.test(v)), ...(b.fns || []).filter((f) => f === 'Γ').map(() => 'Γ('), ...(/!/.test(b.v) ? ['!'] : [])];
+        const last = all[all.length - 1][1] === b;
+        return `
+        <div class="ent-row" data-k="${qi + 1}.${pi + 1}" data-key="${esc(JSON.stringify(key))}"${extra.length ? ` data-extra="${esc(extra.join(' '))}"` : ''}>
+          <label class="ent-l" for="${rid}">${bi === 0 ? pn : ''}${b.pre ? `<span class="ent-pre">${inline(b.pre)}</span>` : ''}</label>
+          <span class="ent-field"><input id="${rid}" class="ent-in" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="${last ? 'done' : 'next'}" aria-describedby="${rid}-p">${b.div ? '<button type="button" class="chip ent-div" aria-pressed="false">Diverges</button>' : ''}</span>
+          <span class="ent-prev" id="${rid}-p"></span>
+          <span class="ent-res" aria-live="polite"></span>
+        </div>`;
+      }).join('');
+    }).join('');
+    return `<details class="ent"><summary><span class="when-closed">Enter answer</span><span class="when-open">Hide answer boxes</span><span class="ent-tally"></span>${UI_ICONS.chevron}</summary><div class="ent-body">
+        <p class="ent-help">Final answers, exact: for example 2/3 ln 2, pi/4, sqrt(3)/5 or e^pi. The line under a box shows how it is read.</p>${rows}
+        <div class="ent-foot"><button type="button" class="pill ent-check">Check</button><span class="ent-wait">Marked at Finish, or when the time is up.</span></div>
+      </div></details>`;
+  }
   function examSheet(m, seg, visible, about, focus, searchExtra, index) {
     const points = totalPts(m);
     const qsHTML = m.qs.map((x, qi) => {
@@ -465,21 +498,22 @@ function render(P, { quizzes, past, locked, lockedNos = [], lockedPast = [] }) {
       <div class="rq-head"><b class="ql">${x.label}</b><span class="qtopic-wrap"><span class="qtopic">${esc(x.topic)}</span></span><span class="pts">${qpts} pt</span></div>
       ${x.stem ? `<div class="stem"><p>${inline(x.stem)}</p></div>` : ''}
       ${partsList(x.parts.map((t, pi) => `${t} (${x.pts[pi]}pt)`), x.labels)}
-      <div class="reveal">${solToggle('Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>`, `
+      <div class="reveal">${entryPanel(x, id, qi, lab)}${solToggle('Show answer', 'Hide answer', answerBox(x.answer) + `<div class="steps">${blocks(x.sol)}</div>`, `
       <div class="mkrow"><span>Tick what you got right:</span>${marks}</div>`)}</div>
     </div>`;
     }).join('');
+    const boxed = m.qs.some((x) => x.check);
     return `
   <article class="sheet mock" id="${m.id}" data-seg="${seg}" data-mock="${m.id}" data-total="${points}"${visible ? '' : ' hidden'}${addedAttr(m)}>
     <header class="sheet-head">
       <div><h3 class="sheet-title">${esc(m.title)}</h3><p class="sheet-sub">${meta([about, `${m.minutes} min`, `${points} pt`])}</p></div>
-      ${timerHTML(m.minutes * 60)}
+      ${timerHTML(m.minutes * 60, boxed)}
     </header>
     <p class="print-only print-score">Score: <span class="blank"></span> / ${points} pt</p>
     <p class="focus">${focus}</p>
     <div class="sheet-tools"><button type="button" class="linkbtn print-btn" data-print="paper">${UI_ICONS.print}<span>Print paper</span></button><button type="button" class="linkbtn print-btn" data-print="key">${UI_ICONS.print}<span>Print with answers</span></button></div>
     ${qsHTML}
-    <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts you ticked</span><button type="button" class="linkbtn mk-clear">Clear ticks</button></div>
+    <div class="scorebar"><span class="score"><b class="score-val">0</b> / ${points} pt</span><span class="score-note">from the parts ${boxed ? 'ticked or marked right' : 'you ticked'}</span><button type="button" class="linkbtn mk-clear">${boxed ? 'Clear ticks and answers' : 'Clear ticks'}</button></div>
   </article>`;
   }
   // a mock may carry its own note above it (`focus`), such as a mock in the in-class quizzes' style
@@ -645,7 +679,7 @@ ${SB_FOOT}
   </section>
 
   <section id="view-exams" class="view" role="tabpanel" aria-labelledby="tab-exams" hidden>
-    ${band('Exams', '試験', !mocks.length ? (typeof P.lede.exams === 'function' ? P.lede.exams(pastList.length, pastLock) : P.lede.exams) : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} ${PT.noun}${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then open the answers and mark your paper.`)}
+    ${band('Exams', '試験', !mocks.length ? (typeof P.lede.exams === 'function' ? P.lede.exams(pastList.length, pastLock) : P.lede.exams) : `Upcoming exams with a countdown, ${mocks.length} mock exams for ${P.name} covering <span class="nw">${span}</span>${pastList.length ? `, and ${pastList.length} ${PT.noun}${pastLock ? ' <span class="nw">(password needed)</span>' : ''}` : ''}. Start the timer, work on paper, then ${mocks.some((m) => m.qs.some((q) => q.check)) ? 'type the final answers to have them marked, or ' : ''}open the answers and mark your paper.`)}
     ${lazyBox('exams')}
   </section>
 
@@ -683,7 +717,7 @@ function foot(site, updated) {
 // page.css/page.js are the Math pages'; the floating calculator and the back-to-top button in src/shared are common to every subject page
 const SHARED = path.join(ROOT, 'src', 'shared');
 const CSS_FILES = [path.join(SRC, 'page.css'), path.join(SHARED, 'calculator.css'), path.join(SHARED, 'totop.css'), path.join(SHARED, 'looks.css')];
-const JS_FILES = [path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')];
+const JS_FILES = [path.join(SRC, 'answers.js'), path.join(SRC, 'page.js'), path.join(SRC, 'graphs.js'), path.join(SHARED, 'totop.js'), path.join(SHARED, 'calculator.js')];
 // the artifact: everything inside the page
 const inlineAssets = () => ({ css: readAll(CSS_FILES), js: readAll(JS_FILES), kcss: katexCSS() });
 // the site: one stylesheet, one script and the KaTeX fonts in math/assets/, shared by every exam page. Pages name the
@@ -693,7 +727,7 @@ function writeAssets() {
   const kcss = katexCSS((name) => { fonts.push(name); return `fonts/${name}.woff2`; });
   const note = (from) => `/* Built by src/math/build.mjs from ${from}. Don't edit it here: change the sources and build again. */\n`;
   const css = note('src/math/page.css, src/shared/calculator.css, src/shared/totop.css, src/shared/looks.css and KaTeX') + readAll(CSS_FILES) + '\n' + kcss + '\n' + KATEX_TWEAK + '\n';
-  const js = note('src/math/page.js, src/math/graphs.js, src/shared/totop.js and src/shared/calculator.js') + readAll(JS_FILES) + '\n';
+  const js = note('src/math/answers.js, src/math/page.js, src/math/graphs.js, src/shared/totop.js and src/shared/calculator.js') + readAll(JS_FILES) + '\n';
   writeIfChanged(path.join(ASSETS, 'math.css'), css);
   writeIfChanged(path.join(ASSETS, 'math.js'), js);
   const dir = path.join(ASSETS, 'fonts');

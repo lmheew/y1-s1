@@ -452,6 +452,18 @@ with sync_playwright() as p:
                   and page.locator('#p2024 .time').inner_text() == '60:00' and '100 pt' in page.locator('#p2024 .sheet-sub').inner_text())
             hits = search(page, 'container')
             check(f'{label}: midterm 2 search finds the past midterms after unlocking', any(t.startswith('Midterm AY2023 · [3]') for t in hits), hits[:4])
+            # the AY2025 paper has answer boxes (14 results, Γ's relation among them), the older papers none
+            page.locator('#past .seg-btn[aria-controls="p2025"]').click()
+            q = page.locator('#p2025-q6')
+            q.locator('details.ent > summary').click()
+            q.locator('.ent-in').nth(1).fill('s Gamma(s)')
+            q.locator('.ent-check').click()
+            check(f'{label}: the unlocked AY2025 paper has answer boxes that mark, and its Finish button; the older papers have none',
+                  page.locator('#p2025 .ent-in').count() == 14 and page.locator('#p2025 .t-done').count() == 1
+                  and page.locator('#p2022 .ent, #p2023 .ent, #p2024 .ent').count() == 0
+                  and q.locator('.ent-row').nth(1).get_attribute('class') == 'ent-row ok' and q.locator('.ent-tally').inner_text() == '1 of 3 right',
+                  (page.locator('#p2025 .ent-in').count(), q.locator('.ent-row').nth(1).get_attribute('class')))
+            page.locator('#p2025 .mk-clear').click()
         else:
             check(f'{label}: midterm 2 past midterms are locked', page.locator('#past .sheet.lock').count() == 4 and page.locator('#past .rq').count() == 0)
         check(f'{label}: midterm 2 Exams has no sideways scroll', overflow(page) <= 0, overflow(page))

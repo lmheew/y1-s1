@@ -1216,6 +1216,116 @@ with sync_playwright() as p:
     pg.mouse.click(5, 300)
     ctx.close()
 
+    # ---- answer boxes (Calculus midterm 2's mocks; answers.js reads them, page.js marks them): Check marks a question
+    # at once; Start timer starts an attempt, where Show answer gives way to the boxes, marked at Finish or when the time
+    # is up, with every part marked right ticked ----
+    ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True)
+    ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+    pg = ctx.new_page()
+    pg.clock.install()
+    pg.goto(BASE + '/math/integrals/')
+    pg.click('#tab-exams')
+    pg.wait_for_selector('#im5 .ent')
+    counts = {m: pg.locator(f'#{m} .ent-in').count() for m in ('im5', 'im6', 'im7', 'im4')}
+    check('answers: every mock question has an answer panel, with a box for each result (64 in all)',
+          pg.locator('#mocks .rq details.ent').count() == 24 and counts == {'im5': 14, 'im6': 14, 'im7': 14, 'im4': 22}
+          and pg.locator('#mocks .t-done').count() == 4 and not pg.locator('#im5 .t-done').is_visible(), counts)
+    q1 = pg.locator('#im5-q1')
+    q1.locator('details.ent > summary').click()
+    boxes = q1.locator('.ent-in')
+    for i, v in enumerate(['-3', '0.5', '8/ln 3', '1/3 ln 4']):
+        boxes.nth(i).fill(v)
+    check('answers: the line under a box shows how it is read, fractions stacked', q1.locator('.ent-prev .fr').count() == 2
+          and q1.locator('.ent-prev').nth(2).inner_text().replace('\n', ' ') == '8 ln(3)', q1.locator('.ent-prev').all_inner_texts())
+    q1.locator('.ent-check').click()
+    check('answers: Check marks a question at once (equal forms count), ticks its parts and adds them to the score',
+          q1.locator('.ent-row.ok').count() == 4 and q1.locator('.ent-tally').inner_text() == '4 of 4 right'
+          and pg.locator('#im5-q1 .mk[aria-pressed="true"]').count() == 4 and pg.locator('#im5 .score-val').inner_text() == '16')
+    boxes.nth(3).fill('-2/3 ln 2')
+    check('answers: a changed answer loses its mark', q1.locator('.ent-row.ok').count() == 3 and q1.locator('.ent-tally').inner_text() == '')
+    q1.locator('.ent-check').click()
+    check('answers: a wrong answer is unticked and gets a hint', 'Check the sign' in q1.locator('.ent-res').nth(3).inner_text()
+          and pg.locator('#im5 .score-val').inner_text() == '12', q1.locator('.ent-res').nth(3).inner_text())
+    # the keys a phone keyboard lacks; Enter goes to the next box
+    boxes.nth(0).fill('')
+    boxes.nth(0).focus()
+    pg.locator('.ent-keys button[data-k="π"]').click()
+    check('answers: a box being typed in has keys for π, √, ^, brackets and /; a tap types and keeps the box',
+          pg.locator('.ent-keys button').all_inner_texts() == ['π', '√', '^', '(', ')', '/'] and boxes.nth(0).input_value() == 'π'
+          and pg.evaluate("document.activeElement.id") == 'im5-q1-a1')
+    pg.keyboard.press('Enter')
+    check('answers: Enter goes on to the next box', pg.evaluate("document.activeElement.id") == 'im5-q1-a2')
+    m4 = pg.locator('#im4-q1')
+    pg.locator('.seg-btn[aria-controls="im4"]').click()
+    m4.locator('details.ent > summary').click()
+    m4.locator('.ent-in').nth(0).fill('2 + 5/2N + 1/(2N)^2')
+    prev = m4.locator('.ent-prev').nth(0)
+    check('answers: 5/2N is read as 5/(2N) and 1/(2N)^2 keeps its square at the bottom, as the preview shows',
+          prev.locator('.fr').count() == 2 and prev.locator('.fr > span:last-child').nth(0).inner_text() == '2N'
+          and prev.locator('.fr > span:last-child').nth(1).inner_text().replace('\n', '') == '(2N)2', prev.inner_html()[:200])
+    q6 = pg.locator('#im4-q6')
+    q6.locator('details.ent > summary').click()
+    q6.locator('.ent-div').nth(1).click()
+    check('answers: a part on convergence has a Diverges button, which types it', q6.locator('.ent-div').count() == 2
+          and q6.locator('.ent-in').nth(2).input_value() == 'diverges' and q6.locator('.ent-div').nth(1).get_attribute('aria-pressed') == 'true')
+    m4.locator('.ent-in').nth(0).fill('')
+    q6.locator('.ent-in').nth(2).fill('')
+    # a timed attempt: the answers of the earlier check go, Show answer hides, Finish marks
+    pg.locator('.seg-btn[aria-controls="im5"]').click()
+    pg.locator('#im5 .t-go').click()
+    check('answers: Start timer starts an attempt: Show answer hides, the boxes wait for Finish, marked answers are cleared',
+          pg.locator('#im5').evaluate("e => e.classList.contains('attempt')") and pg.locator('#im5 .t-done').is_visible()
+          and not q1.locator('details.sol > summary').is_visible() and not q1.locator('.ent-check').is_visible()
+          and q1.locator('.ent-wait').is_visible() and all(boxes.nth(i).input_value() == '' for i in range(4))
+          and pg.locator('.calc-fab.off').count() == 1)
+    q6 = pg.locator('#im5-q6')
+    q6.locator('details.ent > summary').click()
+    for i, v in enumerate(['F(0) = 1/2', 'nF(n-1)/2', 'n!/2^n+1']):
+        q6.locator('.ent-in').nth(i).fill(v)
+    pg.locator('#im5-q4 details.ent > summary').click()
+    pg.locator('#im5-q4 .ent-in').fill('pi(e^2+1)/4')
+    check('answers: nothing is marked during the attempt', pg.locator('#im5 .ent-row.ok, #im5 .ent-row.no').count() == 0)
+    pg.locator('#im5 .t-done').click()
+    check('answers: Finish marks every box, ticks the parts marked right (and unticks the rest), and brings back Show answer',
+          not pg.locator('#im5').evaluate("e => e.classList.contains('attempt')") and q6.locator('.ent-row.ok').count() == 2
+          and q6.locator('.ent-row.no').count() == 1 and q1.locator('.ent-row.none').count() == 4
+          and pg.locator('#im5 .score-val').inner_text() == '26' and q1.locator('details.sol > summary').is_visible()
+          and pg.locator('#im5 .timer.done').count() == 1 and pg.locator('.calc-fab.off').count() == 0, pg.locator('#im5 .score-val').inner_text())
+    pg.reload()
+    pg.click('#tab-exams')
+    pg.wait_for_selector('#im5-q6 .ent', state='attached')
+    check('answers: typed answers stay on the device', pg.locator('#im5-q6 .ent-in').nth(1).input_value() == 'nF(n-1)/2')
+    pg.locator('#im5 .mk-clear').click()
+    check('answers: Clear ticks and answers empties the boxes and the score', pg.locator('#im5 .score-val').inner_text() == '0'
+          and pg.locator('#im5-q6 .ent-in').nth(1).input_value() == '' and pg.evaluate("!JSON.parse(localStorage.getItem('cla1-integrals-mock-scores:typed') || '{}').im5"))
+    # the time running out ends the attempt like Finish
+    pg.locator('#im6 .t-go').evaluate('e => e.scrollIntoView()')
+    pg.locator('.seg-btn[aria-controls="im6"]').click()
+    pg.locator('#im6 .t-go').click()
+    pg.locator('#im6-q1 details.ent > summary').click()
+    pg.locator('#im6-q1 .ent-in').nth(1).fill('2')
+    pg.clock.run_for(60 * 60 * 1000 + 2000)
+    check("answers: when the time is up the boxes are marked", pg.locator('#im6-q1 .ent-row.ok').count() == 1
+          and not pg.locator('#im6').evaluate("e => e.classList.contains('attempt')") and pg.locator('#im6 .score-val').inner_text() == '4')
+    pg.locator('#im6 .mk-clear').click()
+    pg.evaluate("document.querySelectorAll('#mocks details').forEach((d) => { d.open = true; }); document.querySelectorAll('#mocks .sheet[hidden]').forEach((e) => { e.hidden = false; })")
+    pg.set_viewport_size({'width': 360, 'height': 800})
+    pg.wait_for_timeout(300)
+    check('answers: no sideways scroll at 360 px with every answer panel open', overflow(pg) <= 0, overflow(pg))
+    ctx.close()
+    # the themes: Paper's smaller corners, Classic's square boxes
+    for look, radius in [('paper', '8px'), ('classic', '0px')]:
+        ctx = b.new_context(viewport={'width': 390, 'height': 844})
+        ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
+        ctx.add_init_script(f"localStorage.setItem('cla1-midterm-review', JSON.stringify({{ look: '{look}' }}))")
+        pg = ctx.new_page()
+        pg.goto(BASE + '/math/integrals/')
+        pg.click('#tab-exams')
+        pg.wait_for_selector('#im5 .ent')
+        got = pg.locator('#im5-a1, #im5-q1-a1').first.evaluate('e => getComputedStyle(e).borderTopLeftRadius')
+        check(f'answers: {look}: the boxes take the theme\'s corners', got == radius, got)
+        ctx.close()
+
     # ---- a narrow phone with every answer and every sheet open: full-size math never pushes the page sideways ----
     ctx = b.new_context(viewport={'width': 360, 'height': 800})
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
