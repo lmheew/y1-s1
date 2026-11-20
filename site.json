@@ -60,6 +60,13 @@
   ],
   "news": [
     {
+      "date": "2026-11-20",
+      "subject": "math",
+      "title": "Calculus midterm 2: orthogonal functions and Quiz 10",
+      "text": "Calculus midterm 2: the 19 & 20 Nov lesson (Day 24 & 25) adds the 20 Nov class: the inner product of functions, orthogonal functions, the Fourier basis (Exercise (4)), Fourier series and their coefficients, with 5 practice problems, a formula group, and a Shortcuts tip on odd and even functions. In-class Quiz 10 (improper integrals and Fourier coefficients) is under Quizzes (password needed), with Follow-up A and B open to everyone.",
+      "link": "math/integrals/"
+    },
+    {
       "date": "2026-11-19",
       "subject": "math",
       "title": "Calculus midterm 2: four mock midterms",

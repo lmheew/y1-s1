@@ -189,10 +189,10 @@ with sync_playwright() as p:
         # (their New labels are checked below, on a device that hasn't opened anything yet)
         check(f'{label}: picker: Calculus midterm 1 has its date and what it holds', 'Fri 30 Oct' in cards.nth(0).inner_text()
               and 'past midterms' in cards.nth(0).locator('.e-stats').inner_text())
-        # all six lessons have notes now (19 & 20 Nov from its first day), and the four mocks of 19 Nov: the card counts
-        # both (a count of 0 is left out)
+        # all six lessons have notes and day numbers now (Quiz 10's sheet gave Day 24 & 25, so the span counts days), and
+        # the four mocks of 19 Nov: the card counts both (a count of 0 is left out)
         check(f'{label}: picker: Calculus midterm 2 has its date, its lesson span and the lessons so far', 'Mon 23 Nov' in cards.nth(1).inner_text()
-              and '2–20 nov' in cards.nth(1).locator('.kicker').inner_text().lower() and '6 lessons' in cards.nth(1).locator('.e-stats').inner_text()
+              and 'days 14–25' in cards.nth(1).locator('.kicker').inner_text().lower() and '6 lessons' in cards.nth(1).locator('.e-stats').inner_text()
               and '4 mocks' in cards.nth(1).locator('.e-stats').inner_text() and ' 0 ' not in f" {cards.nth(1).locator('.e-stats').inner_text()} ",
               cards.nth(1).locator('.e-stats').inner_text())
         check(f'{label}: picker: an undated exam says so', 'Date to be announced' in cards.nth(2).inner_text())
@@ -479,42 +479,43 @@ with sync_playwright() as p:
           and pg2.locator('#theme-btn').get_attribute('data-mode') == 'system')
     ctx.close()
 
-    # ---- the same at noon on 19 Nov, when the first day of 19 & 20 Nov arrived (two days after Day 22 & 23, Quiz 09
-    # and the past midterms of 17 Nov): the lessons of the last 14 days (9 Nov on) and both days in What's new are New;
-    # 2 & 3 Nov (the first lesson and its Riemann-sum graph) are past their 14 days, as are Calculus midterm 1's lessons
-    # from 29 Oct ----
+    # ---- the same at noon on 20 Nov, when the second day of 19 & 20 Nov and Quiz 10 arrived (a day after the mocks and
+    # the first day, three after Day 22 & 23, Quiz 09 and the past midterms of 17 Nov): the lessons of the last 14 days
+    # (9 Nov on) and those three days in What's new are New; 2 & 3 Nov (the first lesson and its Riemann-sum graph) are
+    # past their 14 days, as are Calculus midterm 1's lessons from 29 Oct ----
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
-    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 19, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
+    ctx.clock.set_fixed_time(datetime.datetime(2026, 11, 20, 12, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=9))))
     ctx.route(STUB, lambda r: r.fulfill(status=200, body='', content_type='text/css'))
     pg = ctx.new_page()
     pg.goto(BASE + '/')
     pg.wait_for_selector('#news .n-day')
-    check('new (19 Nov): the days Quiz 09 and the improper integrals arrived are New on the home page',
+    check('new (20 Nov): the days Quiz 09, the improper integrals and Quiz 10 arrived are New on the home page',
           pg.locator('#news .n-day:has(time[datetime="2026-11-17"]) .new-pill').count() == 1
-          and pg.locator('#news .n-day:has(time[datetime="2026-11-19"]) .new-pill').count() == 1)
+          and pg.locator('#news .n-day:has(time[datetime="2026-11-19"]) .new-pill').count() == 1
+          and pg.locator('#news .n-day:has(time[datetime="2026-11-20"]) .new-pill').count() == 1)
     pg.goto(BASE + '/math/integrals/')
     pg.wait_for_selector('#view-summary .unit')
-    check('new (19 Nov): Calculus midterm 2 has its own tab dots, Exams with its past midterms', dots(pg) == ['practice', 'formulas', 'quizzes', 'exams'], dots(pg))
+    check('new (20 Nov): Calculus midterm 2 has its own tab dots, Exams with its past midterms', dots(pg) == ['practice', 'formulas', 'quizzes', 'exams'], dots(pg))
     pills = [pg.locator(f'#su-{u} .unit-head .new-pill').count() for u in ('u1', 'u2', 'u3', 'u4', 'u5', 'u6')]
-    check('new (19 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
+    check('new (20 Nov): Calculus midterm 2 marks the lessons of the last 14 days, not the first one or its graph',
           pills == [0, 1, 1, 1, 1, 1] and pg.locator('#gx-riemann .new-pill').count() == 0, pills)
     pg.click('#tab-practice')
     pg.wait_for_selector('#pu6 .prob')
-    check('new (19 Nov): the improper-integral problems are New', pg.locator('#pu6 .prob .new-pill').count() == 11, pg.locator('#pu6 .prob .new-pill').count())
+    check('new (20 Nov): the problems of 19 & 20 Nov are New', pg.locator('#pu6 .prob .new-pill').count() == 16, pg.locator('#pu6 .prob .new-pill').count())
     pg.click('#tab-quizzes')
-    pg.wait_for_selector('#qg09')
-    check('new (19 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
+    pg.wait_for_selector('#qg10')
+    check('new (20 Nov): opening Quizzes clears its dot', 'quizzes' not in dots(pg), dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (19 Nov): the past midterms of the integral part are New, even locked, and so are the mocks of 19 Nov',
+    check('new (20 Nov): the past midterms of the integral part are New, even locked, and so are the mocks of 19 Nov',
           pg.locator('#past .sheet-title .new-pill').count() == 3 and pg.locator('#mocks .sheet-title .new-pill').count() == 4 and 'exams' not in dots(pg))
     # Calculus midterm 1's lessons are past their 14 days; only its AY2024 past midterm (17 Nov) is New
     pg.goto(BASE + '/math/derivatives/')
     pg.wait_for_selector('.calc-fab')
-    check('new (19 Nov): Calculus midterm 1 has a dot on Exams only', dots(pg) == ['exams'], dots(pg))
+    check('new (20 Nov): Calculus midterm 1 has a dot on Exams only', dots(pg) == ['exams'], dots(pg))
     pg.click('#tab-exams')
     pg.wait_for_selector('#past')
-    check('new (19 Nov): its AY2024 past midterm is New, the older ones not', pg.locator('#p2024 .sheet-title .new-pill').count() == 1
+    check('new (20 Nov): its AY2024 past midterm is New, the older ones not', pg.locator('#p2024 .sheet-title .new-pill').count() == 1
           and pg.locator('#past .sheet-title .new-pill').count() == 1, pg.locator('#past .sheet-title .new-pill').count())
     ctx.close()
 
@@ -699,7 +700,8 @@ with sync_playwright() as p:
     pg.wait_for_selector('#view-summary .unit')
     li, label, title = pg.evaluate("""() => { const u = [...document.querySelectorAll('#view-summary .unit')].at(-1);
       const name = (e) => ((e.querySelector('strong, b') || {}).textContent || '').trim().replace(/[:.]$/, '');
-      const li = [...u.querySelectorAll('.ideas > li')].reverse().find((e) => /^[A-Za-z ]+$/.test(name(e)));
+      // a name with a formula in it is left out: its text holds the formula twice (KaTeX's own copy for screen readers)
+      const li = [...u.querySelectorAll('.ideas > li')].reverse().find((e) => !e.querySelector('strong .katex, b .katex') && /^[A-Za-z ]+$/.test(name(e)));
       const h = u.querySelector('h2').cloneNode(true); h.querySelectorAll('.new-pill, .kicker').forEach((x) => x.remove());
       return [li.id, name(li), h.textContent.trim()]; }""")
     pg.click('#search-btn')
@@ -809,9 +811,10 @@ with sync_playwright() as p:
         pg.wait_for_selector('#view-night .nsec')
         check(f'night: {page}: the habits, each lesson on the midterm and the values to know', pg.locator('#view-night .nsec').count() == n
               and pg.locator('#view-night .nrow').count() > 20 and overflow(pg) <= 0, (pg.locator('#view-night .nsec').count(), pg.locator('#view-night .nrow').count()))
-    # a lesson that has no day numbers yet (19 & 20 Nov) finds its formula groups by its dates, not with the values to know
-    check('night: math/integrals: the 19 & 20 Nov lesson lists its own formulas (both groups)',
-          pg.locator('#nt-u6 .nrow').count() == 14 and pg.locator('#nt-values .fmod', has_text='Improper integrals').count() == 0,
+    # the last lesson (Day 24 & 25) finds its three formula groups by its day label, not with the values to know
+    check('night: math/integrals: the Day 24 & 25 lesson lists its own formulas (all three groups)',
+          pg.locator('#nt-u6 .nrow').count() == 24 and pg.locator('#nt-values .fmod', has_text='Improper integrals').count() == 0
+          and pg.locator('#nt-values .fmod', has_text='Orthogonal functions').count() == 0,
           pg.locator('#nt-u6 .nrow').count())
     ctx.close()
 

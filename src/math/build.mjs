@@ -66,7 +66,7 @@ const EXAMS = [
   { id: 'derivatives', page: 'derivatives', exam: 'Calculus midterm 1', kicker: 'Calculus midterm 1', title: 'Derivatives',
     text: 'Limits and continuity, derivative rules, extrema, series and Taylor polynomials, plus an introduction to differential equations.' },
   { id: 'integrals', page: 'integrals', exam: 'Calculus midterm 2 (integrals)', kicker: 'Calculus midterm 2', title: 'Integrals',
-    text: 'Riemann sums and definite integrals, primitive functions, integration by parts and substitution, applications, polar curves and improper integrals. Notes are added after each class.' },
+    text: 'Riemann sums and definite integrals, primitive functions, integration by parts and substitution, applications, parametric and polar curves, improper integrals and orthogonal functions.' },
   { id: 'linear-algebra', page: 'linear-algebra', exam: 'Linear Algebra midterm', kicker: 'Linear Algebra', title: 'Linear algebra',
     text: 'Past Linear Algebra exams with worked answers: the AY2024 Christmas exam, and the AY2022 and AY2023 finals with the AY2023 retake. Notes follow once the Linear Algebra classes start.' },
   { id: 'calculus-final', page: 'calculus-final', exam: 'Calculus final', kicker: 'Calculus final', title: 'Derivatives, integrals and series',
@@ -157,7 +157,7 @@ const INTEGRALS = {
     alt: 'CLA1 Review, Calculus midterm 2, integrals: summary, practice, formulas, quizzes, and mock and past midterms',
   },
   lede: {
-    summary: 'One section per lesson in the course schedule, added after each class: the key ideas, and the common mistakes to avoid. Lessons still to come are greyed out.',
+    summary: 'One section per lesson in the course schedule, added after each class: the key ideas, and the common mistakes to avoid.',
     practice: (total) => `${total} practice problems with worked solutions. Try each one on paper, open the answer, then mark how it went.`,
     formulas: 'Every formula from the lessons so far on one page, plus the exact trig values you need without a calculator.',
     quizzes: 'From 5 &amp; 6 Nov, each lesson pair has an in-class quiz. Its sheet (password needed) and two open follow-ups are added here after the class.',

@@ -6,6 +6,7 @@ const NOV6 = '2026-11-06';
 const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
 const NOV17 = '2026-11-17';
+const NOV20 = '2026-11-20';
 
 export const followups = {
   '06': [
@@ -251,6 +252,70 @@ within the region $x\ge0$.`,
 $$A=\int_1^2(4-t^2)\,dt=\Big[4t-\frac{t^3}{3}\Big]_1^2=\frac{16}{3}-\frac{11}{3}=\frac{5}{3}$$
 
 Dropping the factor $\frac{1}{t}$ would give $\int_1^2(4t-t^3)\,dt=\frac{9}{4}$, and integrating from $0$ to $\ln2$ in $t$ would mix the two variables.` },
+    ]},
+  ],
+  '10': [
+    { added: NOV20, focus: 'Each question mirrors Quiz 10 with new numbers.', qs: [
+      { label: 'Q.1', pts: '3pt×2', stem: R`Evaluate the convergence of the improper integrals. Then, give the value if it converges.`,
+        parts: [R`$\displaystyle\int_0^4\frac{x}{2-\sqrt x}\,dx$`, R`$\displaystyle\int_0^{\infty}x^2e^{-x^3}\,dx$`],
+        answer: [R`(1) diverges`, R`(2) converges to $\frac{1}{3}$`],
+        sol: R`
+**(1)** The bottom, $2-\sqrt x$, is $0$ at $x=4$, the upper end, so integrate up to $w<4$ and let $w\to4$. With $t=\sqrt x$: $x=t^2$, $dx=2t\,dt$, and the limits move to $t=0$ and $t=s=\sqrt w$:
+$$\int_0^{w}\frac{x}{2-\sqrt x}\,dx=\int_0^{s}\frac{2t^3}{2-t}\,dt$$
+
+Divide: $t^3=(t-2)(t^2+2t+4)+8$, so
+$$\frac{2t^3}{2-t}=-2\left(t^2+2t+4\right)+\frac{16}{2-t}$$
+
+A primitive of $\frac{16}{2-t}$ is $-16\ln(2-t)$, with the minus sign from the inside:
+$$\begin{aligned}\int_0^{s}\frac{2t^3}{2-t}\,dt&=-2\left(\frac{s^3}{3}+s^2+4s\right)\\[4pt]&\quad-16\ln(2-s)+16\ln2\end{aligned}$$
+
+As $s\to2$, everything but $-16\ln(2-s)$ stays finite, and $-16\ln(2-s)\to+\infty$: the integral diverges.
+
+**(2)** With $u=x^3$, $du=3x^2\,dx$: $\int x^2e^{-x^3}dx=-\frac{1}{3}e^{-x^3}+C$. So
+$$\int_0^{w}x^2e^{-x^3}dx=\frac{1}{3}-\frac{1}{3}e^{-w^3}$$
+which tends to $\frac{1}{3}$ as $w\to\infty$: it converges to $\frac{1}{3}$.` },
+      { label: 'Q.2', pts: '', stem: R`Consider the following Fourier series in the domain of $-\pi\le x\le\pi$,
+$$\begin{aligned}&\sin\left(2x+\frac{\pi}{6}\right)\\[4pt]&=\sum_{m=1}^{\infty}\{a_m\cos(mx)+b_m\sin(mx)\}.\end{aligned}$$
+Find the coefficients $a_2$ and $b_2$. (2pt×2)`,
+        parts: [],
+        answer: [R`$a_2=\frac{1}{2}$ and $b_2=\frac{\sqrt3}{2}$`],
+        sol: R`
+The addition formula $\sin(A+B)=\sin A\cos B+\cos A\sin B$, with $\cos\frac{\pi}{6}=\frac{\sqrt3}{2}$ and $\sin\frac{\pi}{6}=\frac{1}{2}$:
+$$\sin\left(2x+\frac{\pi}{6}\right)=\frac{\sqrt3}{2}\sin2x+\frac{1}{2}\cos2x$$
+
+This is already a Fourier series, with $m=2$ only: $a_2=\frac{1}{2}$ goes with $\cos2x$, and $b_2=\frac{\sqrt3}{2}$ with $\sin2x$. Every other coefficient is $0$.
+
+The inner products agree: since $\langle S_2|C_2\rangle=0$, $a_2=\frac{1}{\pi}\langle f|C_2\rangle=\frac{1}{\pi}\cdot\frac{1}{2}\langle C_2|C_2\rangle=\frac{1}{2}$.` },
+    ]},
+    { added: NOV20, focus: 'Targets the usual slips: the minus sign that an inside a − x brings, a point inside the interval where f diverges, which coefficient goes with cos and which with sin, the signs in the addition formulas, and a coefficient that is 0.', qs: [
+      { label: 'Q.1', pts: '3pt×2', stem: R`Evaluate the convergence of the improper integrals. Then, give the value if it converges.`,
+        parts: [R`$\displaystyle\int_0^2\frac{dx}{\sqrt[3]{2-x}}$`, R`$\displaystyle\int_0^3\frac{dx}{(x-1)^2}$`],
+        answer: [R`(1) converges to $\frac{3}{2}\sqrt[3]{4}$`, R`(2) diverges`],
+        sol: R`
+**(1)** $\frac{1}{\sqrt[3]{2-x}}$ diverges at $x=2$, the upper end, so integrate up to $w<2$. The power rule divides by the new exponent $\frac{2}{3}$, and the inside, $2-x$, brings a minus sign:
+$$\int\frac{dx}{\sqrt[3]{2-x}}=-\frac{3}{2}(2-x)^{2/3}+C$$
+
+So
+$$\begin{aligned}\int_0^{w}\frac{dx}{\sqrt[3]{2-x}}&=\frac{3}{2}\cdot2^{2/3}-\frac{3}{2}(2-w)^{2/3}\\[4pt]&\to\frac{3}{2}\sqrt[3]{4}\end{aligned}$$
+as $w\to2$: it converges. Without the minus sign the answer would come out negative, which a positive integrand can't give.
+
+**(2)** $\frac{1}{(x-1)^2}$ diverges at $x=1$, inside $[0,3]$, so split there: $\int_0^1$ and $\int_1^3$ must both converge. For the first, with $w<1$:
+$$\begin{aligned}\int_0^{w}\frac{dx}{(x-1)^2}&=\Big[-\frac{1}{x-1}\Big]_0^{w}\\[4pt]&=-\frac{1}{w-1}-1\end{aligned}$$
+As $w\to1$ from below, $w-1\to-0$, so $-\frac{1}{w-1}\to+\infty$: this part diverges, and so does the whole integral.
+
+Without the split, $\Big[-\frac{1}{x-1}\Big]_0^3=-\frac{1}{2}-1=-\frac{3}{2}$: a negative number from a positive integrand, which can't be right.` },
+      { label: 'Q.2', pts: '', stem: R`Consider the following Fourier series in the domain of $-\pi\le x\le\pi$,
+$$\begin{aligned}&\sin\left(x-\frac{\pi}{3}\right)\\[4pt]&=\sum_{m=1}^{\infty}\{a_m\cos(mx)+b_m\sin(mx)\}.\end{aligned}$$
+Find the coefficients $a_1$ and $b_2$. (2pt×2)`,
+        parts: [],
+        answer: [R`$a_1=-\frac{\sqrt3}{2}$ and $b_2=0$`],
+        sol: R`
+$\sin(A-B)=\sin A\cos B-\cos A\sin B$ has a minus sign. With $\cos\frac{\pi}{3}=\frac{1}{2}$ and $\sin\frac{\pi}{3}=\frac{\sqrt3}{2}$:
+$$\sin\left(x-\frac{\pi}{3}\right)=\frac{1}{2}\sin x-\frac{\sqrt3}{2}\cos x$$
+
+$a_1$ is the coefficient of $\cos x$, minus sign included: $a_1=-\frac{\sqrt3}{2}$. The other one, $b_1=\frac{1}{2}$, goes with $\sin x$.
+
+There is no $\sin2x$ term, so $b_2=0$. The integral agrees: $\langle S_1|S_2\rangle=\langle C_1|S_2\rangle=0$, so $b_2=\frac{1}{\pi}\int_{-\pi}^{\pi}\sin\left(x-\frac{\pi}{3}\right)\sin2x\,dx=0$.` },
     ]},
   ],
 };

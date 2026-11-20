@@ -7,6 +7,7 @@ const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
 const NOV17 = '2026-11-17';
 const NOV19 = '2026-11-19';
+const NOV20 = '2026-11-20';
 
 // keyword tags per practice problem id, used by search
 export const tags = {
@@ -76,6 +77,11 @@ export const tags = {
   '6.9': "improper integral integration by parts x e^(-x) ln x / x^2 L'Hopital limit",
   '6.10': 'improper converge or diverge e^(-2x) 1/(x ln x) arcsin 1/sqrt(4-x^2) partial fractions 1/(x(x+1)) ln 2',
   '6.11': 'shortcut trick power test comparison p > 1 p < 1 improper 1/cos x converges diverges without integrating',
+  '6.12': 'class exercise (4) orthogonality orthogonal functions inner product sin cos S_m C_n product to sum',
+  '6.13': 'inner product sin sin cos cos orthogonal pi with itself product to sum fourier basis',
+  '6.14': 'fourier series coefficients read off addition formula product to sum a_m b_m',
+  '6.15': 'fourier series coefficients f(x) = x by parts b_m (-1)^(m+1) sine series',
+  '6.16': 'shortcut trick odd even fourier coefficients only sines only cosines without integrating',
 };
 
 // Formula sheet. Each row: [name, TeX]. Checked in verify.py (this folder).
@@ -211,9 +217,8 @@ export const formulas = [
     ['Half-angle', R`1+\cos\theta=2\cos^2\frac{\theta}{2},\quad1-\cos\theta=2\sin^2\frac{\theta}{2}`],
     ['The relation from class', R`\int\frac{dx}{\sqrt{x^2+a^2}}=\ln\left|x+\sqrt{x^2+a^2}\right|+C`],
   ]},
-  // 19 Nov: labelled with the lesson's dates until a quiz sheet gives its day numbers (the night-before sheet matches
-  // the label to the lesson's days, or to its dates while it has none)
-  { id: 'g6', title: 'Improper integrals', quiz: '19 & 20 Nov', added: NOV19, rows: [
+  // 19 & 20 Nov: labelled with the lesson's dates until Quiz 10's sheet gave its day numbers ("Day24 & Day25")
+  { id: 'g6', title: 'Improper integrals', quiz: 'Day 24 & 25 · Quiz 10', added: NOV19, rows: [
     ['Infinite upper limit', R`\int_a^{\infty}f(x)\,dx=\lim_{w\to\infty}\int_a^{w}f(x)\,dx`],
     ['Infinite lower limit', R`\int_{-\infty}^{b}f(x)\,dx=\lim_{w\to-\infty}\int_w^{b}f(x)\,dx`],
     ['f diverges at b (w < b)', R`\int_a^{b}f(x)\,dx=\lim_{w\to b}\int_a^{w}f(x)\,dx`],
@@ -225,11 +230,24 @@ export const formulas = [
     ['tan x', R`\int\tan x\,dx=-\ln|\cos x|+C`],
     ['x e^(−x²)', R`\int xe^{-x^2}\,dx=-\frac{1}{2}e^{-x^2}+C`],
   ]},
-  { id: 'g6b', title: "L'Hôpital's rule and limits", quiz: '19 & 20 Nov', added: NOV19, rows: [
+  { id: 'g6b', title: "L'Hôpital's rule and limits", quiz: 'Day 24 & 25 · Quiz 10', added: NOV19, rows: [
     ["L'Hôpital's rule (0/0 or ∞/∞)", R`\lim\frac{f(x)}{g(x)}=\lim\frac{f'(x)}{g'(x)}`],
     ['0 · ∞ as a fraction', R`w\ln w=\frac{\ln w}{1/w}`],
     ['Limits at ∞', R`\lim_{w\to\infty}\frac{w}{e^{w}}=0,\quad\lim_{w\to\infty}\frac{\ln w}{w}=0`],
     ['The class limits', R`\lim_{w\to+0}w\ln w=0,\quad\lim_{w\to\infty}\arctan w=\frac{\pi}{2}`],
+  ]},
+  // 20 Nov: orthogonal functions, the Fourier basis and Fourier series (Exercise (4), Quiz 10)
+  { id: 'g6c', title: 'Orthogonal functions and Fourier series', quiz: 'Day 24 & 25 · Quiz 10', added: NOV20, rows: [
+    ['Inner product on [−π, π]', R`\langle f|g\rangle=\int_{-\pi}^{\pi}f(x)\,g(x)\,dx`],
+    ['Orthogonal', R`\langle f|g\rangle=0`],
+    ['The Fourier basis', R`S_m=\sin(mx),\quad C_n=\cos(nx)`],
+    ['Sine and cosine, Exercise (4)', R`\langle S_m|C_n\rangle=0`],
+    ['Sines', R`\langle S_m|S_n\rangle=\begin{cases}0&(m\ne n)\\\pi&(m=n)\end{cases}`],
+    ['Cosines', R`\langle C_m|C_n\rangle=\begin{cases}0&(m\ne n)\\\pi&(m=n)\end{cases}`],
+    ['Fourier series', R`f(x)=\sum_{m=1}^{\infty}\{a_m\cos(mx)+b_m\sin(mx)\}`],
+    ['Cosine coefficients', R`a_m=\frac{1}{\pi}\int_{-\pi}^{\pi}f(x)\cos(mx)\,dx`],
+    ['Sine coefficients', R`b_m=\frac{1}{\pi}\int_{-\pi}^{\pi}f(x)\sin(mx)\,dx`],
+    ['Addition formulas', R`\begin{aligned}&\cos(A\pm B)=\cos A\cos B\mp\sin A\sin B\\&\sin(A\pm B)=\sin A\cos B\pm\cos A\sin B\end{aligned}`],
   ]},
   // extras from outside the lectures, added at the user's request; its label matches no lesson, so the night-before
   // sheet lists it with the values to know

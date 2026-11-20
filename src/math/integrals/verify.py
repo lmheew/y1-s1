@@ -1071,6 +1071,126 @@ primitive("P6.11d: 2/sqrt(1-x) is a primitive of (1-x)^(-3/2)", lambda x: 2 / sq
 check("P6.11d: int_0^w = 2/sqrt(1-w) - 2 (w = 0.9)", integral(lambda x: (1 - x) ** -1.5, 0, 0.9, 20000), 2 / sqrt(0.1) - 2, 1e-8)
 grows("P6.11d: 2/sqrt(1-w) - 2 as w -> 1", lambda w: 2 / sqrt(1 - w) - 2, [1 - 10.0 ** -k for k in (1, 4, 8, 12)], 1e5)
 
+# ================= 20 Nov: orthogonal functions and the Fourier basis (u6, g6c, P6.12–P6.16) =================
+ip = lambda f, g: integral(lambda x: f(x) * g(x), -pi, pi, 4000)
+S = lambda m: (lambda x: sin(m * x))
+C = lambda n: (lambda x: cos(n * x))
+am = lambda f, m: ip(f, C(m)) / pi
+bm = lambda f, m: ip(f, S(m)) / pi
+avg = lambda f: integral(f, -pi, pi, 4000) / (2 * pi)
+for m in range(1, 6):
+    for n in range(1, 6):
+        check(f"summary/g6c/P6.12: <S_{m}|C_{n}> = 0", ip(S(m), C(n)), 0, 1e-9)
+        check(f"summary/g6c/P6.13: <S_{m}|S_{n}> = {'pi' if m == n else 0}", ip(S(m), S(n)), pi if m == n else 0, 1e-9)
+        check(f"summary/g6c/P6.13: <C_{m}|C_{n}> = {'pi' if m == n else 0}", ip(C(m), C(n)), pi if m == n else 0, 1e-9)
+    check(f"summary: the constant 1 is orthogonal to C_{m} and S_{m}", abs(ip(lambda x: 1, C(m))) + abs(ip(lambda x: 1, S(m))), 0, 1e-9)
+check("summary: <f|f> = int f^2 > 0 (f = x: 2 pi^3/3)", ip(lambda x: x, lambda x: x), 2 * pi ** 3 / 3)
+check("summary: <1|1> = 2 pi", ip(lambda x: 1, lambda x: 1), 2 * pi)
+for x in (0.3, 1.7, -2.4):
+    for m, n in ((2, 3), (1, 4), (3, 1)):
+        check(f"summary/P6.13: sin mx sin nx = (cos(m-n)x - cos(m+n)x)/2 (m={m}, n={n}, x={x})", sin(m * x) * sin(n * x), (cos((m - n) * x) - cos((m + n) * x)) / 2)
+        check(f"P6.13: cos mx cos nx = (cos(m-n)x + cos(m+n)x)/2 (m={m}, n={n}, x={x})", cos(m * x) * cos(n * x), (cos((m - n) * x) + cos((m + n) * x)) / 2)
+        check(f"summary/P6.12: sin mx cos nx = (sin(m+n)x + sin(m-n)x)/2 (m={m}, n={n}, x={x})", sin(m * x) * cos(n * x), (sin((m + n) * x) + sin((m - n) * x)) / 2)
+    check(f"summary/P6.13: sin^2 3x = (1 - cos 6x)/2 at {x}", sin(3 * x) ** 2, (1 - cos(6 * x)) / 2)
+    check(f"P6.13: cos^2 2x = (1 + cos 4x)/2 at {x}", cos(2 * x) ** 2, (1 + cos(4 * x)) / 2)
+    check(f"summary/P6.12: sin mx cos mx = sin(2mx)/2 at {x} (m=2)", sin(2 * x) * cos(2 * x), sin(4 * x) / 2)
+for k in range(1, 6):
+    check(f"summary/P6.13: int_-pi^pi cos {k}x dx = 0", integral(lambda x, k=k: cos(k * x), -pi, pi), 0, 1e-12)
+# class exercise (4): the primitive takes the same value at pi and -pi
+for m, n in ((1, 2), (3, 1), (2, 5)):
+    F = lambda x, m=m, n=n: -cos((m + n) * x) / (2 * (m + n)) - cos((m - n) * x) / (2 * (m - n))
+    primitive(f"summary/P6.12: a primitive of sin({m}x)cos({n}x)", F, lambda x, m=m, n=n: sin(m * x) * cos(n * x), (-1.1, 0.4, 2.0))
+    check(f"summary/P6.12: F(pi) = F(-pi) (m={m}, n={n})", F(pi), F(-pi), 1e-12)
+for m in (1, 2, 3):
+    G = lambda x, m=m: -cos(2 * m * x) / (4 * m)
+    primitive(f"P6.12(2): a primitive of sin(mx)cos(mx) (m={m})", G, lambda x, m=m: sin(m * x) * cos(m * x), (-1.1, 0.4, 2.0))
+    check(f"P6.12(2): G(pi) = G(-pi) (m={m})", G(pi), G(-pi), 1e-12)
+# the coefficients from inner products: a sum of basis functions gives back its own coefficients
+fs = lambda x: 0.7 + 2 * cos(x) - 3 * sin(2 * x) + 0.5 * cos(3 * x)
+check("summary/g6c: a_1 of 0.7 + 2cos x - 3sin 2x + 0.5cos 3x = 2", am(fs, 1), 2)
+check("summary/g6c: its b_2 = -3", bm(fs, 2), -3)
+check("summary/g6c: its a_3 = 0.5", am(fs, 3), 0.5)
+check("summary/g6c: its b_1 = a_2 = 0", abs(bm(fs, 1)) + abs(am(fs, 2)), 0, 1e-9)
+check("summary: the constant term is the average of f", avg(fs), 0.7)
+f4 = lambda x: sin(x + pi / 4)
+for x in (0.5, -2.0):
+    check(f"summary: sin(x + pi/4) = (sqrt2/2) sin x + (sqrt2/2) cos x at {x}", f4(x), sqrt(2) / 2 * (sin(x) + cos(x)))
+check("summary: sin(x + pi/4): a_1 = sqrt2/2", am(f4, 1), sqrt(2) / 2)
+check("summary: sin(x + pi/4): b_1 = sqrt2/2", bm(f4, 1), sqrt(2) / 2)
+check("summary: sin(x + pi/4): a_m = b_m = 0 for m = 2..5", sum(abs(am(f4, m)) + abs(bm(f4, m)) for m in range(2, 6)), 0, 1e-9)
+check("summary/fourier: x^2 = pi^2/3 + sum 4(-1)^m cos(mx)/m^2 at x = 1 (the constant is the average)",
+      pi ** 2 / 3 + sum(4 * (-1) ** m * cos(m * 1.0) / m ** 2 for m in range(1, 20001)), 1.0, 1e-6)
+for A, B in ((0.7, 0.3), (2.1, -1.2)):
+    check(f"g6c/watch: cos(A + B) = cos A cos B - sin A sin B at {A}, {B}", cos(A + B), cos(A) * cos(B) - sin(A) * sin(B))
+    check(f"g6c/P6.14: cos(A - B) = cos A cos B + sin A sin B at {A}, {B}", cos(A - B), cos(A) * cos(B) + sin(A) * sin(B))
+    check(f"g6c: sin(A + B) = sin A cos B + cos A sin B at {A}, {B}", sin(A + B), sin(A) * cos(B) + cos(A) * sin(B))
+    check(f"g6c/watch: sin(A - B) = sin A cos B - cos A sin B at {A}, {B}", sin(A - B), sin(A) * cos(B) - cos(A) * sin(B))
+check("watch: int_{-pi/2}^{pi/2} sin x sin 2x dx = 4/3", integral(lambda x: sin(x) * sin(2 * x), -pi / 2, pi / 2), 4 / 3)
+# --- practice ---
+f14 = lambda x: cos(3 * x - pi / 6)
+check("P6.14(1): a_3 = sqrt3/2", am(f14, 3), sqrt(3) / 2)
+check("P6.14(1): b_3 = 1/2", bm(f14, 3), 0.5)
+for x in (0.9, -1.3):
+    check(f"P6.14(1): cos(3x - pi/6) = (sqrt3/2)cos 3x + (1/2)sin 3x at {x}", f14(x), sqrt(3) / 2 * cos(3 * x) + 0.5 * sin(3 * x))
+check("P6.14(2): a_1 = 0", am(f14, 1), 0, 1e-9); check("P6.14(2): b_2 = 0", bm(f14, 2), 0, 1e-9)
+g14 = lambda x: sin(3 * x) * cos(x)
+check("P6.14(3): b_2 = 1/2", bm(g14, 2), 0.5); check("P6.14(3): b_4 = 1/2", bm(g14, 4), 0.5)
+check("P6.14(3): every a_m, and b_1, b_3, b_5, is 0", sum(abs(am(g14, m)) for m in range(1, 7)) + abs(bm(g14, 1)) + abs(bm(g14, 3)) + abs(bm(g14, 5)), 0, 1e-9)
+check("P6.14(3): int sin 3x cos x sin 2x dx = pi/2", ip(g14, S(2)), pi / 2)
+for x in (0.6, 2.3):
+    check(f"P6.14(3): sin 3x cos x = (sin 4x + sin 2x)/2 at {x}", g14(x), (sin(4 * x) + sin(2 * x)) / 2)
+for m in range(1, 7):
+    check(f"P6.15(1): a_{m} of x = 0", am(lambda x: x, m), 0, 1e-9)
+    check(f"P6.15(2): b_{m} of x = 2(-1)^(m+1)/m", bm(lambda x: x, m), 2 * (-1) ** (m + 1) / m)
+    primitive(f"P6.15(1): x sin(mx)/m + cos(mx)/m^2 (m={m})", lambda x, m=m: x * sin(m * x) / m + cos(m * x) / m ** 2, lambda x, m=m: x * cos(m * x), (-2.0, 0.5, 1.9))
+    primitive(f"P6.15(2): -x cos(mx)/m + sin(mx)/m^2 (m={m})", lambda x, m=m: -x * cos(m * x) / m + sin(m * x) / m ** 2, lambda x, m=m: x * sin(m * x), (-2.0, 0.5, 1.9))
+    check(f"P6.15(2): -pi(-1)^m/m - pi(-1)^m/m = 2pi(-1)^(m+1)/m (m={m})", -2 * pi * (-1) ** m / m, 2 * pi * (-1) ** (m + 1) / m)
+check("P6.15(3): b_1, b_2, b_3 = 2, -1, 2/3", abs(bm(lambda x: x, 1) - 2) + abs(bm(lambda x: x, 2) + 1) + abs(bm(lambda x: x, 3) - 2 / 3), 0, 1e-9)
+check("P6.15(3): 2 sin x - sin 2x + (2/3) sin 3x - ... tends to x (x = 1)", sum(2 * (-1) ** (m + 1) / m * sin(m * 1.0) for m in range(1, 200001)), 1.0, 1e-4)
+for m in range(1, 5):
+    check(f"P6.16(1)/tricks: a_{m} of x^3 = 0", am(lambda x: x ** 3, m), 0, 1e-9)
+    check(f"P6.16(2)/tricks: b_{m} of x^2 = 0", bm(lambda x: x * x, m), 0, 1e-9)
+    check(f"P6.16(3): b_{m} of x sin x = 0", bm(lambda x: x * sin(x), m), 0, 1e-9)
+check("P6.16(1): x^3 keeps its sines (b_1 = 2(pi^2 - 6))", bm(lambda x: x ** 3, 1), 2 * (pi ** 2 - 6))
+check("P6.16(2): the average of x^2 = pi^2/3", avg(lambda x: x * x), pi ** 2 / 3)
+check("P6.16(3): the average of x sin x = 1", avg(lambda x: x * sin(x)), 1)
+
+# ================= FOLLOW-UPS (Quiz 10) =================
+# 10-A
+gA = lambda t: 2 * t ** 3 / (2 - t)
+FA = lambda s: -2 * (s ** 3 / 3 + s * s + 4 * s) - 16 * log(2 - s) + 16 * log(2)
+for t in (0.3, 1.1, 1.9):
+    check(f"10A Q1(1) t^3 = (t-2)(t^2+2t+4) + 8 at {t}", t ** 3, (t - 2) * (t * t + 2 * t + 4) + 8)
+    check(f"10A Q1(1) 2t^3/(2-t) = -2(t^2+2t+4) + 16/(2-t) at {t}", gA(t), -2 * (t * t + 2 * t + 4) + 16 / (2 - t))
+    check(f"10A Q1(1) F'(s) = 2s^3/(2-s) at {t}", d1(FA, t), gA(t), 1e-6)
+check("10A Q1(1) F(0) = 0", FA(0), 0, 1e-12)
+for w in (1.0, 3.2):
+    check(f"10A Q1(1) int_0^w x/(2 - sqrt x) dx = F(sqrt w) (w={w})", imp(lambda x: x / (2 - sqrt(x)), 0, w), FA(sqrt(w)), 1e-9)
+grows("10A Q1(1) F(s) as s -> 2", FA, [2 - 10.0 ** -k for k in (2, 4, 8, 12)], 100)
+check("10A Q1(2) int_0^inf x^2 e^(-x^3) dx = 1/3", imp(lambda x: x * x * exp(-x ** 3), 0, INF), 1 / 3, 1e-9)
+primitive("10A Q1(2) -(1/3)e^(-x^3) is a primitive of x^2 e^(-x^3)", lambda x: -exp(-x ** 3) / 3, lambda x: x * x * exp(-x ** 3), XN)
+fA = lambda x: sin(2 * x + pi / 6)
+check("10A Q2 a_2 = 1/2", am(fA, 2), 0.5); check("10A Q2 b_2 = sqrt3/2", bm(fA, 2), sqrt(3) / 2)
+check("10A Q2 every other coefficient is 0", sum(abs(am(fA, m)) + abs(bm(fA, m)) for m in (1, 3, 4, 5)), 0, 1e-9)
+for x in (0.8, -2.2):
+    check(f"10A Q2 sin(2x + pi/6) = (sqrt3/2) sin 2x + (1/2) cos 2x at {x}", fA(x), sqrt(3) / 2 * sin(2 * x) + 0.5 * cos(2 * x))
+check("10A Q2 a_2 = (1/pi)(1/2)<C_2|C_2>", 0.5 * ip(C(2), C(2)) / pi, 0.5)
+# 10-B
+check("10B Q1(1) int_0^2 dx/cbrt(2-x) = (3/2) cbrt 4", imp(lambda x: (2 - x) ** (-1 / 3), 0, 2), 1.5 * 4 ** (1 / 3), 1e-9)
+primitive("10B Q1(1) -(3/2)(2-x)^(2/3) is a primitive of (2-x)^(-1/3)", lambda x: -1.5 * (2 - x) ** (2 / 3), lambda x: (2 - x) ** (-1 / 3), (-1.0, 0.5, 1.5))
+check("10B Q1(1) (3/2) 2^(2/3) = (3/2) cbrt 4", 1.5 * 2 ** (2 / 3), 1.5 * 4 ** (1 / 3))
+check("10B Q1(1) int_0^w = (3/2)2^(2/3) - (3/2)(2-w)^(2/3) (w = 1.5)", integral(lambda x: (2 - x) ** (-1 / 3), 0, 1.5), 1.5 * 2 ** (2 / 3) - 1.5 * 0.5 ** (2 / 3))
+check_true("10B Q1(1) without the minus sign the answer is negative", -1.5 * 4 ** (1 / 3) < 0)
+FB = lambda w: -1 / (w - 1) - 1
+check("10B Q1(2) int_0^w dx/(x-1)^2 = -1/(w-1) - 1 (w = 0.6)", integral(lambda x: 1 / (x - 1) ** 2, 0, 0.6), FB(0.6))
+grows("10B Q1(2) -1/(w-1) - 1 as w -> 1 from below", FB, [1 - 10.0 ** -k for k in (1, 3, 6, 9)])
+check("10B Q1(2) without the split: [-1/(x-1)]_0^3 = -3/2", (-1 / (3 - 1)) - (-1 / (0 - 1)), -1.5)
+fB = lambda x: sin(x - pi / 3)
+check("10B Q2 a_1 = -sqrt3/2", am(fB, 1), -sqrt(3) / 2); check("10B Q2 b_1 = 1/2", bm(fB, 1), 0.5)
+check("10B Q2 b_2 = 0", bm(fB, 2), 0, 1e-9)
+for x in (0.8, -2.2):
+    check(f"10B Q2 sin(x - pi/3) = (1/2) sin x - (sqrt3/2) cos x at {x}", fB(x), 0.5 * sin(x) - sqrt(3) / 2 * cos(x))
+
 # ================= MOCK MIDTERMS (exams.mjs: im1, im2, im3) =================
 # --- Mock 1 ---
 primitive("M1[1](1): x^4 - 6 sqrt x + 2 ln|x|", lambda x: x ** 4 - 6 * sqrt(x) + 2 * log(abs(x)), lambda x: 4 * x ** 3 - 3 / sqrt(x) + 2 / x, XN)

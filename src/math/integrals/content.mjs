@@ -3,8 +3,8 @@
 // numbers, so every unit carries `dates` ("2 & 3 Nov"); a lesson gets `days` and `quiz` once a quiz sheet shows them
 // (Quiz 06 is "Day16 & Day17", so 5 & 6 Nov are Days 16 and 17 and 2 & 3 Nov, the two classes before, Days 14 and 15;
 // Quiz 07 is "Day18 & Day19", so 9 & 10 Nov are Days 18 and 19; Quiz 08 is "Day20 & Day21", 12 & 13 Nov; Quiz 09
-// follows as "Day22 & Day23", 16 & 17 Nov; 19 & 20 Nov have notes from 19 Nov but no sheet yet, so they go by their
-// dates, and so does their formula groups' label, which the night-before sheet matches). The 9 Nov
+// follows as "Day22 & Day23", 16 & 17 Nov; Quiz 10 is "Day24 & Day25", 19 & 20 Nov. A taught lesson without a sheet
+// yet goes by its dates, and so does its formula groups' label, which the night-before sheet matches). The 9 Nov
 // class finished the primitive-functions lesson (inverse trigonometric functions) before substitution, so that part
 // sits in u2.
 // A lesson still to come has `upcoming: true` and shows as a greyed-out Summary tile; `starred` marks the lessons with
@@ -20,6 +20,7 @@ const NOV10 = '2026-11-10';
 const NOV13 = '2026-11-13';
 const NOV17 = '2026-11-17';
 const NOV19 = '2026-11-19';
+const NOV20 = '2026-11-20';
 
 export const units = [
   {
@@ -295,9 +296,9 @@ Use it to check an answer; on a quiz, still show the by-parts steps.
   },
   {
     // 19 Nov: improper integrals (slides 10–26) and L'Hôpital's rule; the 20 Nov class (orthogonal functions) is not in yet
-    id: 'u6', dates: '19 & 20 Nov', starred: true, added: NOV19,
+    id: 'u6', quiz: 'Quiz 10', days: 'Day 24 & 25', dates: '19 & 20 Nov', starred: true, added: NOV20,
     title: 'Improper integrals and orthogonal functions',
-    intro: R`These notes cover the 19 Nov class: improper integrals, with L'Hôpital's rule for the limits they lead to. The 20 Nov class (orthogonal functions) isn't covered here yet.`,
+    intro: R`Two parts: improper integrals, with L'Hôpital's rule for the limits they lead to (19 Nov), and orthogonal functions, with the Fourier basis and Fourier series (20 Nov).`,
     ideas: R`
 - **Improper integrals:** $F(b)-F(a)$ needs a finite interval and an $f$ that stays finite on it. An integral is improper when a limit is $\infty$ or $-\infty$, or when $f$ diverges (goes to $\pm\infty$) at a point of the interval. It is calculated as a limit of ordinary integrals: integrate up to a movable end $w$, then let $w$ go to the problem point:
 $$\int_a^{\infty}f(x)\,dx=\lim_{w\to\infty}\int_a^{w}f(x)\,dx$$
@@ -330,19 +331,46 @@ The integral converges only if every part does: if one part diverges, so does $I
 - **L'Hôpital's rule:** for a limit of the form $\frac{0}{0}$ or $\frac{\infty}{\infty}$,
 $$\lim\frac{f(x)}{g(x)}=\lim\frac{f'(x)}{g'(x)}$$
 with the top and the bottom differentiated separately, not by the quotient rule. If the new limit has the same form, use the rule again. The limits at the end of an improper integral often need it: $\frac{w}{e^w}$ is $\frac{\infty}{\infty}$, and $\lim_{w\to\infty}\frac{w}{e^w}=\lim_{w\to\infty}\frac{1}{e^w}=0$. A product $0\cdot\infty$ is first written as a fraction, as in Exercise (3):
-$$\begin{aligned}\lim_{w\to+0}w\ln w&=\lim_{w\to+0}\frac{\ln w}{1/w}\\[4pt]&=\lim_{w\to+0}\frac{1/w}{-1/w^2}\\[4pt]&=\lim_{w\to+0}(-w)=0\end{aligned}$$`,
+$$\begin{aligned}\lim_{w\to+0}w\ln w&=\lim_{w\to+0}\frac{\ln w}{1/w}\\[4pt]&=\lim_{w\to+0}\frac{1/w}{-1/w^2}\\[4pt]&=\lim_{w\to+0}(-w)=0\end{aligned}$$
+- **Inner product of functions:** on $[-\pi,\pi]$, two functions are multiplied and integrated, as the dot product of two vectors multiplies their components and adds:
+$$\langle f|g\rangle=\int_{-\pi}^{\pi}f(x)\,g(x)\,dx$$
+The inner product of $f$ with itself, $\int_{-\pi}^{\pi}f^2\,dx$, is positive for every $f$ other than $0$, like the square of a vector's length.
+- **Orthogonal functions:** $f$ and $g$ are orthogonal when $\langle f|g\rangle=0$, as two vectors are perpendicular when their dot product is $0$.
+- **The Fourier basis:** $S_m=\sin(mx)$ and $C_n=\cos(nx)$, for $m,n=1,2,3,\dots$, together with the constant $1$. On $[-\pi,\pi]$, any two different ones are orthogonal, and each sine or cosine has the inner product $\pi$ with itself ($\langle1|1\rangle=2\pi$):
+$$\begin{gathered}\langle S_m|C_n\rangle=0\\[6pt]\langle S_m|S_n\rangle=\langle C_m|C_n\rangle=\begin{cases}0&(m\ne n)\\\pi&(m=n)\end{cases}\end{gathered}$$
+Each one comes from product to sum, such as
+$$\begin{aligned}&\sin mx\sin nx\\[2pt]&=\frac{1}{2}\{\cos(m-n)x-\cos(m+n)x\}\end{aligned}$$
+and the integral of $\cos kx$ over $[-\pi,\pi]$ is $0$ for every whole number $k\ne0$, since $\sin k\pi=0$. For $m=n$, $\sin^2mx=\frac{1-\cos2mx}{2}$ gives $\langle S_m|S_m\rangle=\frac{2\pi}{2}=\pi$.
+- **Class exercise (4):** check the orthogonality of $S_m$ and $C_n$ by the inner product. For $m\ne n$, product to sum gives
+$$\begin{aligned}&\sin(mx)\cos(nx)\\[2pt]&=\frac{1}{2}\{\sin(m+n)x+\sin(m-n)x\}\end{aligned}$$
+whose primitive is a sum of cosines, $-\frac{\cos(m+n)x}{2(m+n)}-\frac{\cos(m-n)x}{2(m-n)}$. Since $\cos$ is even, it takes the same value at $\pi$ and $-\pi$, so $\langle S_m|C_n\rangle=0$. For $m=n$, $\sin(mx)\cos(mx)=\frac{1}{2}\sin2mx$, whose integral over $[-\pi,\pi]$ is $0$ too. Every sine is orthogonal to every cosine.
+- **Fourier series:** a function on $[-\pi,\pi]$ is written in the Fourier basis, as a vector is written with its components:
+$$f(x)=\sum_{m=1}^{\infty}\{a_m\cos(mx)+b_m\sin(mx)\}$$
+plus a constant term, the average of $f$ over $[-\pi,\pi]$, when $f$ has one.
+- **The coefficients from inner products:** take the inner product of both sides with $C_m$. By orthogonality every term gives $0$ except $a_m\langle C_m|C_m\rangle=\pi a_m$, so $a_m=\frac{1}{\pi}\langle f|C_m\rangle$; with $S_m$ in the same way:
+$$\begin{aligned}a_m&=\frac{1}{\pi}\int_{-\pi}^{\pi}f(x)\cos(mx)\,dx\\[4pt]b_m&=\frac{1}{\pi}\int_{-\pi}^{\pi}f(x)\sin(mx)\,dx\end{aligned}$$
+It is the way a vector's component along a basis vector comes from a dot product.
+- **Reading coefficients off:** when $f$ is already made of sines and cosines, expand it with the addition formulas and read the coefficients off; every other coefficient is $0$. For example,
+$$\sin\left(x+\frac{\pi}{4}\right)=\frac{\sqrt2}{2}\sin x+\frac{\sqrt2}{2}\cos x$$
+so $a_1=b_1=\frac{\sqrt2}{2}$ and $a_m=b_m=0$ for $m\ge2$. The integrals for $a_m$ and $b_m$ give the same numbers.`,
     watch: R`
 - Don't put $\infty$, or the point where $f$ diverges, into the primitive. Replace it with $w$, and take the limit as the last step.
 - Look inside the interval before you use $F(b)-F(a)$. $\int_{-1}^{1}\frac{dx}{x^2}$ is not $\Big[-\frac{1}{x}\Big]_{-1}^{1}=-2$ (a positive function can't give a negative integral): $\frac{1}{x^2}$ diverges at $0$, and $\int_0^{1}\frac{dx}{x^2}=\infty$, so the integral diverges.
 - $f(x)\to0$ is not enough: $\frac{1}{x}\to0$, yet $\int_1^{\infty}\frac{dx}{x}=\infty$.
 - In $\int\frac{dx}{\sqrt{1-x}}=-2\sqrt{1-x}+C$, the power rule divides by the new exponent $\frac{1}{2}$ (so it multiplies by $2$), and the inside, $1-x$, brings the minus sign. Check a primitive by differentiating it.
 - Every part of a split integral must converge on its own. One part that diverges makes the whole integral diverge, even if the other part is finite.
-- L'Hôpital's rule is only for $\frac{0}{0}$ and $\frac{\infty}{\infty}$: $\lim_{x\to0}\frac{x+1}{x+2}=\frac{1}{2}$, not $\frac{1}{1}$. Check the form again before each use.`,
-    tricksAdded: NOV19,
+- L'Hôpital's rule is only for $\frac{0}{0}$ and $\frac{\infty}{\infty}$: $\lim_{x\to0}\frac{x+1}{x+2}=\frac{1}{2}$, not $\frac{1}{1}$. Check the form again before each use.
+- A function is never orthogonal to itself: $\langle S_m|S_m\rangle=\langle C_m|C_m\rangle=\pi$, not $0$. Only two different members of the basis are orthogonal.
+- Orthogonality depends on the interval. The integrals vanish on $[-\pi,\pi]$, but not on every interval: $\int_{-\pi/2}^{\pi/2}\sin x\sin2x\,dx=\frac{4}{3}$.
+- $a_m$ goes with $\cos(mx)$ and $b_m$ with $\sin(mx)$. Divide by $\pi$, which is $\langle C_m|C_m\rangle$, not by $2\pi$.
+- Mind the signs in the addition formulas: $\cos(A+B)=\cos A\cos B-\sin A\sin B$ and $\sin(A-B)=\sin A\cos B-\cos A\sin B$. A minus sign stays with its coefficient.
+- A term that isn't in $f$ has the coefficient $0$. If $f$ has only $\cos x$ and $\sin x$, then $a_2=b_2=0$: that is an answer, not a mistake.`,
+    tricksAdded: NOV20,
     tricks: R`
 - **The power test:** near the problem point, compare $f$ with a power. At $\infty$, $\int_1^{\infty}\frac{dx}{x^p}$ converges only for $p>1$. Near a finite point $c$ where $f$ diverges, $\frac{1}{|x-c|^p}$ gives a finite integral only for $p<1$. And $p=1$ diverges both ways. $\frac{1}{\sqrt{1-x}}$ has $p=\frac{1}{2}<1$ at $x=1$, so it converges, while $\tan x$ behaves like $\frac{1}{\pi/2-x}$ near $\frac{\pi}{2}$, with $p=1$, so it diverges.
 - **Limits worth knowing:** $e^{w}$ grows faster than every power, and every power faster than $\ln w$: for $p>0$, $\lim_{w\to\infty}w^pe^{-w}=0$, $\lim_{w\to\infty}\frac{\ln w}{w^p}=0$ and $\lim_{w\to+0}w^p\ln w=0$. Each one is L'Hôpital's rule, used once or a few times; on a quiz, still show the steps.
-- **Symmetry:** an even integrand on $[-a,a]$ gives twice one half, $\int_{-1}^{1}\frac{dx}{\sqrt{|x|}}=2\int_0^1\frac{dx}{\sqrt x}=4$. Both halves must still converge: $\int_{-1}^{1}\frac{dx}{x^2}$ diverges, symmetric or not.`,
+- **Symmetry:** an even integrand on $[-a,a]$ gives twice one half, $\int_{-1}^{1}\frac{dx}{\sqrt{|x|}}=2\int_0^1\frac{dx}{\sqrt x}=4$. Both halves must still converge: $\int_{-1}^{1}\frac{dx}{x^2}$ diverges, symmetric or not.
+- **Odd and even:** $\sin(mx)$ is odd and $\cos(nx)$ is even, so $\sin(mx)\cos(nx)$ is odd and $\langle S_m|C_n\rangle=0$ at once: an odd function integrates to $0$ over $[-\pi,\pi]$. In the same way, an odd $f$, such as $x$ or $x^3$, has only sines (every $a_m=0$), and an even $f$, such as $x^2$, has only cosines (every $b_m=0$).`,
   },
 ];
 
@@ -359,6 +387,7 @@ export const habits = R`
 - For a length, simplify $1+f'(x)^2$ (look for a perfect square) before you take the root.
 - For a parametric or polar length, write the two derivatives first, square and add them, then look for a perfect square, $\sin^2+\cos^2=1$ or a half-angle formula.
 - Before any definite integral, check both ends and the inside of the interval for $\infty$ or a point where $f$ diverges. If there is one, replace it with $w$, integrate, and take the limit last; end with "converges" and the value, or "diverges".
+- For a Fourier coefficient, expand $f$ first with the addition formulas or product to sum. If it is already a sum of sines and cosines, read $a_m$ (with $\cos$) and $b_m$ (with $\sin$) off; every other coefficient is $0$.
 - Keep answers exact: $\frac{16}{3}$, $\frac{\pi}{4}$ or $\frac{e^2-1}{2}$, not decimals.`;
 
 // ---------------- Practice ----------------
@@ -1182,7 +1211,7 @@ $$I=\int_{-1}^{0}\frac{dx}{\sqrt{-x}}+\int_0^{1}\frac{dx}{\sqrt x}$$
 $$\int_w^{1}x^{-1/2}\,dx=\Big[2\sqrt x\Big]_w^{1}=2-2\sqrt w\to2$$
 
 The left part, up to $w<0$, with the primitive $-2\sqrt{-x}$ (the inside, $-x$, brings a minus sign):
-$$\int_{-1}^{w}\frac{dx}{\sqrt{-x}}=\Big[-2\sqrt{-x}\Big]_{-1}^{w}=2-2\sqrt{-w}\to2$$
+$$\begin{aligned}\int_{-1}^{w}\frac{dx}{\sqrt{-x}}&=\Big[-2\sqrt{-x}\Big]_{-1}^{w}\\[4pt]&=2-2\sqrt{-w}\to2\end{aligned}$$
 
 Both parts converge, so $I=2+2=4$. The graph is symmetric about the $y$-axis, so the two parts are equal.` },
     { src: 'Splitting at a point inside', added: NOV19,
@@ -1254,5 +1283,74 @@ $\frac{\ln w+1}{w}$ is $\frac{\infty}{\infty}$, and L'Hôpital's rule gives $\fr
 **(3)** The problem point is $\frac{\pi}{2}$, where $\cos x$ is about $\frac{\pi}{2}-x$, so the integrand is about $\frac{1}{\pi/2-x}$, with $p=1$: it diverges. Indeed $\int_0^{w}\frac{dx}{\cos x}=\ln\left(\frac{1}{\cos w}+\tan w\right)$, which grows without bound as $w\to\frac{\pi}{2}$.
 
 **(4)** At $x=1$, $p=\frac{3}{2}\ge1$: it diverges. Indeed $\int_0^{w}(1-x)^{-3/2}\,dx=\frac{2}{\sqrt{1-w}}-2$, which grows without bound as $w\to1$.` },
+    { src: 'Class exercise (4)', added: NOV20,
+      stem: R`Check the orthogonality of $S_m=\sin(mx)$ and $C_n=\cos(nx)$, for whole numbers $m,n\ge1$, by computing the inner product $\displaystyle\langle S_m|C_n\rangle=\int_{-\pi}^{\pi}\sin(mx)\cos(nx)\,dx$.`,
+      parts: [R`$m\ne n$`, R`$m=n$`],
+      hint: R`Product to sum: $\sin A\cos B=\frac{1}{2}\{\sin(A+B)+\sin(A-B)\}$. A primitive of $\sin kx$ is $-\frac{\cos kx}{k}$, and $\cos$ takes the same value at $\pi$ and $-\pi$.`,
+      answer: [R`(1) $0$`, R`(2) $0$`],
+      sol: R`
+**(1)** Product to sum, with $m+n\ne0$ and $m-n\ne0$:
+$$\begin{aligned}&\sin(mx)\cos(nx)\\[2pt]&=\frac{1}{2}\{\sin(m+n)x+\sin(m-n)x\}\end{aligned}$$
+
+A primitive is $-\frac{\cos(m+n)x}{2(m+n)}-\frac{\cos(m-n)x}{2(m-n)}$. Since $\cos$ is even, $\cos(-k\pi)=\cos k\pi$: the primitive takes the same value at $\pi$ and at $-\pi$, so $\langle S_m|C_n\rangle=0$.
+
+**(2)** For $m=n$, $\sin(mx)\cos(mx)=\frac{1}{2}\sin2mx$, and
+$$\begin{aligned}\int_{-\pi}^{\pi}\frac{1}{2}\sin2mx\,dx&=\Big[-\frac{\cos2mx}{4m}\Big]_{-\pi}^{\pi}\\[4pt]&=0\end{aligned}$$
+
+So $\langle S_m|C_n\rangle=0$ for every $m$ and $n$: every sine is orthogonal to every cosine on $[-\pi,\pi]$.` },
+    { src: 'Sines with sines, cosines with cosines', added: NOV20,
+      stem: R`Compute the inner products on $[-\pi,\pi]$, with $S_m=\sin(mx)$ and $C_n=\cos(nx)$.`,
+      parts: [R`$\langle S_2|S_3\rangle$`, R`$\langle C_1|C_4\rangle$`, R`$\langle S_3|S_3\rangle$`, R`$\langle C_2|C_2\rangle$`],
+      hint: R`Product to sum: $\sin A\sin B=\frac{1}{2}\{\cos(A-B)-\cos(A+B)\}$ and $\cos A\cos B=\frac{1}{2}\{\cos(A-B)+\cos(A+B)\}$. For a square, use $\sin^2x=\frac{1-\cos2x}{2}$ and $\cos^2x=\frac{1+\cos2x}{2}$.`,
+      answer: [R`(1) $0$`, R`(2) $0$`, R`(3) $\pi$`, R`(4) $\pi$`],
+      sol: R`
+**(1)** $\sin2x\sin3x=\frac{1}{2}(\cos x-\cos5x)$, and the integral of $\cos kx$ over $[-\pi,\pi]$ is $\Big[\frac{\sin kx}{k}\Big]_{-\pi}^{\pi}=0$ for every whole number $k\ne0$. So $\langle S_2|S_3\rangle=0$.
+
+**(2)** $\cos x\cos4x=\frac{1}{2}(\cos3x+\cos5x)$, so $\langle C_1|C_4\rangle=0$ in the same way.
+
+**(3)** $\sin^23x=\frac{1-\cos6x}{2}$, so
+$$\begin{aligned}\langle S_3|S_3\rangle&=\int_{-\pi}^{\pi}\frac{1-\cos6x}{2}\,dx\\[4pt]&=\frac{2\pi}{2}-0=\pi\end{aligned}$$
+
+**(4)** $\cos^22x=\frac{1+\cos4x}{2}$, so $\langle C_2|C_2\rangle=\frac{2\pi}{2}+0=\pi$. A function's inner product with itself is never $0$.` },
+    { src: 'Reading off Fourier coefficients', added: NOV20,
+      stem: R`Each function on $[-\pi,\pi]$ is written as a Fourier series,
+$$f(x)=\sum_{m=1}^{\infty}\{a_m\cos(mx)+b_m\sin(mx)\}.$$
+Find the coefficients asked for.`,
+      parts: [R`$f(x)=\cos\left(3x-\frac{\pi}{6}\right)$: $a_3$ and $b_3$`, R`The same $f$: $a_1$ and $b_2$`, R`$f(x)=\sin3x\cos x$: $b_2$ and $b_4$`],
+      hint: R`Expand with $\cos(A-B)=\cos A\cos B+\sin A\sin B$, or turn the product into a sum. Then match each term with $a_m\cos(mx)$ or $b_m\sin(mx)$; a term that isn't there has the coefficient $0$.`,
+      answer: [R`(1) $a_3=\frac{\sqrt3}{2}$, $b_3=\frac{1}{2}$`, R`(2) $a_1=0$, $b_2=0$`, R`(3) $b_2=b_4=\frac{1}{2}$`],
+      sol: R`
+**(1)** With $\cos\frac{\pi}{6}=\frac{\sqrt3}{2}$ and $\sin\frac{\pi}{6}=\frac{1}{2}$:
+$$\begin{aligned}&\cos\left(3x-\frac{\pi}{6}\right)\\[4pt]&=\cos3x\cos\frac{\pi}{6}+\sin3x\sin\frac{\pi}{6}\\[4pt]&=\frac{\sqrt3}{2}\cos3x+\frac{1}{2}\sin3x\end{aligned}$$
+So $a_3=\frac{\sqrt3}{2}$ (with $\cos3x$) and $b_3=\frac{1}{2}$ (with $\sin3x$).
+
+**(2)** Only $m=3$ appears, so every other coefficient is $0$: $a_1=0$ and $b_2=0$.
+
+**(3)** Product to sum: $\sin3x\cos x=\frac{1}{2}(\sin4x+\sin2x)$, so $b_2=b_4=\frac{1}{2}$, and every other coefficient, every $a_m$ included, is $0$. The integral gives the same: $b_2=\frac{1}{\pi}\int_{-\pi}^{\pi}\sin3x\cos x\sin2x\,dx=\frac{1}{\pi}\cdot\frac{\pi}{2}=\frac{1}{2}$.` },
+    { src: 'Fourier coefficients of f(x) = x', added: NOV20,
+      stem: R`Find the Fourier coefficients of $f(x)=x$ on $[-\pi,\pi]$.`,
+      parts: [R`$a_m$`, R`$b_m$`, R`The first three terms of the series`],
+      hint: R`Integrate $x\cos(mx)$ and $x\sin(mx)$ by parts, differentiating $x$. Use $\sin(\pm m\pi)=0$ and $\cos(\pm m\pi)=(-1)^m$.`,
+      answer: [R`(1) $a_m=0$`, R`(2) $b_m=\frac{2(-1)^{m+1}}{m}$`, R`(3) $2\sin x-\sin2x+\frac{2}{3}\sin3x$`],
+      sol: R`
+**(1)** By parts, differentiating $x$, a primitive of $x\cos(mx)$ is $\frac{x\sin(mx)}{m}+\frac{\cos(mx)}{m^2}$. At $x=\pm\pi$, $\sin(\pm m\pi)=0$ and $\cos(\pm m\pi)$ is the same number, so the primitive takes the same value at both ends and $a_m=0$.
+
+**(2)** In the same way, a primitive of $x\sin(mx)$ is $-\frac{x\cos(mx)}{m}+\frac{\sin(mx)}{m^2}$. With $\cos(\pm m\pi)=(-1)^m$:
+$$\begin{aligned}&\int_{-\pi}^{\pi}x\sin(mx)\,dx\\[4pt]&=-\frac{\pi(-1)^m}{m}-\frac{\pi(-1)^m}{m}=\frac{2\pi(-1)^{m+1}}{m}\end{aligned}$$
+so $b_m=\frac{1}{\pi}\cdot\frac{2\pi(-1)^{m+1}}{m}=\frac{2(-1)^{m+1}}{m}$.
+
+**(3)** $b_1=2$, $b_2=-1$ and $b_3=\frac{2}{3}$:
+$$x=2\sin x-\sin2x+\frac{2}{3}\sin3x-\cdots$$` },
+    { src: 'Shortcut: odd and even', added: NOV20,
+      stem: R`Without integrating, decide which Fourier coefficients of each function on $[-\pi,\pi]$ are $0$.`,
+      parts: [R`$f(x)=x^3$`, R`$f(x)=x^2$`, R`$f(x)=x\sin x$`],
+      hint: R`An odd function times an even one is odd, and an odd function integrates to $0$ over $[-\pi,\pi]$. $\cos(mx)$ is even and $\sin(mx)$ is odd.`,
+      answer: [R`(1) every $a_m=0$: only sines`, R`(2) every $b_m=0$: only cosines, with a constant term`, R`(3) every $b_m=0$: only cosines, with a constant term`],
+      sol: R`
+**(1)** $x^3$ is odd, so $x^3\cos(mx)$ is odd (odd times even) and $a_m=\frac{1}{\pi}\int_{-\pi}^{\pi}x^3\cos(mx)\,dx=0$. Only the sines remain.
+
+**(2)** $x^2$ is even, so $x^2\sin(mx)$ is odd (even times odd) and every $b_m=0$. Only cosines remain, with a constant term, the average $\frac{1}{2\pi}\int_{-\pi}^{\pi}x^2\,dx=\frac{\pi^2}{3}$.
+
+**(3)** $x\sin x$ is odd times odd, so even, and every $b_m=0$ in the same way; its average is $\frac{1}{2\pi}\int_{-\pi}^{\pi}x\sin x\,dx=1$. The same reasoning gives Exercise (4) at once: $\sin(mx)\cos(nx)$ is odd, so $\langle S_m|C_n\rangle=0$.` },
   ],
 };

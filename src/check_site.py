@@ -335,16 +335,17 @@ with sync_playwright() as p:
               and 'quiz 09' in page.locator('#su-u5 .unit-head .kicker').inner_text().lower()
               and 'parametric and polar curves' in page.locator('#su-u5 h2').inner_text().lower()
               and 'improper integrals' in page.locator('#su-u6 h2').inner_text().lower()
-              and 'covered here yet' in page.locator('#su-u6 .unit-note').inner_text())
+              and 'orthogonal functions' in page.locator('#su-u6 .unit-note').inner_text())
         check(f'{label}: midterm 2 has its Shortcuts boxes after Watch out, marked as not from the lectures',
               page.locator('#su-u2 .tricks li').count() == 3 and page.locator('#su-u3 .tricks li').count() == 6 and page.locator('#su-u4 .tricks li').count() == 4
-              and page.locator('#su-u5 .tricks li').count() == 4 and page.locator('#su-u6 .tricks li').count() == 3 and page.locator('#su-u1 .tricks').count() == 0
+              and page.locator('#su-u5 .tricks li').count() == 4 and page.locator('#su-u6 .tricks li').count() == 4 and page.locator('#su-u1 .tricks').count() == 0
               and 'not from the lectures' in page.locator('#su-u3 .tricks-note').inner_text()
               and page.evaluate("document.querySelector('#su-u3 .watch').compareDocumentPosition(document.querySelector('#su-u3 .tricks')) & 4") > 0)
-        # 19 & 20 Nov have notes but no quiz sheet with day numbers yet, so the lesson goes by its dates
-        check(f'{label}: a midterm 2 lesson without day numbers goes by its dates',
-              page.locator('#view-summary .tile[data-target="su-u6"] .tile-k').inner_text().lower() == '19 & 20 nov'
-              and page.locator('#su-u6 .unit-head .kicker').inner_text().lower().startswith('19 & 20 nov'),
+        # 19 & 20 Nov went by their dates until Quiz 10's sheet gave the day numbers (Day24 & Day25)
+        check(f'{label}: the last midterm 2 lesson has its day numbers and quiz from Quiz 10',
+              page.locator('#view-summary .tile[data-target="su-u6"] .tile-k').inner_text().lower() == 'day 24 & 25'
+              and page.locator('#su-u6 .unit-head .kicker').inner_text().lower().startswith('day 24 & 25 · 19 & 20 nov')
+              and 'quiz 10' in page.locator('#su-u6 .unit-head .kicker').inner_text().lower(),
               page.locator('#view-summary .tile[data-target="su-u6"] .tile-k').inner_text())
         check(f'{label}: midterm 2 Summary has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.locator('#gx-riemann').scroll_into_view_if_needed()
@@ -363,11 +364,11 @@ with sync_playwright() as p:
         shot(page, f'{label}-integrals-summary')
         page.click('#tab-practice')
         page.wait_for_selector('#view-practice .prob')
-        check(f'{label}: midterm 2 Practice has 8 + 11 + 15 + 11 + 10 + 11 problems, the 2 & 3 Nov ones keeping their ids',
+        check(f'{label}: midterm 2 Practice has 8 + 11 + 15 + 11 + 10 + 16 problems, the 2 & 3 Nov ones keeping their ids',
               page.locator('#pu1 .prob').count() == 8 and page.locator('#pu2 .prob').count() == 11 and page.locator('#pu3 .prob').count() == 15
               and page.locator('#pu4 .prob').count() == 11 and page.locator('#prob-4-11').count() == 1
               and page.locator('#pu5 .prob').count() == 10 and page.locator('#prob-5-10').count() == 1
-              and page.locator('#pu6 .prob').count() == 11 and page.locator('#prob-6-1').count() == 1 and page.locator('#prob-6-11').count() == 1
+              and page.locator('#pu6 .prob').count() == 16 and page.locator('#prob-6-1').count() == 1 and page.locator('#prob-6-16').count() == 1
               and page.locator('#prob-1-12').count() == 1 and page.locator('#prob-1-4').count() == 0 and page.locator('#prob-2-10').count() == 1
               and page.locator('#prob-3-13').count() == 1)
         card = page.locator('#prob-1-1')
@@ -384,14 +385,16 @@ with sync_playwright() as p:
               and page.locator('#fg-g2c .frow').count() == 6 and page.locator('#fg-g3 .frow').count() == 13 and page.locator('#fg-g3b .frow').count() == 5
               and page.locator('#fg-g4 .frow').count() == 7 and page.locator('#fg-g4b .frow').count() == 7 and page.locator('#fg-g4c .frow').count() == 4
               and page.locator('#fg-g4d .frow').count() == 11 and page.locator('#fg-g5 .frow').count() == 8 and page.locator('#fg-g5b .frow').count() == 8
-              and page.locator('#fg-g6 .frow').count() == 10 and page.locator('#fg-g6b .frow').count() == 4
+              and page.locator('#fg-g6 .frow').count() == 10 and page.locator('#fg-g6b .frow').count() == 4 and page.locator('#fg-g6c .frow').count() == 10
               and page.locator('#fg-gs .frow').count() == 15
               and page.locator('#fg-exact').count() == 1)
         check(f'{label}: midterm 2 Formulas has no sideways scroll', overflow(page) <= 0, overflow(page))
         page.click('#tab-quizzes')
-        page.wait_for_selector('#qg09')
-        check(f'{label}: midterm 2 Quizzes has Quizzes 06 to 09: each a locked sheet and two open follow-ups',
-              page.locator('#view-quizzes .qgroup').count() == 4 and page.locator('#qg06 .seg-btn').count() == 3 and page.locator('#qg07 .seg-btn').count() == 3
+        page.wait_for_selector('#qg10')
+        check(f'{label}: midterm 2 Quizzes has Quizzes 06 to 10: each a locked sheet and two open follow-ups',
+              page.locator('#view-quizzes .qgroup').count() == 5 and page.locator('#qg06 .seg-btn').count() == 3 and page.locator('#qg07 .seg-btn').count() == 3
+              and page.locator('#qg10 .seg-btn').count() == 3 and page.locator('#rq10.lock form.unlock').count() == 1
+              and page.locator('#rq10a .rq').count() == 2 and page.locator('#rq10b .rq').count() == 2 and 'day 24 & 25' in page.locator('#qg10 .kicker').inner_text().lower()
               and page.locator('#qg09 .seg-btn').count() == 3 and page.locator('#rq09.lock form.unlock').count() == 1
               and page.locator('#rq09a .rq').count() == 2 and page.locator('#rq09b .rq').count() == 2 and 'day 22 & 23' in page.locator('#qg09 .kicker').inner_text().lower()
               and page.locator('#qg08 .seg-btn').count() == 3 and page.locator('#rq08.lock form.unlock').count() == 1
@@ -405,8 +408,9 @@ with sync_playwright() as p:
             form.locator('input[name="password"]').fill(PASSWORD)
             form.locator('.u-go').click()
             page.wait_for_selector('body.unlocked', timeout=20000)
-            check(f'{label}: the password opens Quizzes 06 to 09 on midterm 2', page.locator('#rq06 .rq').count() == 3 and page.locator('#rq07 .rq').count() == 2
-                  and page.locator('#rq08 .rq').count() == 6 and page.locator('#rq09 .rq').count() == 2 and page.locator('.sheet.lock').count() == 0)
+            check(f'{label}: the password opens Quizzes 06 to 10 on midterm 2', page.locator('#rq06 .rq').count() == 3 and page.locator('#rq07 .rq').count() == 2
+                  and page.locator('#rq08 .rq').count() == 6 and page.locator('#rq09 .rq').count() == 2 and page.locator('#rq10 .rq').count() == 2
+                  and page.locator('.sheet.lock').count() == 0)
             check(f'{label}: Quiz 08 shows its two sheets, each under its own heading',
                   page.locator('#rq08 .sheet-part').all_inner_texts() == ['Sheet 1', 'Sheet 2'] or [t.lower() for t in page.locator('#rq08 .sheet-part').all_inner_texts()] == ['sheet 1', 'sheet 2'],
                   page.locator('#rq08 .sheet-part').all_inner_texts())
